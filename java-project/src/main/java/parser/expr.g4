@@ -99,3 +99,10 @@ functionDeclaration
   | 'function' ID '(' typeFields? ')' ':' typeId '=' expr
   ;
 
+// Règles lexer
+INT  :  ('0'..'9')+ ;
+ID   :  ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+STR : '"'(~["\\\r\n] | '\\n'|'\\t'|'\\r')+'"';
+COMMENT : '/*' (.)*?  '*/' ->skip ;
+WS  : [ \n\t\r] + -> skip ;
+
