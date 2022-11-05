@@ -122,6 +122,7 @@ typeId        // Ajout
 
 variableDeclaration
   : 'var' ID ':=' expr
+  | 'var' ID ':' typeId ':=' expr
   ;
 
 functionDeclaration
