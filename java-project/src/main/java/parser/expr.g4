@@ -79,7 +79,7 @@ type
   ;
 
 typeFields // records
-  : typeField (',' typeField)+
+  : typeField (',' typeField)*
   ;
 
 typeField
