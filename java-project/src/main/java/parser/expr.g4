@@ -8,26 +8,50 @@ program : expr? EOF;
 
 expr
   : stringConstant                                    # StringConstantExpr
+  | stringConstant exprNRG                            # StringConstantExprNRG
   | integerConstant                                   # IntegerConstantExpr
+  | integerConstant exprNRG                           # IntegerConstantExprNRG
   | 'nil'                                             # NilExpr
+  | 'nil' exprNRG                                     # NilExprNRG
   | lvalue                                            # LValueExpr
+  | lvalue exprNRG                                    # LValueExprNRG
   | ID '(' exprList? ')'                              # FunctionAcess
+  | ID '(' exprList? ')' exprNRG                      # FunctionAcessNRG
   | typeId '{' fieldList? '}'                         # RecordDeclarationExpr
+  | typeId '{' fieldList? '}' exprNRG                 # RecordDeclarationExprNRG
   | typeId '[' expr ']' 'of' expr                     # ArrayDeclarationExpr
+  | typeId '[' expr ']' 'of' expr exprNRG             # ArrayDeclarationExprNRG
   | 'if' expr 'then' expr                             # IfThenExpr
+  | 'if' expr 'then' expr exprNRG                     # IfThenExprNRG
   | 'if' expr 'then' expr 'else' expr                 # IfThenElseExpr
+  | 'if' expr 'then' expr 'else' expr exprNRG         # IfThenElseExprNRG
   | 'while' expr 'do' expr                            # WhileExpr
+  | 'while' expr 'do' expr exprNRG                    # WhileExprNRG
   | 'for' ID ':=' expr 'to' expr 'do' expr            # ForExpr
+  | 'for' ID ':=' expr 'to' expr 'do' expr exprNRG    # ForExprNRG
   | 'let' declarationList 'in' exprSeq? 'end'         # LetExpr
+  | 'let' declarationList 'in' exprSeq? 'end' exprNRG # LetExprNRG
   | 'break'                                           # BreakExpr
+  | 'break' exprNRG                                   # BreakExprNRG
   | '-' expr                                          # MinusExpr
-  | expr ('*' | '/') expr                             # MultiplicativeExpr
-  | expr ('+' | '-') expr                             # AdditiveExpr
-  | expr ('=' | '<>' | '>' | '<' | '>=' | '<=') expr  # EqualityExpr
-  | expr '&' expr                                     # AndExpr
-  | expr '|' expr                                     # OrExpr
+  | '-' expr exprNRG                                  # MinusExprNRG
   | '(' exprSeq? ')'                                  # ParenthesedExpr
+  | '(' exprSeq? ')' exprNRG                          # ParenthesedExprNRG
   | lvalue ':=' expr                                  # AssignationExpr
+  | lvalue ':=' expr exprNRG                          # AssignationExprNRG
+  ;
+
+exprNRG
+  : ('*' | '/') expr                                  # MultiplicativeExpr
+  | ('*' | '/') expr exprNRG                          # MultiplicativeExprNRG
+  | ('+' | '-') expr                                  # AdditiveExpr
+  | ('+' | '-') expr exprNRG                          # AdditiveExprNRG
+  | ('=' | '<>' | '>' | '<' | '>=' | '<=') expr       # EqualityExpr
+  | ('=' | '<>' | '>' | '<' | '>=' | '<=') expr exprNRG # EqualityExprNRG
+  | '&' expr                                          # AndExpr
+  | '&' expr exprNRG                                  # AndExprNRG
+  | '|' expr                                          # OrExpr
+  | '|' expr exprNRG                                  # OrExprNRG
   ;
 
 exprSeq
@@ -52,11 +76,17 @@ integerConstant // Ajout
   ;
 
 lvalue
-  : ID
-  | lvalue '.' ID
-  | lvalue '[' expr ']'
+  : ID lvalueNRG
+  | ID
   ;
 
+lvalueNRG
+  :
+  | '.' ID lvalueNRG
+  | '[' expr ']' lvalueNRG
+  | '.' ID
+  | '[' expr ']'
+  ;
 
 declarationList
   : declaration+
