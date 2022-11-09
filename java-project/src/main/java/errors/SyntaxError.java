@@ -1,3 +1,5 @@
+package errors;
+
 public class SyntaxError {
 
     public int line;
