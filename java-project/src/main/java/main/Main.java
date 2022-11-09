@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 
 import java.io.IOException;
 
-import errors.GestionnaireErreur;
+
 import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -60,8 +60,6 @@ public class Main {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setVisible(true);
-
-
         }
         catch (IOException | RecognitionException e) {
             e.printStackTrace();

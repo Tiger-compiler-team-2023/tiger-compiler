@@ -4,7 +4,7 @@ grammar expr;
 package parser;
 }
 
-program : expr? EOF;
+program : expr?EOF;
 
 expr
   : stringConstant                                    # StringConstantExpr
@@ -133,6 +133,7 @@ functionDeclaration
 // Règles lexer
 INT  :  ('0'..'9')+ ;
 ID   :  ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
-STR : '"'(~["\\\r\n] | '\\n'|'\\t'|'\\r')+'"';
+//STR : '"'(~["\\\r\n] | '\\n'|'\\t'|'\\r')+'"';
+STR : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'.'|' '|'!'|'?'|'-'|':'|';'|',')*'"';
 COMMENT : '/*' (.)*?  '*/' ->skip ;
 WS  : [ \n\t\r] + -> skip ;
