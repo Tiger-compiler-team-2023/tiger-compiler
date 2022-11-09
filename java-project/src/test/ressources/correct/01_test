@@ -1,0 +1,37 @@
+let
+    type tableau = array of int
+    type matrice_carree = {mat:tableau, size:int}
+
+    function create(n:int) :matrice_carree =
+        matrice_carree {mat = intArray [n*n] of 0, size = n}
+
+    function set(m :matrice_carree, i :int, j :int, e :int) =
+        (m.mat[i*m.size + j] := e)
+
+    function get(m :matrice_carree, i :int, j :int) :int =
+        m.mat[i*m.size + j]
+
+    function trace(m :matrice_carree) :int =
+        let
+            function trace_aux(m :matrice_carree, i :int, res :int) =
+            if (i = m.size)
+            then res
+            else trace_aux(m, i+1, res + get(m, i, i))
+        in
+            trace_aux(m, 0, 0)
+        end
+in
+    let
+        var ma_matrice :matrice_carree := create(2)
+    in
+        set(ma_matrice, 0, 0, 1);
+        set(ma_matrice, 0, 1, 2);
+        set(ma_matrice, 1, 0, 3);
+        set(ma_matrice, 1, 1, 4);
+        /* Nous venons de créer la matrice
+            1   2
+            3   4
+        */
+        trace(ma_matrice)
+    end
+end

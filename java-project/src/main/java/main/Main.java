@@ -11,8 +11,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 
-//import parser.*;
-
 public class Main {
 
     public static void main(String[] args){
@@ -25,14 +23,29 @@ public class Main {
         String testFile = args[0];
 
         try {
-
             //chargement du fichier et construction du parser
+            // Le programme lit d'abord une chaîne de caractères
             CharStream input = CharStreams.fromFileName(testFile);
-            exprLexer lexer = new exprLexer(input);
-            CommonTokenStream stream = new CommonTokenStream(lexer);
-            exprParser parser = new exprParser(stream);
+            // il la passe à l'analyseur lexical.
+            // Ceci permet de transformer la chaîne de caractères en une
+            // suite de mots (ou token) du langage (par exemple 'if')
+            parser.exprLexer lexer = new parser.exprLexer(input);
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(GestionnaireErreur.getInstance());
 
-            exprParser.ProgramContext program = parser.program();
+            // On utilise ensuite le lexer pour transformer la chaîne
+            // de départ en chaîne de token
+            CommonTokenStream stream = new CommonTokenStream(lexer);
+            //  Pour finir, on analyse syntaxiquement (parse) la chaine de
+            //  Token grâce à la classe de parser générée par antlr.
+            // https://stackoverflow.com/questions/18132078/handling-errors-in-antlr4
+            parser.exprParser parser = new parser.exprParser(stream);
+            parser.removeErrorListeners();
+            parser.addErrorListener(GestionnaireErreur.getInstance());
+            // obtenir l'arbre syntaxique
+            System.out.println("----");
+            parser.exprParser.ProgramContext program = parser.program();
+            System.out.println("----");
 
             // code d'affichage de l'arbre syntaxique
             JFrame frame = new JFrame("Antlr AST");
@@ -51,8 +64,5 @@ public class Main {
         catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }
-
-
     }
-
 }
