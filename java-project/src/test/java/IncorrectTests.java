@@ -31,4 +31,22 @@ public class IncorrectTests {
         CustomParser.parse(file);
         Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
     }
+
+    @Test
+    public void troisiemeTest() throws IOException {
+        String path = "src/test/ressources/correct/ExponentiationRapide.tiger";
+
+        File file = new File(path);
+        CustomParser.parse(file);
+        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+    }
+
+    @Test
+    public void quatriemeTest() throws IOException {
+        String path = "src/test/ressources/correct/Inegalites.tiger";
+
+        File file = new File(path);
+        CustomParser.parse(file);
+        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+    }
 }
