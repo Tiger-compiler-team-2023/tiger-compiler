@@ -55,7 +55,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- This plugin sets up maven to use Java X -->
+            <!-- Version de java pour la compilation et version du bytecode genéré -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -73,10 +73,7 @@
                 </executions>
             </plugin>
 
-            <!--   plugin to create a self-contained portable package
-                   This allows us to execute our application like this:
-                   java -cp target/array-init-1.0-jar-with-dependencies.jar org.abcd.examples.ArrayInit.ArrayInit
-             -->
+            <!--   création du fatjar -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>

@@ -21,7 +21,7 @@ public class IncorrectTests {
         String path = "src/test/ressources/incorrect/01_test";
         File file = new File(path);
         CustomParser.parse(file);
-        //Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 1);
+        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 1);
     }
 
     @Test
@@ -30,7 +30,7 @@ public class IncorrectTests {
 
         File file = new File(path);
         CustomParser.parse(file);
-        //Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
     }
 
     @Test
@@ -39,7 +39,7 @@ public class IncorrectTests {
 
         File file = new File(path);
         CustomParser.parse(file);
-        //Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
     }
 
     @Test

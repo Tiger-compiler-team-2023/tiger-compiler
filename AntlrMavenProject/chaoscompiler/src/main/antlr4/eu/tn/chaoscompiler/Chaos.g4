@@ -1,305 +1,140 @@
 grammar Chaos;
+
 /*
 @header{
 package parser;
 }*/
 
-program
- : exp
- ;
+program : expr?EOF;
 
+expr
+  : stringConstant                                    # StringConstantExpr
+  | stringConstant exprNRG                            # StringConstantExprNRG
+  | integerConstant                                   # IntegerConstantExpr
+  | integerConstant exprNRG                           # IntegerConstantExprNRG
+  | 'nil'                                             # NilExpr
+  | 'nil' exprNRG                                     # NilExprNRG
+  | lvalue                                            # LValueExpr
+  | lvalue exprNRG                                    # LValueExprNRG
+  | ID '(' exprList? ')'                              # FunctionAcess
+  | ID '(' exprList? ')' exprNRG                      # FunctionAcessNRG
+  | typeId '{' fieldList? '}'                         # RecordDeclarationExpr
+  | typeId '{' fieldList? '}' exprNRG                 # RecordDeclarationExprNRG
+  | typeId '[' expr ']' 'of' expr                     # ArrayDeclarationExpr
+  | typeId '[' expr ']' 'of' expr exprNRG             # ArrayDeclarationExprNRG
+  | 'if' expr 'then' expr                             # IfThenExpr
+  | 'if' expr 'then' expr exprNRG                     # IfThenExprNRG
+  | 'if' expr 'then' expr 'else' expr                 # IfThenElseExpr
+  | 'if' expr 'then' expr 'else' expr exprNRG         # IfThenElseExprNRG
+  | 'while' expr 'do' expr                            # WhileExpr
+  | 'while' expr 'do' expr exprNRG                    # WhileExprNRG
+  | 'for' ID ':=' expr 'to' expr 'do' expr            # ForExpr
+  | 'for' ID ':=' expr 'to' expr 'do' expr exprNRG    # ForExprNRG
+  | 'let' declarationList 'in' exprSeq? 'end'         # LetExpr
+  | 'let' declarationList 'in' exprSeq? 'end' exprNRG # LetExprNRG
+  | 'break'                                           # BreakExpr
+  | 'break' exprNRG                                   # BreakExprNRG
+  | '-' expr                                          # MinusExpr
+  | '-' expr exprNRG                                  # MinusExprNRG
+  | '(' exprSeq? ')'                                  # ParenthesedExpr
+  | '(' exprSeq? ')' exprNRG                          # ParenthesedExprNRG
+  | lvalue ':=' expr                                  # AssignationExpr
+  | lvalue ':=' expr exprNRG                          # AssignationExprNRG
+  ;
 
-exp
- : expNoBinOpNoId binOp
- | loop
- | ifThen
- | negation
- | id idFacto
- ;
+exprNRG
+  : ('*' | '/') expr                                  # MultiplicativeExpr
+  | ('*' | '/') expr exprNRG                          # MultiplicativeExprNRG
+  | ('+' | '-') expr                                  # AdditiveExpr
+  | ('+' | '-') expr exprNRG                          # AdditiveExprNRG
+  | ('=' | '<>' | '>' | '<' | '>=' | '<=') expr       # EqualityExpr
+  | ('=' | '<>' | '>' | '<' | '>=' | '<=') expr exprNRG # EqualityExprNRG
+  | '&' expr                                          # AndExpr
+  | '&' expr exprNRG                                  # AndExprNRG
+  | '|' expr                                          # OrExpr
+  | '|' expr exprNRG                                  # OrExprNRG
+  ;
 
-idFacto
- : binOp
- | refOrCreate
- ;
+exprSeq
+  : expr (';' expr)*
+  ;
 
-expNoBinOp
- : expNoBinOpNoId
- | idRead
- ;
+exprList
+  : expr (',' expr)*
+  ;
 
-idRead
- : id idReadFacto
- ;
+fieldList
+  : ID '=' expr (',' ID '=' expr)*
+  ;
 
-idReadFacto
- : '(' expCKleene ')'
- | '.' id lValue
- | '[' exp ']' lValue
- | /* mot vide */
- ;
+stringConstant // Ajout
+  : STR
+  ;
 
-expNoBinOpNoId
- : constante
- | letExp
- | '(' expNoBinOpNoIdPar
- ;
+integerConstant // Ajout
+  : INT
+  | lvalue
+  ;
 
-expNoBinOpNoIdPar
- : ')'
- | exp expNoBinOpNoIdParExp
- ;
+lvalue
+  : ID lvalueNRG
+  | ID
+  ;
 
-expNoBinOpNoIdParExp
- : ';' expSCKleene ')'
- | ')'
- ;
+lvalueNRG
+  :
+  | '.' ID lvalueNRG
+  | '[' expr ']' lvalueNRG
+  | '.' ID
+  | '[' expr ']'
+  ;
 
-binOp
- : addOp
- | multOp
- | orOp
- | andOp
- | compOp
- | /* mot vide */
- ;
+declarationList
+  : declaration+
+  ;
 
-orOp
- : '|' orOpTail
- ;
+declaration
+  : typeDeclaration
+  | variableDeclaration
+  | functionDeclaration
+  ;
 
-orOpTail
- : expNoBinOp orOpOpt
- ;
+typeDeclaration
+  : 'type' typeId '=' type
+  ;
 
-orOpOpt
- : orOp
- | andOpOpt
- ;
+type
+  : typeId                    // alias
+  | '{' typeFields? '}'       // records
+  | 'array' 'of' typeId       // array
+  ;
 
-andOp
- : '&' andOpTail
- ;
+typeFields // records
+  : typeField (',' typeField)*
+  ;
 
-andOpTail
- : expNoBinOp andOpOpt
- ;
+typeField
+  : ID ':' typeId
+  ;
 
-andOpOpt
- : andOp
- | compOpOpt
- ;
+typeId        // Ajout
+  : ID        // ça peut paraitre bête de faire une règle juste pour ça mais je pense qu'on en aura besoin pour les contrôles sémantiques
+  ;
 
-compOp
- : '=' compOpTail
- | '<>' compOpTail
- | '<=' compOpTail
- | '>=' compOpTail
- | '<' compOpTail
- | '>' compOpTail
- ;
+variableDeclaration
+  : 'var' ID ':=' expr
+  | 'var' ID ':' typeId ':=' expr
+  ;
 
-compOpTail
- : expNoBinOp compOpOpt
- ;
-
-compOpOpt
- : compOp
- | addOpOpt
- ;
-
-addOp
- : '+' addOpTail
- | '-' addOpTail
- ;
-
-addOpTail
- : expNoBinOp addOpOpt
- ;
-
-addOpOpt
- : addOp
- | multOpOpt
- ;
-
-multOp
- : '*' multOpTail
- | '/' multOpTail
- ;
-
-multOpTail
- : expNoBinOp multOpOpt
- ;
-
-multOpOpt
- : multOp
- | /* mot vide */
- ;
-
-constante
- : INT
- | STR
- | 'nil'
- | 'break'
- ;
-
-refOrCreate
- : '(' expCKleene ')' binOp
- | '.' id lValue refOrCreateTail
- | ':=' exp
- | '{' fieldCreateCKleene '}'
- | '[' exp ']' refOrCreateCrochet
- ;
-
-refOrCreateCrochet
- : lValue refOrCreateTail
- | 'of' exp
- ;
-
-refOrCreateTail
- : ':=' exp
- | binOp
- ;
-
-lValue
- : '[' exp ']' lValue
- | '.' id lValue
- | /* mot vide */
- ;
-
-fieldCreate
- : id '=' exp
- ;
-
-loop
- : whileExp
- | forExp
- ;
-
-whileExp
- : 'while' exp 'do' exp
- ;
-
-forExp
- : 'for' id ':=' exp 'to' exp 'do' exp
- ;
-
-negation
- : '-' exp
- ;
-
-ifThen
- : 'if' expNoBinOp binOp 'then' exp optElse
- ;
-
-optElse
- : 'else' exp
- ;
-
-letExp
- : 'let' decPositive 'in' expSCKleene 'end'
- ;
-
-dec
- : tyDec
- | varDec
- | funDec
- ;
-
-tyDec
- : 'type' id '=' ty
- ;
-
-ty
- : id
- | arrTy
- | recTy
- ;
-
-arrTy
- : 'array' 'of' id
- ;
-
-recTy
- : '{' fieldDecCKleene '}'
- ;
-
-fieldDec
- : id ':' id
- ;
-
-funDec
- : 'function' id '(' fieldDecCKleene ')' optType '=' exp
- ;
-
-varDec
- : 'var' id optType ':=' exp
- ;
-
-optType
- : ':' id
- | /* mot vide */
- ;
-
-/* ********** ********** ********** ********** *
- *    Etoile de Kleene (*) et positive (+)     *
- * ********** ********** ********** ********** */
-
-expSCKleene
- : exp expSCKleeneFacto
- | /* mot vide */
- ;
-
-expSCKleeneFacto
- : ';' exp expSCKleeneFacto
- | /* mot vide */
- ;
-
-fieldDecCKleene
- : fieldDec fieldDecCKleeneFacto
- | /* mot vide */
- ;
-
-fieldDecCKleeneFacto
- : ',' fieldDec fieldDecCKleeneFacto
- | /* mot vide */
- ;
-
-expCKleene
- : exp expCKleeneFacto
- | /* mot vide */
- ;
-
-expCKleeneFacto
- : ',' exp expCKleeneFacto
- | /* mot vide */
- ;
-
-fieldCreateCKleene
- : fieldCreate fieldCreateCKleeneFacto
- | /* mot vide */
- ;
-
-fieldCreateCKleeneFacto
- : ',' fieldCreate fieldCreateCKleeneFacto
- | /* mot vide */
- ;
-
-decPositive
- : dec decKleene
- ;
-
-decKleene
- : dec decKleene
- | /* mot vide */
- ;
-
-id
- : ID
- ;
+functionDeclaration
+  : 'function' ID '(' typeFields? ')' '=' expr
+  | 'function' ID '(' typeFields? ')' ':' typeId '=' expr
+  ;
 
 // Règles lexer
-INT : ('0'..'9')+ ;
-ID : ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+INT  :  ('0'..'9')+ ;
+ID   :  ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+//STR : '"'(~["\\\r\n] | '\\n'|'\\t'|'\\r')+'"';
 STR : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'.'|' '|'!'|'?'|'-'|':'|';'|','|'\\n'|'\\t'|'\\r'|'('|')')*'"';
-COMMENT : '/*' (.)*? '*/' -> skip ;
-WS : [ \n\t\r] + -> skip ;
+COMMENT : '/*' (.)*?  '*/' ->skip ;
+WS  : [ \n\t\r] + -> skip ;
