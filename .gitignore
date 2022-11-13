@@ -515,3 +515,7 @@ java-project/.idea/
 java-project/java-project.iml
 
 java-project/src/main/java/parser/
+
+AntlrMavenProject/chaoscompiler/.idea/
+
+AntlrMavenProject/chaoscompiler/target/
