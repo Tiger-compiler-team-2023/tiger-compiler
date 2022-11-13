@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class GestionnaireErreur extends BaseErrorListener {
     private static GestionnaireErreur INSTANCE;
     private ArrayList<SyntaxError> errors;
+    private boolean throwException = false;
 
     public GestionnaireErreur() {
         this.errors = new ArrayList<SyntaxError>();
@@ -31,7 +32,9 @@ public class GestionnaireErreur extends BaseErrorListener {
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
             throws ParseCancellationException {
         // System.out.println("error <3 " + offendingSymbol + " "+ e.getMessage());
-        // throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
+        if(throwException){
+            throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
+        }
         errors.add(new SyntaxError(line, charPositionInLine, msg));
     }
 
@@ -39,4 +42,7 @@ public class GestionnaireErreur extends BaseErrorListener {
         return getInstance().errors.size();
     }
 
+    public static void setThrowException(boolean throwException) {
+        getInstance().throwException = throwException;
+    }
 }

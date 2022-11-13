@@ -8,7 +8,8 @@ Membres du groupe :
 - Rida Moussaoui (gpe. 42, ISS)
 
 ---
-# Utilisation de Maven
+# MAVEN
+## Utilisation de Maven
 ### Installer Maven
 _Ubuntu_ : ```sudo apt install Maven```
 
@@ -18,62 +19,76 @@ _Windows_ : https://maven.apache.org/install.html#windows-tips
 
 ---
 ### Se déplacer dans le bon projet
-```
+```antlrv4
 cd AntlrMavenProject/chaoscompiler/
 ```
+---
 
-### Utiliser les goals MAVEN
+### Utiliser les goals
 
 - Nettoyer le projet
 
-```
-nvm clean
+``` antlrv4
+mvn clean
 ```
 
----
+--- 
 - Générer le lexer et le parser puis compiler
 
-```
-nvm compile
+``` antlrv4
+mvn compile
 ```
 
 Pour génerer le lexer et le parser **sans** compiler le projet, on peut aussi faire:
 
-```
+``` antlrv4
 mvn antlr4:antlr4
 ```
 
 ---
 
-- lance les tests + tâches précèdentes si nécessaires
-```
+- lance les tests (grace au plugin *surefire*) + tâches précèdentes si nécessaires
+``` antlrv4
 mvn test
 ```
 ---
+### Execution du main
+Deux solution:
+1. Executer le main manuellement avec gradle
 
-- Executer le main manuellement avec gradle
-
+``` antlrv4
+mvn install
 ```
-nvm install
-```
-```
-mvn exec:java -Dexec.mainClass=eu.tn.chaoscompiler.main.Main
+``` antlrv4
+mvn exec:java -Dexec.mainClass=eu.tn.chaoscompiler.main.Main -Dexec.args="./src/test/ressources/correct/01_test"
 ```
 ---
-- L'application peut également générer un jar totalement indépendant
-```
+2. L'application peut également générer un fatjar totalement indépendant avec le *maven-assembly-plugin*, le jar est situé dans le dossier target.
+``` antlrv4
 mvn package
 ```
-```
-java -jar .\chaoscompiler-1.0-SNAPSHOT-jar-with-dependencies.jar
+``` antlrv4
+java -jar .\target\chaoscompiler-1.0-SNAPSHOT-jar-with-dependencies.jar ./src/test/ressources/correct/01_test 
+
 ```
 
 Qu'on peut adapter si besoin en fonction des versions de java, par exemple ;
-```
-C:\Users\USER\.jdks\openjdk-19\bin\java.exe -jar .\chaoscompiler-1.0-SNAPSHOT-jar-with-dependencies.jar
+``` antlrv4
+C:\Users\USER\.jdks\openjdk-19\bin\java.exe -jar ...
+
 ```
 
+### Problèmes possibles
 
+En cas de soucis avec la version de java, essayer de modifier la version de java utilisé par le plugin de de compilation (*maven-compiler-plugin*) de maven dans le fichier *pom.xml*.
+
+Il faut changer les lignes suivantes en remplacant ``19`` par ``1.8`` par exemple :
+``` xml
+<configuration>
+    <source>19</source>
+    <target>19</target>
+</configuration>
+```
 
 
 
