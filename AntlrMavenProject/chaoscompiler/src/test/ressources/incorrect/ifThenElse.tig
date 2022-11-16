@@ -1,0 +1,5 @@
+if (17=5)
+  then
+    "vrai" 
+  else
+    0
