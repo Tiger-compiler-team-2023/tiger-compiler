@@ -18,36 +18,21 @@ public class IncorrectTests {
     // Pour la démo
     @Test
     public void firstTest() throws IOException {
-        String path = "src/test/ressources/incorrect/01_test";
-        File file = new File(path);
-        CustomParser.parse(file);
-        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 1);
+        TigerAssert.assertNbErreurs("incorrect/01_test", 1);
     }
 
     @Test
     public void secondTest() throws IOException {
-        String path = "src/test/ressources/correct/01_test";
-
-        File file = new File(path);
-        CustomParser.parse(file);
-        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+        TigerAssert.assertNbErreurs("correct/01_test", 0);
     }
 
     @Test
     public void troisiemeTest() throws IOException {
-        String path = "src/test/ressources/correct/ExponentiationRapide.tiger";
-
-        File file = new File(path);
-        CustomParser.parse(file);
-        Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+        TigerAssert.assertCorrect("correct/ExponentiationRapide.tiger");
     }
 
     @Test
     public void quatriemeTest() throws IOException {
-        String path = "src/test/ressources/correct/Inegalites.tiger";
-
-        File file = new File(path);
-        CustomParser.parse(file);
-        //Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 0);
+        //TigerAssert.assertCorrect("correct/Inegalites.tiger");
     }
 }

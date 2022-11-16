@@ -1,5 +1,8 @@
 package eu.tn.chaoscompiler.errors;
 
+import lombok.Cleanup;
+import lombok.Generated;
+import lombok.Setter;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
@@ -10,7 +13,7 @@ import java.util.ArrayList;
 public class GestionnaireErreur extends BaseErrorListener {
     private static GestionnaireErreur INSTANCE;
     private ArrayList<SyntaxError> errors;
-    private boolean throwException = false;
+    private @Setter boolean throwException = false;
 
     public GestionnaireErreur() {
         this.errors = new ArrayList<SyntaxError>();
@@ -40,9 +43,5 @@ public class GestionnaireErreur extends BaseErrorListener {
 
     public static int getNbErreur(){
         return getInstance().errors.size();
-    }
-
-    public static void setThrowException(boolean throwException) {
-        getInstance().throwException = throwException;
     }
 }

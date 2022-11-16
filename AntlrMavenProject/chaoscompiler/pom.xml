@@ -33,6 +33,12 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.24</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -76,6 +82,8 @@
             <!--   création du fatjar -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
+                <groupId>org.apache.maven.plugins</groupId>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>

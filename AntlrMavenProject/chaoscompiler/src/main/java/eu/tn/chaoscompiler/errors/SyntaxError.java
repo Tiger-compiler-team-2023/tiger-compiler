@@ -1,14 +1,5 @@
 package eu.tn.chaoscompiler.errors;
 
-public class SyntaxError {
+public record SyntaxError(int line, int charPositionInLine, String msg) {
 
-    public int line;
-    public int charPositionInLine;
-    public String msg;
-
-    public SyntaxError(int line, int charPositionInLine, String msg) {
-        this.line = line;
-        this.charPositionInLine = charPositionInLine;
-        this.msg = msg;
-    }
 }
