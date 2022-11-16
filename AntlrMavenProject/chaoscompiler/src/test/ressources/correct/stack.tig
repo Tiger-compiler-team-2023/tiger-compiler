@@ -1,0 +1,16 @@
+let type stack = {head:int , tail:stack}
+    
+    function createStack() :stack = stack {head = 0, tail = nil}
+
+    function isStackEmpty(s :stack) :int = s.head=0 & s.tail=nil
+
+    function pushStack(s :stack, e :int) :stack = stack {head = e, tail = s}
+
+    function popStack(s :stack) :stack = if isEmpty(s)
+        then print("Votre pile est vide.")
+        else s.tail
+
+    function topStack(s :stack) :int = if isEmpty(s)
+        then print("Votre pile est vide.")
+        else s.head
+in end
