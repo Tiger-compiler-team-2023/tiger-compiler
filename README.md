@@ -1,3 +1,7 @@
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=25&duration=7000&pause=2000&color=F7630A&center=true&width=435&lines=%F0%9F%90%85%F0%9F%90%85+Compilateur+Tiger+%F0%9F%90%85%F0%9F%90%85)](https://git.io/typing-svg)
+
+---
+
 # pcl-goureau1u
 
 Projet de Compilation 2022-2023 (PCL1 & PCL2).

@@ -1,7 +1,5 @@
 package eu.tn.chaoscompiler.errors;
 
-import lombok.Cleanup;
-import lombok.Generated;
 import lombok.Setter;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
