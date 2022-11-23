@@ -45,7 +45,6 @@ public class Main {
             // obtenir l'arbre syntaxique
             System.out.println("----");
             ChaosParser.ProgramContext program = parser.program();
-            System.out.println("----");
 
             // code d'affichage de l'arbre syntaxique
             JFrame frame = new JFrame("Antlr AST");
@@ -58,6 +57,8 @@ public class Main {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setVisible(true);
+            System.out.println(program.getChild(0).getChild(1).getText());
+            System.out.println(program.getChild(0).getChild(1));
         }
         catch (IOException | RecognitionException e) {
             e.printStackTrace();

@@ -25,6 +25,9 @@ public class GestionnaireErreur extends BaseErrorListener {
         return INSTANCE;
     }
 
+    /**
+     * Réinitialise la gestion des erreurs
+     */
     public static void reset() {
         getInstance().errors.clear();
     }

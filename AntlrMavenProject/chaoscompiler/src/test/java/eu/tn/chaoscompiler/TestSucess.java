@@ -2,9 +2,12 @@ package eu.tn.chaoscompiler;
 
 import org.junit.Test;
 
-import java.io.IOException;
-
-public class TestSucess extends TigerTest {
+/**
+ * Tests unitaires portant sur la bonne création d'arbre syntaxique pour des programmes
+ * sources correctes
+ *
+ */
+public final class TestSucess extends TigerTest {
     @Test public void correctTests() {
         TigerAssert.assertCorrect("correct/01_test.tig");
     }

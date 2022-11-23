@@ -60,6 +60,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <visitor>true</visitor>
+                </configuration>
             </plugin>
             <!-- Version de java pour la compilation et version du bytecode genéré -->
             <plugin>
@@ -101,7 +104,7 @@
                         <id>simple-command</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>attached</goal>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>
