@@ -1,140 +1,266 @@
 grammar Chaos;
 
-/*_
-@header{
-package parser;
-}*/
+program : exp? EOF;
 
-program : expr?EOF;
 
-expr
-  : stringConstant                                    # StringConstantExpr
-  | stringConstant exprNRG                            # StringConstantExprNRG
-  | integerConstant                                   # IntegerConstantExpr
-  | integerConstant exprNRG                           # IntegerConstantExprNRG
-  | 'nil'                                             # NilExpr
-  | 'nil' exprNRG                                     # NilExprNRG
-  | lvalue                                            # LValueExpr
-  | lvalue exprNRG                                    # LValueExprNRG
-  | ID '(' exprList? ')'                              # FunctionAcess
-  | ID '(' exprList? ')' exprNRG                      # FunctionAcessNRG
-  | typeId '{' fieldList? '}'                         # RecordDeclarationExpr
-  | typeId '{' fieldList? '}' exprNRG                 # RecordDeclarationExprNRG
-  | typeId '[' expr ']' 'of' expr                     # ArrayDeclarationExpr
-  | typeId '[' expr ']' 'of' expr exprNRG             # ArrayDeclarationExprNRG
-  | 'if' expr 'then' expr                             # IfThenExpr
-  | 'if' expr 'then' expr exprNRG                     # IfThenExprNRG
-  | 'if' expr 'then' expr 'else' expr                 # IfThenElseExpr
-  | 'if' expr 'then' expr 'else' expr exprNRG         # IfThenElseExprNRG
-  | 'while' expr 'do' expr                            # WhileExpr
-  | 'while' expr 'do' expr exprNRG                    # WhileExprNRG
-  | 'for' ID ':=' expr 'to' expr 'do' expr            # ForExpr
-  | 'for' ID ':=' expr 'to' expr 'do' expr exprNRG    # ForExprNRG
-  | 'let' declarationList 'in' exprSeq? 'end'         # LetExpr
-  | 'let' declarationList 'in' exprSeq? 'end' exprNRG # LetExprNRG
-  | 'break'                                           # BreakExpr
-  | 'break' exprNRG                                   # BreakExprNRG
-  | '-' expr                                          # MinusExpr
-  | '-' expr exprNRG                                  # MinusExprNRG
-  | '(' exprSeq? ')'                                  # ParenthesedExpr
-  | '(' exprSeq? ')' exprNRG                          # ParenthesedExprNRG
-  | lvalue ':=' expr                                  # AssignationExpr
-  | lvalue ':=' expr exprNRG                          # AssignationExprNRG
-  ;
 
-exprNRG
-  : ('*' | '/') expr                                  # MultiplicativeExpr
-  | ('*' | '/') expr exprNRG                          # MultiplicativeExprNRG
-  | ('+' | '-') expr                                  # AdditiveExpr
-  | ('+' | '-') expr exprNRG                          # AdditiveExprNRG
-  | ('=' | '<>' | '>' | '<' | '>=' | '<=') expr       # EqualityExpr
-  | ('=' | '<>' | '>' | '<' | '>=' | '<=') expr exprNRG # EqualityExprNRG
-  | '&' expr                                          # AndExpr
-  | '&' expr exprNRG                                  # AndExprNRG
-  | '|' expr                                          # OrExpr
-  | '|' expr exprNRG                                  # OrExprNRG
-  ;
+// Expressions
 
-exprSeq
-  : expr (';' expr)*
-  ;
+exp
+    : expNonValued                                          #LoopOrCondition
+    | expValued affectOp                                    #ExpBin
+    ;
 
-exprList
-  : expr (',' expr)*
-  ;
 
-fieldList
-  : ID '=' expr (',' ID '=' expr)*
-  ;
 
-stringConstant // Ajout
-  : STR
-  ;
+// Expressions sans valeur (càd de valeur void)
 
-integerConstant // Ajout
-  : INT
-  | lvalue
-  ;
+expNonValued
+    : 'while' expValued 'do' exp                            #While
+    | 'for' ID ':=' expValued 'to' expValued 'do' exp       #For
+    | 'if' expValued 'then' exp elseOpt                     #If
+    ;
 
-lvalue
-  : ID lvalueNRG
-  | ID
-  ;
+// // Else
 
-lvalueNRG
-  :
-  | '.' ID lvalueNRG
-  | '[' expr ']' lvalueNRG
-  | '.' ID
-  | '[' expr ']'
-  ;
+elseOpt
+    : 'else' exp                                            #Else
+    | /* mot vide */                                        #NoElse
+    ;
+
+// Expressions avec (possiblement) operateur binaire
+
+expValued
+    : expNoOr orOp
+    ;
+
+expNoOr
+    : expNoAnd andOp
+    ;
+
+expNoAnd
+    : expNoComp compOp
+    ;
+
+expNoComp
+    : expNoAdd addOp
+    ;
+
+expNoAdd
+    : value multOp
+    ;
+
+//  // Operateur logique |
+
+affectOp
+    : ':=' expValued                #Affect
+    | /* mot vide */                #NoAffect
+    ;
+
+orOp
+    : '|' expNoOr orOp              #Or
+    | /* mot vide */                #NoOr
+    ;
+
+//  // Operateur logique &
+
+andOp
+    : '&' expNoAnd andOp            #And
+    | /* mot vide */                #NoAnd
+    ;
+
+//  // Operateurs de comparaison
+
+compOp
+    : '=' expNoComp                 #Equals
+    | '<>' expNoComp                #NotEquals
+    | '<=' expNoComp                #InfOrEquals
+    | '>=' expNoComp                #SupOrEquals
+    | '<' expNoComp                 #InfThan
+    | '>' expNoComp                 #SupThan
+    | /* mot vide */                #NoComp
+    ;
+
+//  // Operateurs + et -
+
+addOp
+    : '+' expNoAdd addOp            #Add
+    | '-' expNoAdd addOp            #Minus
+    | /* mot vide */                #NoAddMinus
+    ;
+
+//  // Operateurs * et /
+
+multOp
+    : '*' value multOp              #Mult
+    | '/' value multOp              #Divide
+    | /* mot vide */                #NoMultDiv
+    ;
+
+//  // Expressions prenant possiblement une valeur
+//  // sur lesquelles il est possible de faire une operation
+
+value
+    : ID idRef                      #Reference
+    | STR                           #String
+    | INT                           #Integer
+    | '-' negationTail              #Negation
+    | letExp                        #Let
+    | '(' expSeq ')'                #Sequence
+    ;
+
+//  //  // Ce qui peut suivre l'operateur unaire -
+
+negationTail
+    : ID idRef                      #NegReference
+    | STR                           #NegString
+    | INT                           #NegInteger
+    | letExp                        #NegLet
+    | '(' expSeq ')'                #NegSequence
+    ;
+
+//  //  // Ce qui peut suivre un ID
+
+idRef
+    : '(' expValuedListOpt ')'              #FunctionCall
+    | '[' expValued ']' arrayCreateOpt      #ArrayElement
+    | '{' fieldCreateOpt '}'                #RecordCreate
+    | '.' ID idRef                          #StructFieldAccess
+    | /* mot vide */                        #NoIdTail
+    ;
+
+arrayCreateOpt
+    : 'of' expValued                        #ArrayAssign
+    |  idRef                                #ArrayAccess
+    ;
+
+fieldCreateOpt
+    : fieldCreate
+    | /* mot vide */
+    ;
+
+fieldCreate
+    : ID '=' expValued fieldCreateTail
+    ;
+
+fieldCreateTail
+    : ',' fieldCreate
+    | /* mot vide */
+    ;
+
+
+//  //  // Expression let in end
+
+letExp
+    : 'let' declarationListOpt 'in' expSeqOpt 'end'
+    ;
+
+
+//  //  //  Liste de valeurs en parametres d'un appel de fonction
+
+expValuedListOpt
+    : expValuedList                 #Parameter
+    | /* mot vide */                #NoParameter
+    ;
+
+expValuedList
+    : expValued expValuedListTail
+    ;
+
+expValuedListTail
+    : ',' expValuedList          #NextParameter
+    | /*mot vide */              #EndParameters
+    ;
+
+//  //  // Sequences d'expressions separees par des ;
+
+expSeqOpt
+    : expSeq                    #NonEmptySequence
+    | /* mot vide */            #EmptySequence
+    ;
+
+expSeq
+    : exp expSeqTail
+    ;
+
+expSeqTail
+    : ';' expSeq                #NextSeqElement
+    | /* mot vide */            #EndSequence
+    ;
+
+//  // Liste de declarations dans let
+
+declarationListOpt
+    : declarationList           #NonEmptyDeclarationList
+    | /* mot vide */            #EmptyDeclarationList
+    ;
 
 declarationList
-  : declaration+
-  ;
+    : declaration decTail
+    ;
+
+decTail
+    : declaration decTail       #NextDeclaration
+    | /* mot vide */            #DeclarationEnd
+    ;
 
 declaration
-  : typeDeclaration
-  | variableDeclaration
-  | functionDeclaration
-  ;
+    : 'var' ID optType ':=' expValued                       #DeclarationVariable
+    | 'type' ID '=' ty                                      #DeclarationType
+    | 'function' ID '(' fieldDecList ')' optType '=' exp    #DeclarationFunction
+    ;
 
-typeDeclaration
-  : 'type' typeId '=' type
-  ;
 
-type
-  : typeId                    // alias
-  | '{' typeFields? '}'       // records
-  | 'array' 'of' typeId       // array
-  ;
+//  //  // Declaration de types
 
-typeFields // records
-  : typeField (',' typeField)*
-  ;
+ty
+    : ID                #RenameType
+    | arrTy             #Array
+    | recTy             #Record
+    ;
 
-typeField
-  : ID ':' typeId
-  ;
+arrTy
+    : 'array of' ID
+    ;
 
-typeId        // Ajout
-  : ID        // ça peut paraitre bête de faire une règle juste pour ça mais je pense qu'on en aura besoin pour les contrôles sémantiques
-  ;
+recTy
+    : '{' fieldDecList '}'
+    ;
 
-variableDeclaration
-  : 'var' ID ':=' expr
-  | 'var' ID ':' typeId ':=' expr
-  ;
+//  //  // Declaration de fonctions
 
-functionDeclaration
-  : 'function' ID '(' typeFields? ')' '=' expr
-  | 'function' ID '(' typeFields? ')' ':' typeId '=' expr
-  ;
+optType
+    : ':' ID                #HasType
+    | /* mot vide */        #VoidType
+    ;
 
-// Règles lexer
-INT  :  ('0'..'9')+ ;
-ID   :  ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
-//STR : '"'(~["\\\r\n] | '\\n'|'\\t'|'\\r')+'"';
+//  //  //  // Liste de parametres pour une declaration de fonction
+//  //  //  // Ou une declaration de type record
+
+fieldDecList
+    : fieldDec fieldDecTail     #FieldDecElement
+    | /* mot vide */            #EmptyFieldDecList
+    ;
+
+fieldDecTail
+    : ',' fieldDec fieldDecTail #NextFieldDec
+    | /* mot vide */            #EndFieldDecList
+    ;
+
+fieldDec
+    : ID ':' ID
+    ;
+
+
+
+// Terminaux
+
+INT : ('0'..'9')+ ;
+ID : ('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 STR : '"'('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'.'|' '|'!'|'?'|'-'|':'|';'|','|'\\n'|'\\t'|'\\r'|'('|')')*'"';
-COMMENT : '/*' (.)*?  '*/' ->skip ;
-WS  : [ \n\t\r] + -> skip ;
+
+
+// Skip
+
+COMMENT : '/*' (.)*? '*/' -> skip ;
+WS : [ \n\t\r] + -> skip ;
