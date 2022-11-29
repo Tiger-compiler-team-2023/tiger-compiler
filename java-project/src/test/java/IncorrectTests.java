@@ -17,7 +17,7 @@ public class IncorrectTests {
     // Pour la démo
     @Test
     public void firstTest() throws IOException {
-        String path = "src/test/ressources/incorrect/01_test";
+        String path = "src/test/ressources/incorrect/trace_matrice_incorrect";
         File file = new File(path);
         CustomParser.parse(file);
         Assert.assertEquals("Mauvais nombre d'erreurs", GestionnaireErreur.getNbErreur(), 1);
@@ -25,7 +25,7 @@ public class IncorrectTests {
 
     @Test
     public void secondTest() throws IOException {
-        String path = "src/test/ressources/correct/01_test";
+        String path = "src/test/ressources/correct/trace_matrice";
 
         File file = new File(path);
         CustomParser.parse(file);

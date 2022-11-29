@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public final class TestLexicalError extends TigerTest {
     @Test public void testErreurSyntaxique(){
-        TigerAssert.assertNbErreurs("erreursSyntaxique/01_test.tig", 1);
+        TigerAssert.assertNbErreurs("erreursSyntaxique/trace_matricetrace_matrice.tig", 1);
     }
 
 }

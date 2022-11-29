@@ -9,7 +9,7 @@ import org.junit.Test;
  */
 public final class TestSucess extends TigerTest {
     @Test public void correctTests() {
-        TigerAssert.assertCorrect("correct/01_test.tig");
+        TigerAssert.assertCorrect("correct/trace_matrice.tig");
     }
 
     @Test public void basicWhileLoop(){

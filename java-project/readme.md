@@ -8,7 +8,7 @@ java -jar ./lib/antlr-4.11.1-complete.jar ./src/main/java/parser/expr.g4 -no-lis
 ```
 
 ```shell
-./src/test/ressources/correct/01_test
+./src/test/ressources/correct/trace_matrice
 ```
 ---
 Gestion des erreurs :
