@@ -122,8 +122,8 @@ negationTail
 //  //  // Ce qui peut suivre un ID
 
 idRef
-    : '(' expValuedListOpt ')'              #FunctionCall
-    | '[' expValued ']' arrayCreateOpt      #ArrayElement
+    : '(' expValuedOrIfListOpt ')'              #FunctionCall
+    | '[' expValuedOrIf ']' arrayCreateOpt      #ArrayElement
     | '{' fieldCreateOpt '}'                #RecordCreate
     | '.' ID idRef                          #StructFieldAccess
     | /* mot vide */                        #NoIdTail
@@ -158,19 +158,25 @@ letExp
 
 //  //  //  Liste de valeurs en parametres d'un appel de fonction
 
-expValuedListOpt
+expValuedOrIfListOpt
     : expValuedList                 #Parameter
     | /* mot vide */                #NoParameter
     ;
 
 expValuedList
-    : expValued expValuedListTail
+    : expValuedOrIf expValuedListTail
     ;
 
 expValuedListTail
     : ',' expValuedList          #NextParameter
     | /*mot vide */              #EndParameters
     ;
+
+expValuedOrIf
+    : 'if' expValued 'then' exp elseOpt     #IfValued
+    | expValued                             #ExpValuedBis
+    ;
+
 
 //  //  // Sequences d'expressions separees par des ;
 
