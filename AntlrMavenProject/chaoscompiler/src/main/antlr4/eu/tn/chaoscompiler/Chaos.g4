@@ -113,7 +113,6 @@ value
 
 negationTail
     : ID idRef                      #NegReference
-    | STR                           #NegString
     | INT                           #NegInteger
     | letExp                        #NegLet
     | '(' expSeq ')'                #NegSequence

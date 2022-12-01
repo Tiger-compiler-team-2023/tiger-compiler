@@ -84,9 +84,12 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         // Si l'opérateur à droite est null on skip le nœud
         if (droit == null) {
             return gauche;
-        } else {
+        }
+        if (ctx.getChild(1) instanceof ChaosParser.AddContext) {
             return new Addition(gauche, droit);
         }
+        // TODO SOUSTRACTION
+        return null;
     }
 
     @Override
@@ -167,7 +170,11 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         if (suppMember == null) {
             return memberToAdd;
         }
-        return new Addition(memberToAdd, suppMember);
+        if (ctx.getChild(2) instanceof ChaosParser.AddContext){
+            return new Addition(memberToAdd, suppMember);
+        }
+        // TODO SOUSTRACTION
+        return null;
     }
 
     @Override
@@ -217,6 +224,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         if (tail instanceof IntegerNode) {
             return tail;
         }
+        // TODO NEGATIONS
         return null;
     }
 
@@ -232,11 +240,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitNegReference(ChaosParser.NegReferenceContext ctx) {
-        return null;
-    }
-
-    @Override
-    public Ast visitNegString(ChaosParser.NegStringContext ctx) {
         return null;
     }
 
