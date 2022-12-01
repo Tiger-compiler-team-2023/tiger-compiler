@@ -135,8 +135,8 @@ arrayCreateOpt
     ;
 
 fieldCreateOpt
-    : fieldCreate
-    | /* mot vide */
+    : fieldCreate                           #FieldCreateOptParent
+    | /* mot vide */                        #NoIdFieldCreate
     ;
 
 fieldCreate
@@ -144,8 +144,8 @@ fieldCreate
     ;
 
 fieldCreateTail
-    : ',' fieldCreate
-    | /* mot vide */
+    : ',' fieldCreate                       #FieldCreateTailAdd
+    | /* mot vide */                        #NoFieldCreateTail
     ;
 
 

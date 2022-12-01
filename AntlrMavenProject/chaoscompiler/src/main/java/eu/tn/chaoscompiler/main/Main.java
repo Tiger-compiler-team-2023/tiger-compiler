@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
-        if (args.length < 1){
+        if (args.length < 1) {
             System.out.println("Error : Expected 1 argument filepath, found 0");
             return;
         }
@@ -50,7 +50,7 @@ public class Main {
             JFrame frame = new JFrame("Antlr AST");
             JPanel panel = new JPanel();
             TreeViewer viewer = new TreeViewer(Arrays.asList(
-                    parser.getRuleNames()),program);
+                    parser.getRuleNames()), program);
             viewer.setScale(1.5); // Scale a little
             panel.add(viewer);
             frame.add(panel);
@@ -59,8 +59,7 @@ public class Main {
             frame.setVisible(true);
             System.out.println(program.getChild(0).getChild(1).getText());
             System.out.println(program.getChild(0).getChild(1));
-        }
-        catch (IOException | RecognitionException e) {
+        } catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }
     }

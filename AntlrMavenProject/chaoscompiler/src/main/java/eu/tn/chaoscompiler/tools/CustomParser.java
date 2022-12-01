@@ -10,7 +10,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.File;
 
 public class CustomParser {
-    public static void parse(File file){
+    public static void parse(File file) {
         try {
             //chargement du fichier et construction du parser
             // Le programme lit d'abord une chaîne de caractères
@@ -33,7 +33,7 @@ public class CustomParser {
 
             // obtenir l'arbre syntaxique
             parser.program();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

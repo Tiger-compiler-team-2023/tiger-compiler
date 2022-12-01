@@ -36,13 +36,13 @@ public class GestionnaireErreur extends BaseErrorListener {
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
             throws ParseCancellationException {
         // System.out.println("error <3 " + offendingSymbol + " "+ e.getMessage());
-        if(throwException){
+        if (throwException) {
             throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
         }
         errors.add(new SyntaxError(line, charPositionInLine, msg));
     }
 
-    public static int getNbErreur(){
+    public static int getNbErreur() {
         return getInstance().errors.size();
     }
 }
