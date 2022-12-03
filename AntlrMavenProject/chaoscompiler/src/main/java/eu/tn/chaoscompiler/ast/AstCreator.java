@@ -9,13 +9,18 @@ import eu.tn.chaoscompiler.ChaosParser.FunctionCallContext;
 import eu.tn.chaoscompiler.ChaosParser.RecordCreateContext;
 import eu.tn.chaoscompiler.ChaosParser.StructFieldAccessContext;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.declarations.ArrayTypeDeclaration;
+import eu.tn.chaoscompiler.ast.nodes.declarations.NoRecordTypeDeclaration;
+import eu.tn.chaoscompiler.ast.nodes.declarations.TypeDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.IfThenElse;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.Let;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
+import eu.tn.chaoscompiler.ast.nodes.declarations.RecordTypeDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.ArrayAssign;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldCreate;
+import eu.tn.chaoscompiler.ast.nodes.references.FieldDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
 import eu.tn.chaoscompiler.ast.nodes.references.RecordCreate;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
@@ -508,6 +513,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     }
     // --------------------------------
 
+    // ----------- Declaration  ----------
     @Override
     public Ast visitNonEmptyDeclarationList(ChaosParser.NonEmptyDeclarationListContext ctx) {
         return null;
@@ -540,7 +546,14 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitDeclarationType(ChaosParser.DeclarationTypeContext ctx) {
-        return null;
+        // declaration : 'type' ID '=' ty
+        Id typeId = (Id) getChildAst(1, ctx);
+        TypeDeclaration ty = (TypeDeclaration) getChildAst(3, ctx);
+
+        // dans les trois cas possibles (RenameType, array, record), on récupère un objet
+        // type déclaration auquel il manque son typeId
+        ty.typeId = typeId;
+        return ty;
     }
 
     @Override
@@ -549,28 +562,85 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     }
 
     @Override
-    public Ast visitRenameType(ChaosParser.RenameTypeContext ctx) {
-        return null;
+    public Ast visitFieldDecElement(ChaosParser.FieldDecElementContext ctx) {
+        // fieldDecList : fieldDec fieldDecTail
+        Ast gauche = getChildAst(0, ctx);
+        Ast droite = getChildAst(1, ctx);
+
+        if (droite == null) {
+            // On initialise l'objet pour la déclaration du record si le noeud
+            // actuel est le champ le plus à droite
+            RecordTypeDeclaration recordTypeDeclaration = new RecordTypeDeclaration();
+            return recordTypeDeclaration.addFieldInHead((FieldDeclaration) gauche);
+        }
+        // Dans le cas contraire, on modifie la déclaration existante pour
+        // à ajouter le nœud actuel et le retourner
+        return ((RecordTypeDeclaration) droite).addFieldInHead((FieldDeclaration) gauche);
     }
 
     @Override
-    public Ast visitArray(ChaosParser.ArrayContext ctx) {
-        return null;
+    public Ast visitEmptyFieldDecList(ChaosParser.EmptyFieldDecListContext ctx) {
+        // MOT VIDE
+        return new RecordTypeDeclaration(); // Crée une déclaration de record vide
     }
 
     @Override
-    public Ast visitRecord(ChaosParser.RecordContext ctx) {
-        return null;
+    public Ast visitNextFieldDec(ChaosParser.NextFieldDecContext ctx) {
+        // fieldDecTail : ',' fieldDec fieldDecTail
+        Ast gauche = getChildAst(1, ctx);
+        Ast droite = getChildAst(2, ctx);
+
+        if (droite == null) {
+            // On initialise l'objet pour la déclaration du record si le noeud
+            // actuel est le champ le plus à droite
+            RecordTypeDeclaration recordTypeDeclaration = new RecordTypeDeclaration();
+            return recordTypeDeclaration.addFieldInHead((FieldDeclaration) gauche);
+        }
+        // Dans le cas contraire, on modifie la déclaration existante pour
+        // à ajouter le nœud actuel et le retourner
+        return ((RecordTypeDeclaration) droite).addFieldInHead((FieldDeclaration) gauche);
     }
 
     @Override
-    public Ast visitArrTy(ChaosParser.ArrTyContext ctx) {
-        return null;
+    public Ast visitEndFieldDecList(ChaosParser.EndFieldDecListContext ctx) {
+        return null; // MOT VIDE donc null
+    }
+
+    @Override
+    public Ast visitFieldDec(ChaosParser.FieldDecContext ctx) {
+        // fieldDec : ID ':' ID
+        return new FieldDeclaration((Id) getChildAst(0, ctx), (Id) getChildAst(2, ctx));
     }
 
     @Override
     public Ast visitRecTy(ChaosParser.RecTyContext ctx) {
-        return null;
+        // recTy : '{' fieldDecList '}'
+        return getChildAst(1, ctx);
+    }
+
+    @Override
+    public Ast visitRecord(ChaosParser.RecordContext ctx) {
+        // ty : recTy
+        return getChildAst(0, ctx);
+    }
+
+    @Override
+    public Ast visitArray(ChaosParser.ArrayContext ctx) {
+        // ty : arrTy
+        return getChildAst(0, ctx);
+    }
+
+    @Override
+    public Ast visitRenameType(ChaosParser.RenameTypeContext ctx) {
+        // ty : id
+        return new NoRecordTypeDeclaration((Id) getChildAst(0, ctx));
+    }
+    // ----------------------------------
+
+    @Override
+    public Ast visitArrTy(ChaosParser.ArrTyContext ctx) {
+        // arrTy : 'array' 'of' ID
+        return new ArrayTypeDeclaration((Id) getChildAst(2, ctx));
     }
 
     @Override
@@ -583,29 +653,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return null; // MOT VIDE donc null
     }
 
-    @Override
-    public Ast visitFieldDecElement(ChaosParser.FieldDecElementContext ctx) {
-        return null;
-    }
 
-    @Override
-    public Ast visitEmptyFieldDecList(ChaosParser.EmptyFieldDecListContext ctx) {
-        return null; // MOT VIDE donc null
-    }
-
-    @Override
-    public Ast visitNextFieldDec(ChaosParser.NextFieldDecContext ctx) {
-        return null;
-    }
-
-    @Override
-    public Ast visitEndFieldDecList(ChaosParser.EndFieldDecListContext ctx) {
-        return null; // MOT VIDE donc null
-    }
-
-    @Override
-    public Ast visitFieldDec(ChaosParser.FieldDecContext ctx) {
-        return null;
-    }
 }
 

@@ -2,7 +2,6 @@ package eu.tn.chaoscompiler.ast.nodes.operators;
 
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstVisitor;
-import lombok.AllArgsConstructor;
 
 public class Addition extends BinariesOperators {
 

@@ -8,10 +8,12 @@ public class Let implements Ast {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
     public Ast declarationList;
     public Ast exprSeq;
-    public Let(Ast declarationList, Ast exprSeq){
-        this.declarationList=declarationList;
-        this.exprSeq=exprSeq;
+
+    public Let(Ast declarationList, Ast exprSeq) {
+        this.declarationList = declarationList;
+        this.exprSeq = exprSeq;
     }
 }
