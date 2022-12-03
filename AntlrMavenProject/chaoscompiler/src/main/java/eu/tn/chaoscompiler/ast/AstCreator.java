@@ -3,9 +3,12 @@ package eu.tn.chaoscompiler.ast;
 import eu.tn.chaoscompiler.ChaosBaseVisitor;
 import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ChaosVisitor;
+import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
+import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
@@ -17,9 +20,9 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     Ast getChildAst(int idx, ParserRuleContext ctx) {
         return new Program(ctx.getChild(idx).accept(this));
     }
-
-
     //-------------------------------
+
+
     @Override
     public Ast visitProgram(ChaosParser.ProgramContext ctx) {
         return new Program(getChildAst(0, ctx));
@@ -170,7 +173,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         if (suppMember == null) {
             return memberToAdd;
         }
-        if (ctx.getChild(2) instanceof ChaosParser.AddContext){
+        if (ctx.getChild(2) instanceof ChaosParser.AddContext) {
             return new Addition(memberToAdd, suppMember);
         }
         // TODO SOUSTRACTION
@@ -209,7 +212,10 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitString(ChaosParser.StringContext ctx) {
-        return null;
+        // Value : STR.
+        // Il faut enlever les guillemets au début et à la fin
+        String str = ctx.getChild(0).toString();
+        return new StringNode(str.substring(1, str.length() - 1));
     }
 
     @Override
@@ -222,10 +228,10 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         // '-' negationTail
         Ast tail = getChildAst(1, ctx);
         if (tail instanceof IntegerNode) {
-            return tail;
+            return tail; // le nœud fils gère la négation
         }
-        // TODO NEGATIONS
-        return null;
+        // Dans les autres cas pas d'autre choix que de passer par un nouveau nœud
+        return new Negation(tail);
     }
 
     @Override
@@ -235,29 +241,33 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitSequence(ChaosParser.SequenceContext ctx) {
-        return null;
+        // value : '(' expSeq ')'
+        return getChildAst(1, ctx); // on retourne la séquence sous-jacente
     }
 
     @Override
     public Ast visitNegReference(ChaosParser.NegReferenceContext ctx) {
-        return null;
+        // negationTail : ID idRef
+        return getChildAst(0, ctx); // La négation est gérée par le nœud parent
     }
 
     @Override
     public Ast visitNegInteger(ChaosParser.NegIntegerContext ctx) {
-        // INT
+        // negInteger : INT
         // Même chose que pour Integer avec '-' devant
         return new IntegerNode(-Integer.parseInt(ctx.getChild(0).toString()));
     }
 
     @Override
     public Ast visitNegLet(ChaosParser.NegLetContext ctx) {
-        return null;
+        // negationTail : letExp
+        return getChildAst(0, ctx); // La négation est gérée par le nœud parent
     }
 
     @Override
     public Ast visitNegSequence(ChaosParser.NegSequenceContext ctx) {
-        return null;
+        // negationTail : '(' expSeq ')'
+        return getChildAst(1, ctx); // La négation est gérée par le nœud parent
     }
 
     @Override
@@ -282,7 +292,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitNoIdTail(ChaosParser.NoIdTailContext ctx) {
-        return null; // MOT Vc
+        return null; // MOT VIDE donc null
     }
 
     @Override
@@ -361,9 +371,11 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return null;
     }
 
+    // ----------- Sequences  ----------
     @Override
     public Ast visitNonEmptySequence(ChaosParser.NonEmptySequenceContext ctx) {
-        return null;
+        // expSeqOpt : expSeq
+        return getChildAst(0, ctx); // on retourne la séquence sous-jacente
     }
 
     @Override
@@ -373,18 +385,29 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitExpSeq(ChaosParser.ExpSeqContext ctx) {
-        return null;
+        // expSeq : exp expSeqTail
+        Ast gauche = getChildAst(0, ctx);
+        Ast droite = getChildAst(1, ctx);
+        if (droite == null) {
+            // sequence avec un seul élément
+            return new Sequence(gauche);
+        }
+        // Sinon on sait que le fils droit est une séquence, donc on
+        // va la modifier pour ajouter le nœud gauche en tête et la retourner
+        return ((Sequence) droite).addInHead(gauche);
     }
 
     @Override
     public Ast visitNextSeqElement(ChaosParser.NextSeqElementContext ctx) {
-        return null;
+        //expSeqTail : ';' expSeq
+        return getChildAst(1, ctx);
     }
 
     @Override
     public Ast visitEndSequence(ChaosParser.EndSequenceContext ctx) {
         return null; // MOT VIDE donc null
     }
+    // --------------------------------
 
     @Override
     public Ast visitNonEmptyDeclarationList(ChaosParser.NonEmptyDeclarationListContext ctx) {
