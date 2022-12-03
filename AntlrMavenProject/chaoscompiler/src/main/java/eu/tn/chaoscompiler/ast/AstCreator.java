@@ -6,6 +6,7 @@ import eu.tn.chaoscompiler.ChaosVisitor;
 import eu.tn.chaoscompiler.ChaosParser.FunctionCallContext;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
+import eu.tn.chaoscompiler.ast.nodes.looporcondition.IfThenElse;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
@@ -65,12 +66,17 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitIf(ChaosParser.IfContext ctx) {
-        return null;
+        Ast condExpr=ctx.getChild(1).accept(this);
+        Ast thenExpr=ctx.getChild(3).accept(this);
+        Ast elseExpr=ctx.getChild(4).accept(this);
+
+        return new IfThenElse(condExpr,thenExpr, elseExpr);
+
     }
 
     @Override
     public Ast visitElse(ChaosParser.ElseContext ctx) {
-        return null;
+        return ctx.getChild(1).accept(this);
     }
 
     @Override
