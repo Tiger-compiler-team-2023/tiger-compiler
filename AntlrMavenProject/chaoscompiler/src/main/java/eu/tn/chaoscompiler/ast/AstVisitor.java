@@ -7,10 +7,12 @@ import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
 import eu.tn.chaoscompiler.ast.nodes.operators.BinariesOperators;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
+import eu.tn.chaoscompiler.ast.nodes.references.ArrayAccess;
 import eu.tn.chaoscompiler.ast.nodes.references.ArrayAssign;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldCreate;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
 import eu.tn.chaoscompiler.ast.nodes.references.ParameterList;
+import eu.tn.chaoscompiler.ast.nodes.references.RecordAccess;
 import eu.tn.chaoscompiler.ast.nodes.references.RecordCreate;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.Program;
@@ -37,8 +39,10 @@ public interface AstVisitor<T> {
     public T visit(ParameterList node);
 
     public T visit(ArrayAssign node);
+    public T visit(ArrayAccess node);
 
     public T visit(RecordCreate node);
+    public T visit(RecordAccess node);
 
     public T visit(FieldCreate node);
 
