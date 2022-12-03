@@ -9,11 +9,11 @@ public class For implements Ast {
     public <T> T accept(AstVisitor<T> visitor) {
         return null;
     }
-    private Ast Id;
+    public Ast Id;
 
-    private Ast startExpr;
-    private Ast endExpr;
-    private Ast doExpr;
+    public Ast startExpr;
+    public Ast endExpr;
+    public Ast doExpr;
     public For(Ast Id, Ast startExpr,Ast endExpr,Ast doExpr){
         this.Id=Id;
         this.startExpr=startExpr;

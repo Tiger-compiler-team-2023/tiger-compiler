@@ -56,11 +56,11 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitFor(ChaosParser.ForContext ctx) {
         String str_Id =ctx.getChild(1).toString();
         Ast Id=new Id(str_Id);
-        Ast startExpr=ctx.getChild().accept(this);
-        Ast endExpr=ctx.getChild().accept(this);
-        Ast doExpr=ctx.getChild().accept(this);
+        Ast startExpr=ctx.getChild(3).accept(this);
+        Ast endExpr=ctx.getChild(5).accept(this);
+        Ast doExpr=ctx.getChild(7).accept(this);
         return new For(Id,startExpr,endExpr,doExpr);
-        
+
     }
 
     @Override
