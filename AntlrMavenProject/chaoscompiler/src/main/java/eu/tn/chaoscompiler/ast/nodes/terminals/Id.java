@@ -11,6 +11,9 @@ public class Id implements Ast {
         return visitor.visit(this);
     }
     public String identifier;
+    public Id(String identifier){
+        this.identifier=identifier;
+    }
 }
 
 

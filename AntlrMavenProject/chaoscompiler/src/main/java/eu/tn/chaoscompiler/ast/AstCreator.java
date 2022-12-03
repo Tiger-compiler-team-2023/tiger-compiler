@@ -5,6 +5,8 @@ import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ChaosVisitor;
 import eu.tn.chaoscompiler.ChaosParser.FunctionCallContext;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
+import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
@@ -28,12 +30,14 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitProgram(ChaosParser.ProgramContext ctx) {
-        return new Program(getChildAst(0, ctx));
+        //return new Program(getChildAst(0, ctx));
+        return getChildAst(0,ctx);
     }
+
 
     @Override
     public Ast visitLoopOrCondition(ChaosParser.LoopOrConditionContext ctx) {
-        return null;
+        return ctx.getChild(0).accept(this); //Elimination d'un noeud unaire inutile
     }
 
     @Override
@@ -43,12 +47,20 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitWhile(ChaosParser.WhileContext ctx) {
-        return null;
+        Ast condExpr=ctx.getChild(1).accept(this);
+        Ast doExpr=ctx.getChild(3).accept(this);
+        return new While(condExpr,doExpr);
     }
 
     @Override
     public Ast visitFor(ChaosParser.ForContext ctx) {
-        return null;
+        String str_Id =ctx.getChild(1).toString();
+        Ast Id=new Id(str_Id);
+        Ast startExpr=ctx.getChild().accept(this);
+        Ast endExpr=ctx.getChild().accept(this);
+        Ast doExpr=ctx.getChild().accept(this);
+        return new For(Id,startExpr,endExpr,doExpr);
+        
     }
 
     @Override

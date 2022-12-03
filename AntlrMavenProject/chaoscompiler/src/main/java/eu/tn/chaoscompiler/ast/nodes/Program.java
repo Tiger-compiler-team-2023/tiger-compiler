@@ -12,4 +12,7 @@ public class Program implements Ast {
     }
 
     public Ast expression;
+    public Program(Ast expression){
+        this.expression=expression;
+    }
 }
