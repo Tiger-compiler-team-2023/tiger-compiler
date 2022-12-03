@@ -22,6 +22,7 @@ import eu.tn.chaoscompiler.ast.nodes.references.ArrayAssign;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldCreate;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
+import eu.tn.chaoscompiler.ast.nodes.references.ParameterList;
 import eu.tn.chaoscompiler.ast.nodes.references.RecordCreate;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
@@ -442,7 +443,17 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitParameter(ChaosParser.ParameterContext ctx) {
-        return null;
+        ParameterList res = new ParameterList();
+
+        ChaosParser.ExpValuedListContext evl = (ChaosParser.ExpValuedListContext) ctx.getChild(0);
+
+        res.addParameter(getChildAst(0, evl));
+        while (evl.getChild(1) instanceof ChaosParser.NextParameterContext) {
+            evl = (ChaosParser.ExpValuedListContext) evl.getChild(1).getChild(1);
+            res.addParameter(getChildAst(0, evl));
+        }
+
+        return (Ast) res;
     }
 
     @Override
@@ -452,12 +463,12 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitExpValuedList(ChaosParser.ExpValuedListContext ctx) {
-        return null;
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitNextParameter(ChaosParser.NextParameterContext ctx) {
-        return null;
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override

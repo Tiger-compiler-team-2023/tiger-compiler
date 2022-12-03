@@ -10,6 +10,7 @@ import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.ArrayAssign;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldCreate;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
+import eu.tn.chaoscompiler.ast.nodes.references.ParameterList;
 import eu.tn.chaoscompiler.ast.nodes.references.RecordCreate;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.Program;
@@ -32,6 +33,8 @@ public interface AstVisitor<T> {
     public T visit(IntegerNode node);
 
     public T visit(FunctionCall node);
+
+    public T visit(ParameterList node);
 
     public T visit(ArrayAssign node);
 
