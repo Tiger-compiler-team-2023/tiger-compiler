@@ -7,7 +7,7 @@ public class While implements Ast {
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
     public Ast condExpr;
     public Ast doExpr;

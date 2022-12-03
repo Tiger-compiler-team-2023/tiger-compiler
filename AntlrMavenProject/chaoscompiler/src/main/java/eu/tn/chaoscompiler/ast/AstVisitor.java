@@ -1,5 +1,7 @@
 package eu.tn.chaoscompiler.ast;
 
+import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
+import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
 import eu.tn.chaoscompiler.ast.nodes.operators.BinariesOperators;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
@@ -22,4 +24,8 @@ public interface AstVisitor<T> {
     public T visit(IntegerNode node);
     
     public T visit(FunctionCall node);
+
+    T visit(For forExpr);
+
+    T visit(While whileExpr);
 }
