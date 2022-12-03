@@ -5,9 +5,9 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class FunctionCall implements Ast {
+public class FieldCreate implements Ast {
     public Ast id;
-    public Ast ArgList;
+    public Ast expr;
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {

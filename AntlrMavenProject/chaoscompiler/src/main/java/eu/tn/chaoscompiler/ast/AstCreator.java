@@ -3,20 +3,31 @@ package eu.tn.chaoscompiler.ast;
 import eu.tn.chaoscompiler.ChaosBaseVisitor;
 import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ChaosVisitor;
+import eu.tn.chaoscompiler.ChaosParser.ArrayAssignContext;
+import eu.tn.chaoscompiler.ChaosParser.ArrayElementContext;
 import eu.tn.chaoscompiler.ChaosParser.FunctionCallContext;
+import eu.tn.chaoscompiler.ChaosParser.RecordCreateContext;
+import eu.tn.chaoscompiler.ChaosParser.StructFieldAccessContext;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.IfThenElse;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.Let;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
+import eu.tn.chaoscompiler.ast.nodes.references.ArrayAssign;
+import eu.tn.chaoscompiler.ast.nodes.references.FieldCreate;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
+import eu.tn.chaoscompiler.ast.nodes.references.RecordCreate;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import org.antlr.v4.runtime.ParserRuleContext;
+
+
+import java.util.ArrayList;
+import java.util.Stack;
 
 /**
  * Cette classe est une implémentation de {@link ChaosVisitor},
@@ -230,27 +241,69 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitReference(ChaosParser.ReferenceContext ctx) {
         // value -> ID idRef
-        Ast gauche = getChildAst(0, ctx);
-        Ast droit = getChildAst(1, ctx);
+        /*
+         * idRef
+         * : '(' expValuedOrIfListOpt ')' #FunctionCall
+         * | '[' expValuedOrIf ']' arrayCreateOpt #ArrayElement
+         * | '{' fieldCreateOpt '}' #RecordCreate
+         * | '.' ID idRef #StructFieldAccess
+         * | * mot vide * #NoIdTail
+         * ;
+         */
+        if (getChildAst(1, ctx) /* droit */ instanceof FunctionCallContext) {
 
-        if (droit == null) { // id tout seul
-            return gauche;
-        } else {
-            /*
-            idRef
-                : '(' expValuedOrIfListOpt ')'              #FunctionCall
-                | '[' expValuedOrIf ']' arrayCreateOpt      #ArrayElement
-                | '{' fieldCreateOpt '}'                #RecordCreate
-                | '.' ID idRef                          #StructFieldAccess
-                | * mot vide *                        #NoIdTail
-                ;
-             */
-            if (droit instanceof FunctionCallContext) {
-                return new FunctionCall(gauche, droit);
+            return new FunctionCall(getChildAst(0, ctx),
+                    getChildAst(1, ctx));
+
+        } else if (ctx.getChild(1) instanceof ChaosParser.ArrayElementContext) {
+
+            ChaosParser.ArrayElementContext ae = (ChaosParser.ArrayElementContext) ctx.getChild(1);
+            // '[' expValuedOrIf ']' arrayCreateOpt #ArrayElement
+            if (ae.getChild(3) instanceof ChaosParser.ArrayAssignContext) {
+                // On crée un tableau #ArrayAssign
+                return new ArrayAssign( // syntaxe: type [nombre] of element
+                    getChildAst(0, ctx), // type
+                    getChildAst(1, ae),  // nombre
+                    getChildAst(1, (ChaosParser.ArrayAssignContext) ae.getChild(3))); // element
             } else {
+                // On accède au tableau #ArrayAccess
                 return null; // TODO
             }
+
+        } else if (getChildAst(1, ctx) /* droit */ instanceof RecordCreateContext) {
+
+            ChaosParser.RecordCreateContext rc = (ChaosParser.RecordCreateContext) ctx.getChild(1);
+            RecordCreate res = new RecordCreate();
+
+            if (rc.getChild(1) instanceof ChaosParser.NoIdFieldCreateContext) {
+                // Enregistrement vide
+                return res;
+            } else {
+                // Enregistrement plein
+                ChaosParser.FieldCreateOptParentContext fc = (ChaosParser.FieldCreateOptParentContext) rc.getChild(1);
+                res.addArg((Ast) new FieldCreate(getChildAst(0, fc), getChildAst(2, fc)));
+                while (fc.getChild(3) instanceof ChaosParser.FieldCreateTailAddContext) {
+                    fc = (ChaosParser.FieldCreateOptParentContext) fc.getChild(3).getChild(1);
+                    res.addArg((Ast) new FieldCreate(getChildAst(0, fc), getChildAst(2, fc)));
+                }
+                return res;
+            }
+
+        } else if (getChildAst(1, ctx) /* droit */ instanceof StructFieldAccessContext) {
+
+            return null;
+            // TODO
+
+        } else if (getChildAst(1, ctx) == null) {
+
+            return getChildAst(0, ctx) /* gauche */;
+
+        } else {
+
+            return null; // Erreur
+
         }
+
     }
 
     @Override
@@ -315,17 +368,17 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitFunctionCall(ChaosParser.FunctionCallContext ctx) {
-        return null;
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitArrayElement(ChaosParser.ArrayElementContext ctx) {
-        return null;
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitRecordCreate(ChaosParser.RecordCreateContext ctx) {
-        return null;
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override

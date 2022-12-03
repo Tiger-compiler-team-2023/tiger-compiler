@@ -5,9 +5,12 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class FunctionCall implements Ast {
-    public Ast id;
-    public Ast ArgList;
+public class ArrayAssign implements Ast {
+    public Ast type;
+    public Ast nombreDElements;
+    public Ast element;
+
+    // TODO
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
