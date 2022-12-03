@@ -7,6 +7,7 @@ import eu.tn.chaoscompiler.ChaosParser.FunctionCallContext;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.IfThenElse;
+import eu.tn.chaoscompiler.ast.nodes.looporcondition.Let;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
@@ -278,7 +279,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitLet(ChaosParser.LetContext ctx) {
-        return null;
+        return ctx.getChild(0).accept(this); //élimination d'un noeud unaire inutile
     }
 
     @Override
@@ -375,7 +376,10 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitLetExp(ChaosParser.LetExpContext ctx) {
-        return null;
+        Ast declarationList = ctx.getChild(1).accept(this);
+        Ast exprSeq = ctx.getChild(3).accept(this);
+        return new Let(declarationList,exprSeq);
+
     }
 
     @Override
