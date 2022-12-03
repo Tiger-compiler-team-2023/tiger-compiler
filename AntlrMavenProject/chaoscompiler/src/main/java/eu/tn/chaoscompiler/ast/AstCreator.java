@@ -3,8 +3,11 @@ package eu.tn.chaoscompiler.ast;
 import eu.tn.chaoscompiler.ChaosBaseVisitor;
 import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ChaosVisitor;
+import eu.tn.chaoscompiler.ChaosParser.FunctionCallContext;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
+import eu.tn.chaoscompiler.ast.nodes.references.FunctionCall;
+import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
@@ -207,7 +210,28 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitReference(ChaosParser.ReferenceContext ctx) {
-        return null;
+        // value -> ID idRef
+        Ast gauche = getChildAst(0, ctx);
+        Ast droit = getChildAst(1, ctx);
+
+        if (droit == null) { // id tout seul
+            return gauche;
+        } else {
+            /*
+            idRef
+                : '(' expValuedOrIfListOpt ')'              #FunctionCall
+                | '[' expValuedOrIf ']' arrayCreateOpt      #ArrayElement
+                | '{' fieldCreateOpt '}'                #RecordCreate
+                | '.' ID idRef                          #StructFieldAccess
+                | * mot vide *                        #NoIdTail
+                ;
+             */
+            if (droit instanceof FunctionCallContext) {
+                return new FunctionCall(gauche, droit);
+            } else {
+                return null; // TODO
+            }
+        }
     }
 
     @Override
