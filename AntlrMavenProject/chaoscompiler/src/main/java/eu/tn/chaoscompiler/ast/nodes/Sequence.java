@@ -13,13 +13,8 @@ public class Sequence implements Ast {
 
     public ArrayList<Ast> instructions;
 
-    public Sequence(Ast firstElements){
-        this.instructions = new ArrayList<>();
-    }
-
-    public Sequence addInHead(Ast node){
-        this.instructions.add(0, node);
-        return this;
+    public Sequence(ArrayList<Ast> list){
+        this.instructions = list;
     }
 }
 

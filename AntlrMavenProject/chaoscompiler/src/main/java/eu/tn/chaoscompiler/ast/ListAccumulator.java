@@ -24,7 +24,7 @@ public class ListAccumulator<T extends Ast> implements Ast {
     }
 
     public ListAccumulator<T> addInHead(T element){
-        list.add(element);
+        list.add(0, element);
         return this;
     }
 }

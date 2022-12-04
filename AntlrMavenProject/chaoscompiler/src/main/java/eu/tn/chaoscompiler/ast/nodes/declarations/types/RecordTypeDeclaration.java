@@ -4,22 +4,15 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 
+@NoArgsConstructor
 public class RecordTypeDeclaration extends Declaration {
-    public RecordTypeDeclaration() {
-        super(null);
-        this.fields = new ArrayList<>();
-    }
-    public RecordTypeDeclaration(Id typeId) {
-        super(typeId);
-        this.fields = new ArrayList<>();
-    }
-
-    public RecordTypeDeclaration addFieldInHead(FieldDeclaration fieldDeclaration){
-        fields.add(0, fieldDeclaration);
-        return this;
+    public RecordTypeDeclaration(ArrayList<FieldDeclaration> list) {
+        super();
+        this.fields = list;
     }
 
     @Override
