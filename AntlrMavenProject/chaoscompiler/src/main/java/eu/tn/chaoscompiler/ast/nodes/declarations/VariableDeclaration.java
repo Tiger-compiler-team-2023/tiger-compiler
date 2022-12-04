@@ -4,15 +4,14 @@ import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstVisitor;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 
-/**
- * Déclaration de type simples ou de tableau
- */
-public class NoRecordTypeDeclaration extends TypeDeclaration {
-    public Id baseTypeId;
+public class VariableDeclaration extends Declaration {
+    public Id typeId;
+    public Ast value;
 
-    public NoRecordTypeDeclaration(Id baseTypeId) {
-        super(null);
-        this.baseTypeId = baseTypeId;
+    public VariableDeclaration(Id varId, Id typeId, Ast value) {
+        super(varId);
+        this.typeId = typeId;
+        this.value = value;
     }
 
     @Override

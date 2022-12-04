@@ -1,12 +1,13 @@
-package eu.tn.chaoscompiler.ast.nodes.declarations;
+package eu.tn.chaoscompiler.ast.nodes.declarations.types;
 
 import eu.tn.chaoscompiler.ast.AstVisitor;
+import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.references.FieldDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 
 import java.util.ArrayList;
 
-public class RecordTypeDeclaration extends TypeDeclaration {
+public class RecordTypeDeclaration extends Declaration {
     public RecordTypeDeclaration() {
         super(null);
         this.fields = new ArrayList<>();
