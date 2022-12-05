@@ -12,7 +12,6 @@ import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.*;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
-import jdk.incubator.vector.VectorOperators;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
