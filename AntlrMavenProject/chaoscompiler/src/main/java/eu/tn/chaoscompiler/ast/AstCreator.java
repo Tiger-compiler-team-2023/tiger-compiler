@@ -10,7 +10,6 @@ import eu.tn.chaoscompiler.ast.nodes.declarations.types.RecordTypeDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.*;
-import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -20,8 +19,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
  */
 public class AstCreator extends ChaosBaseVisitor<Ast> {
     // ----- Quelques fonctions pour factoriser un peu ce bazar
-    Ast getChildAst(int idx, ParserRuleContext ctx) {
-        return new Program(ctx.getChild(idx).accept(this));
+    public Ast getChildAst(int idx, ParserRuleContext ctx) {
+        return ctx.getChild(idx).accept(this);
     }
 
     /**
@@ -36,6 +35,48 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         }
         // Sinon on modifie celui existant
         return ((ListAccumulator<T>) droite).addInHead((T) gauche);
+    }
+
+    public Ast customVisitAddOrMinus(ParserRuleContext ctx, int left_idx, int right_idx){
+        Ast value = getChildAst(left_idx, ctx);
+        Ast suppMember = getChildAst(right_idx, ctx);
+        if (suppMember == null) {
+            return value;
+        }
+        if(ctx.getChild(right_idx) instanceof AddContext){
+            return new Addition(value, suppMember);
+        }
+        return new Soustraction(value, suppMember);
+    }
+
+    public Ast customVisitMultOrDiv(ParserRuleContext ctx, int left_idx, int right_idx){
+        Ast value = getChildAst(left_idx, ctx);
+        Ast suppMember = getChildAst(right_idx, ctx);
+        if (suppMember == null) {
+            return value;
+        }
+        if(ctx.getChild(right_idx) instanceof MultContext){
+            return new Multiplication(value, suppMember);
+        }
+        return new Division(value, suppMember);
+    }
+
+    public Ast customVisitAnd(ParserRuleContext ctx, int left_idx, int right_idx){
+        Ast value = getChildAst(left_idx, ctx);
+        Ast suppMember = getChildAst(right_idx, ctx);
+        if (suppMember == null) {
+            return value;
+        }
+        return new And(value, suppMember);
+    }
+
+    public Ast customVisitOr(ParserRuleContext ctx, int left_idx, int right_idx){
+        Ast value = getChildAst(left_idx, ctx);
+        Ast suppMember = getChildAst(right_idx, ctx);
+        if (suppMember == null) {
+            return value;
+        }
+        return new Or(value, suppMember);
     }
     // -------------------------------
 
@@ -55,14 +96,12 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         // expValued affectOp
         Ast leftMember = getChildAst(0, ctx);
         Ast suppMember = getChildAst(1, ctx);
-        BinaryOperator affectOp ;
 
         if (suppMember != null) {
-            affectOp = (BinaryOperator) suppMember ; // suppMember est une affectation
+            var affectOp = (BinaryOperator) suppMember ; // suppMember est une affectation
             affectOp.setLeft(leftMember) ; // placer la membre gauche
             return affectOp ;
         }
-
         return leftMember ;
     }
 
@@ -81,7 +120,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         Ast endExpr = ctx.getChild(5).accept(this);
         Ast doExpr = ctx.getChild(7).accept(this);
         return new For(Id, startExpr, endExpr, doExpr);
-
     }
 
     @Override
@@ -91,7 +129,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         Ast elseExpr = ctx.getChild(4).accept(this);
 
         return new IfThenElse(condExpr, thenExpr, elseExpr);
-
     }
 
     @Override
@@ -107,35 +144,13 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitExpValued(ChaosParser.ExpValuedContext ctx) {
         // expNoOr orOp
-        Ast leftMember = getChildAst(0, ctx);
-        Ast suppMember = getChildAst(1, ctx);
-        BinaryOperator orOp ;
-
-        while (suppMember != null) {
-            orOp = (BinaryOperator) suppMember ; // suppMember est Or
-            suppMember = orOp.getLeft() ; // Recuperer le prochain membre
-            orOp.setLeft(leftMember) ; // remettre dans l'ordre de l'associativite gauche
-            leftMember = orOp ;
-        }
-
-        return leftMember ;
+        return customVisitOr(ctx, 0, 1);
     }
 
     @Override
     public Ast visitExpNoOr(ChaosParser.ExpNoOrContext ctx) {
         // expNoAnd andOp
-        Ast leftMember = getChildAst(0, ctx);
-        Ast suppMember = getChildAst(1, ctx);
-        BinaryOperator andOp ;
-
-        while (suppMember != null) {
-            andOp = (BinaryOperator) suppMember ; // suppMember est And
-            suppMember = andOp.getLeft() ; // Recuperer le prochain membre
-            andOp.setLeft(leftMember) ; // remettre dans l'ordre de l'associativite gauche
-            leftMember = andOp ;
-        }
-
-        return leftMember ;
+        return customVisitAnd(ctx, 0, 1);
     }
 
     @Override
@@ -143,54 +158,26 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         // expNoComp compOp
         Ast leftMember = getChildAst(0, ctx);
         Ast suppMember = getChildAst(1, ctx);
-        BinaryOperator compOp ;
-
-        if (suppMember != null) {
-            compOp = (BinaryOperator) suppMember ; // suppMember est une operation de comparaison
-            compOp.setLeft(leftMember) ; // placer la membre gauche
-            return compOp ;
+        if(suppMember == null){
+            return leftMember;
         }
-
-        return leftMember ;
+        return ((BinaryOperator)leftMember).setLeft(leftMember);
     }
 
     @Override
     public Ast visitExpNoComp(ChaosParser.ExpNoCompContext ctx) {
         // expNoAdd addOp
-        Ast leftMember = getChildAst(0, ctx);
-        Ast suppMember = getChildAst(1, ctx);
-        BinaryOperator addOp ;
-
-        while (suppMember != null) {
-            addOp = (BinaryOperator) suppMember ; // suppMember est une Addition ou Soustraction
-            suppMember = addOp.getLeft() ; // Recuperer le prochain membre
-            addOp.setLeft(leftMember) ; // remettre dans l'ordre de l'associativite gauche
-            leftMember = addOp ;
-        }
-
-        return leftMember ;
+        return customVisitAddOrMinus(ctx, 0, 1);
     }
 
     @Override
     public Ast visitExpNoAdd(ChaosParser.ExpNoAddContext ctx) {
         // value multOp
-        Ast leftMember = getChildAst(0, ctx);
-        Ast suppMember = getChildAst(1, ctx);
-        BinaryOperator multOp ;
-
-        while (suppMember != null) {
-            multOp = (BinaryOperator) suppMember ; // suppMember est une Multiplication Ou Division
-            suppMember = multOp.getLeft() ; // Recuperer le prochain membre
-            multOp.setLeft(leftMember) ; // remettre dans l'ordre de l'associativite gauche
-            leftMember = multOp ;
-        }
-
-        return leftMember ;
+        return customVisitMultOrDiv(ctx, 0, 1);
     }
 
     @Override
     public Ast visitAffect(ChaosParser.AffectContext ctx) {
-
         // ':=' expValued
         Ast value = getChildAst(1, ctx);
         return new Affect(null, value);
@@ -204,12 +191,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitOr(ChaosParser.OrContext ctx) {
         // '|' expNoOr orOp
-        Ast value = getChildAst(1, ctx);
-        Ast suppMember = getChildAst(2, ctx);
-        if (suppMember == null) {
-            return value;
-        }
-        return new Or(suppMember, value);
+        return customVisitOr(ctx, 1, 2);
     }
 
     @Override
@@ -219,14 +201,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitAnd(ChaosParser.AndContext ctx) {
-
         // '&' expNoAnd andOp
-        Ast value = getChildAst(1, ctx);
-        Ast suppMember = getChildAst(2, ctx);
-        if (suppMember == null) {
-            return value;
-        }
-        return new And(suppMember, value);
+        return customVisitAnd(ctx, 1, 2);
     }
 
     @Override
@@ -282,28 +258,19 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return null; // MOT VIDE donc null
     }
 
+    //-----------------
     @Override
     public Ast visitAdd(ChaosParser.AddContext ctx) {
         // '+' expNoAdd addOp
-        Ast value = getChildAst(1, ctx);
-        Ast suppMember = getChildAst(2, ctx);
-        if (suppMember == null) {
-            return value;
-        }
-        return new Addition(suppMember, value);
+        return customVisitAddOrMinus(ctx, 1, 2);
     }
 
     @Override
     public Ast visitMinus(ChaosParser.MinusContext ctx) {
-
         // '-' expNoAdd addOp
-        Ast value = getChildAst(1, ctx);
-        Ast suppMember = getChildAst(2, ctx);
-        if (suppMember == null) {
-            return value;
-        }
-        return new Soustraction(suppMember, value);
+        return customVisitAddOrMinus(ctx, 1, 2);
     }
+    // ---------------
 
     @Override
     public Ast visitNoAddMinus(ChaosParser.NoAddMinusContext ctx) {
@@ -313,23 +280,13 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitMult(ChaosParser.MultContext ctx) {
         // '*' value multOp
-        Ast value = getChildAst(1, ctx);
-        Ast suppMember = getChildAst(2, ctx);
-        if (suppMember == null) {
-            return value;
-        }
-        return new Multiplication(suppMember, value);
+        return customVisitMultOrDiv(ctx, 1, 2);
     }
 
     @Override
     public Ast visitDivide(ChaosParser.DivideContext ctx) {
         // '/' value multOp
-        Ast value = getChildAst(1, ctx);
-        Ast suppMember = getChildAst(2, ctx);
-        if (suppMember == null) {
-            return value;
-        }
-        return new Division(suppMember, value);
+        return customVisitMultOrDiv(ctx, 1, 2);
     }
 
     @Override

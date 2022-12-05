@@ -2,20 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>eu.tn.chaoscompiler</groupId>
-    <artifactId>chaoscompiler</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-    <name>ChaosCompiler</name>
-    <url>https://gitlab.telecomnancy.univ-lorraine.fr/Theo.Goureau/pcl-goureau1u</url>
-
-    <properties>
-        <!--<maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>-->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <exec.mainClass>eu/tn/chaoscompiler/main/Main.java</exec.mainClass>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.antlr</groupId>
@@ -39,7 +25,28 @@
             <version>1.18.24</version>
             <scope>compile</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/guru.nidi/graphviz-java -->
+        <dependency>
+            <groupId>guru.nidi</groupId>
+            <artifactId>graphviz-java</artifactId>
+            <version>0.18.1</version>
+        </dependency>
     </dependencies>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>eu.tn.chaoscompiler</groupId>
+    <artifactId>chaoscompiler</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>ChaosCompiler</name>
+
+    <url>https://gitlab.telecomnancy.univ-lorraine.fr/Theo.Goureau/pcl-goureau1u</url>
+    <properties>
+        <!--<maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <exec.mainClass>eu/tn/chaoscompiler/main/Main.java</exec.mainClass>
+    </properties>
     <build>
         <plugins>
             <!-- Plugin to compile the g4 files ahead of the java files
