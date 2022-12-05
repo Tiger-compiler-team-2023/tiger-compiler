@@ -12,6 +12,7 @@ import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.*;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * Cette classe est une implémentation de {@link ChaosVisitor},
@@ -37,31 +38,31 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return ((ListAccumulator<T>) droite).addInHead((T) gauche);
     }
 
-    public Ast customVisitAddOrMinus(ParserRuleContext ctx, int left_idx, int right_idx){
+    public Ast customVisitAddOrMinus(ParserRuleContext ctx, int left_idx, int right_idx) {
         Ast value = getChildAst(left_idx, ctx);
         Ast suppMember = getChildAst(right_idx, ctx);
         if (suppMember == null) {
             return value;
         }
-        if(ctx.getChild(right_idx) instanceof AddContext){
+        if (ctx.getChild(right_idx) instanceof AddContext) {
             return new Addition(value, suppMember);
         }
         return new Soustraction(value, suppMember);
     }
 
-    public Ast customVisitMultOrDiv(ParserRuleContext ctx, int left_idx, int right_idx){
+    public Ast customVisitMultOrDiv(ParserRuleContext ctx, int left_idx, int right_idx) {
         Ast value = getChildAst(left_idx, ctx);
         Ast suppMember = getChildAst(right_idx, ctx);
         if (suppMember == null) {
             return value;
         }
-        if(ctx.getChild(right_idx) instanceof MultContext){
+        if (ctx.getChild(right_idx) instanceof MultContext) {
             return new Multiplication(value, suppMember);
         }
         return new Division(value, suppMember);
     }
 
-    public Ast customVisitAnd(ParserRuleContext ctx, int left_idx, int right_idx){
+    public Ast customVisitAnd(ParserRuleContext ctx, int left_idx, int right_idx) {
         Ast value = getChildAst(left_idx, ctx);
         Ast suppMember = getChildAst(right_idx, ctx);
         if (suppMember == null) {
@@ -70,7 +71,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return new And(value, suppMember);
     }
 
-    public Ast customVisitOr(ParserRuleContext ctx, int left_idx, int right_idx){
+    public Ast customVisitOr(ParserRuleContext ctx, int left_idx, int right_idx) {
         Ast value = getChildAst(left_idx, ctx);
         Ast suppMember = getChildAst(right_idx, ctx);
         if (suppMember == null) {
@@ -98,11 +99,11 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         Ast suppMember = getChildAst(1, ctx);
 
         if (suppMember != null) {
-            var affectOp = (BinaryOperator) suppMember ; // suppMember est une affectation
-            affectOp.setLeft(leftMember) ; // placer la membre gauche
-            return affectOp ;
+            var affectOp = (BinaryOperator) suppMember; // suppMember est une affectation
+            affectOp.setLeft(leftMember); // placer la membre gauche
+            return affectOp;
         }
-        return leftMember ;
+        return leftMember;
     }
 
     @Override
@@ -158,10 +159,10 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         // expNoComp compOp
         Ast leftMember = getChildAst(0, ctx);
         Ast suppMember = getChildAst(1, ctx);
-        if(suppMember == null){
+        if (suppMember == null) {
             return leftMember;
         }
-        return ((BinaryOperator)leftMember).setLeft(leftMember);
+        return ((BinaryOperator) suppMember).setLeft(leftMember);
     }
 
     @Override
@@ -329,6 +330,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
             if (!(rc.getChild(1) instanceof ChaosParser.NoIdFieldCreateContext)) {
                 // Enregistrement plein
                 var fc = (ChaosParser.FieldCreateOptParentContext) rc.getChild(1);
+                // fieldCreate : ID '=' expValued fieldCreateTail
                 res.addArg(new FieldCreate(getChildAst(0, fc), getChildAst(2, fc)));
                 while (fc.getChild(3) instanceof ChaosParser.FieldCreateTailAddContext) {
                     fc = (ChaosParser.FieldCreateOptParentContext) fc.getChild(3).getChild(1);
@@ -338,11 +340,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
             return res;
         } else if (idRefCtx instanceof StructFieldAccessContext) {
             return accessAux(ctx);
-        } else if (idRefCtx == null) {
-            return getChildAst(0, ctx) /* gauche */;
-        } else {
-            return null; // Erreur /
         }
+        return getChildAst(0, ctx) /* gauche */;
     }
 
     // Fonction auxiliaire
@@ -515,7 +514,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
             evl = (ChaosParser.ExpValuedListContext) evl.getChild(1).getChild(1);
             res.addParameter(getChildAst(0, evl));
         }
-
         return res;
     }
 
@@ -649,7 +647,9 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         var returnType = (Id) getChildAst(5, ctx);
         Ast content = getChildAst(7, ctx);
 
-        return new FunctionDeclaration(functionId, recordTypeDeclaration.list, returnType, content);
+        return new FunctionDeclaration(functionId,
+                (recordTypeDeclaration == null ? null : recordTypeDeclaration.list),
+                returnType, content);
     }
 
     @Override
@@ -713,6 +713,12 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitArrTy(ChaosParser.ArrTyContext ctx) {
         // arrTy : 'array' 'of' ID
         return new ArrayTypeDeclaration((Id) getChildAst(2, ctx));
+    }
+
+    @Override
+    public Ast visitTerminal(TerminalNode node) {
+        // ID
+        return new Id(node.getText());
     }
     // ----------------------------------
 }

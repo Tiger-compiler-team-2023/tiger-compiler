@@ -64,7 +64,7 @@ public class Main {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setVisible(true);
-            System.out.println(program.getChild(0).getChild(1).getText());
+            //System.out.println(program.getChild(0).getChild(1).getText());
             System.out.println(program.getChild(0).getChild(1));
 
             AstCreator creator = new AstCreator();

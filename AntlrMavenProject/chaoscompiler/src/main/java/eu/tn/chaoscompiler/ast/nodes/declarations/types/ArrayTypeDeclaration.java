@@ -5,8 +5,11 @@ import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 
 public class ArrayTypeDeclaration extends Declaration {
+    public Id baseTypeId;
+
     public ArrayTypeDeclaration(Id baseTypeId) {
-        super(baseTypeId);
+        super();
+        this.baseTypeId = baseTypeId;
     }
 
     @Override
