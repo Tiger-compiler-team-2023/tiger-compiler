@@ -10,15 +10,17 @@ public class For implements Ast {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
     public Ast Id;
 
     public Ast startExpr;
     public Ast endExpr;
     public Ast doExpr;
-    public For(Ast Id, Ast startExpr,Ast endExpr,Ast doExpr){
-        this.Id=Id;
-        this.startExpr=startExpr;
-        this.endExpr=endExpr;
-        this.doExpr=doExpr;
+
+    public For(Ast Id, Ast startExpr, Ast endExpr, Ast doExpr) {
+        this.Id = Id;
+        this.startExpr = startExpr;
+        this.endExpr = endExpr;
+        this.doExpr = doExpr;
     }
 }

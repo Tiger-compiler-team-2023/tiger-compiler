@@ -8,12 +8,14 @@ public class IfThenElse implements Ast {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
     public Ast condExpr;
     public Ast thenExpr;
     public Ast elseExpr;
-    public IfThenElse(Ast condExpr, Ast thenExpr, Ast elseExpr){
-        this.condExpr=condExpr;
-        this.thenExpr=thenExpr;
-        this.elseExpr=elseExpr;
+
+    public IfThenElse(Ast condExpr, Ast thenExpr, Ast elseExpr) {
+        this.condExpr = condExpr;
+        this.thenExpr = thenExpr;
+        this.elseExpr = elseExpr;
     }
 }

@@ -9,10 +9,12 @@ public class While implements Ast {
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
     public Ast condExpr;
     public Ast doExpr;
-    public While(Ast condExpr, Ast doExpr){
-        this.condExpr=condExpr;
-        this.doExpr=doExpr;
+
+    public While(Ast condExpr, Ast doExpr) {
+        this.condExpr = condExpr;
+        this.doExpr = doExpr;
     }
 }

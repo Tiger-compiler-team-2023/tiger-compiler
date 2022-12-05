@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class IntegerNode implements Ast {
+public final class IntegerNode implements Ast{
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

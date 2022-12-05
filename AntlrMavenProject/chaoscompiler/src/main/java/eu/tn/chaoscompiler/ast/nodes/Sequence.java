@@ -8,12 +8,12 @@ import java.util.ArrayList;
 public class Sequence implements Ast {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
 
     public ArrayList<Ast> instructions;
 
-    public Sequence(ArrayList<Ast> list){
+    public Sequence(ArrayList<Ast> list) {
         this.instructions = list;
     }
 }

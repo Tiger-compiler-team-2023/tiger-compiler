@@ -11,11 +11,6 @@ import java.util.ArrayList;
  */
 @NoArgsConstructor
 public class ListAccumulator<T extends Ast> implements Ast {
-    @Override
-    public <Q> Q accept(AstVisitor<Q> visitor) {
-        return null;
-    }
-
     public ArrayList<T> list;
 
     public ListAccumulator(T firstElement) {
@@ -23,7 +18,12 @@ public class ListAccumulator<T extends Ast> implements Ast {
         list.add(firstElement);
     }
 
-    public ListAccumulator<T> addInHead(T element){
+    @Override
+    public <Q> Q accept(AstVisitor<Q> visitor) {
+        return null;
+    }
+
+    public ListAccumulator<T> addInHead(T element) {
         list.add(0, element);
         return this;
     }

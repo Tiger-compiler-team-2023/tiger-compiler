@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 public class StringNode implements Ast {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
 
     public String stringContent;

@@ -13,6 +13,9 @@ import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.graphstream.graph.*;
+import org.graphstream.graph.implementations.*;
+
 public class Main {
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -51,7 +54,7 @@ public class Main {
             JPanel panel = new JPanel();
             TreeViewer viewer = new TreeViewer(Arrays.asList(
                     parser.getRuleNames()), program);
-            viewer.setScale(1.5); // Scale a little
+            viewer.setScale(0.3); // Scale a little
             panel.add(viewer);
             frame.add(panel);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -59,6 +62,20 @@ public class Main {
             frame.setVisible(true);
             System.out.println(program.getChild(0).getChild(1).getText());
             System.out.println(program.getChild(0).getChild(1));
+
+            System.setProperty("org.graphstream.ui", "swing");
+
+            Graph graph = new SingleGraph("Tutorial 1");
+
+            graph.addNode("A");
+            graph.addNode("B");
+            graph.addNode("C");
+            graph.addEdge("AB", "A", "B");
+            graph.addEdge("BC", "B", "C");
+            graph.addEdge("CA", "C", "A");
+
+            graph.display();
+
         } catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }

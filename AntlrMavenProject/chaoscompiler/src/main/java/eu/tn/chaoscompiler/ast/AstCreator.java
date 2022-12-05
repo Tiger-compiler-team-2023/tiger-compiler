@@ -369,7 +369,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         } else if (idRefCtx instanceof RecordCreateContext rc) {
             RecordCreate res = new RecordCreate();
 
-            if (! (rc.getChild(1) instanceof ChaosParser.NoIdFieldCreateContext)){
+            if (!(rc.getChild(1) instanceof ChaosParser.NoIdFieldCreateContext)) {
                 // Enregistrement plein
                 var fc = (ChaosParser.FieldCreateOptParentContext) rc.getChild(1);
                 res.addArg(new FieldCreate(getChildAst(0, fc), getChildAst(2, fc)));
@@ -443,10 +443,11 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return ctx.getChild(0).accept(this); // élimination d'un noeud unaire inutile
     }
 
-    @Override @SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public Ast visitSequence(ChaosParser.SequenceContext ctx) {
         // value : '(' expSeq ')'
-        var listAccumulator = (ListAccumulator<Ast>)getChildAst(1, ctx);
+        var listAccumulator = (ListAccumulator<Ast>) getChildAst(1, ctx);
         return new Sequence(listAccumulator.list); // on retourne la séquence sous-jacente
     }
 
@@ -722,12 +723,13 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return new FieldDeclaration((Id) getChildAst(0, ctx), (Id) getChildAst(2, ctx));
     }
 
-    @Override @SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     public Ast visitRecTy(ChaosParser.RecTyContext ctx) {
         // recTy : '{' fieldDecList '}'
         var listAcc = (ListAccumulator<FieldDeclaration>) getChildAst(1, ctx);
-        if(listAcc == null){
-            return  new RecordTypeDeclaration();
+        if (listAcc == null) {
+            return new RecordTypeDeclaration();
         }
         return new RecordTypeDeclaration(listAcc.list);
     }

@@ -11,6 +11,6 @@ public class ArrayTypeDeclaration extends Declaration {
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
 }

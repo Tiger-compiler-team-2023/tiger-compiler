@@ -1,14 +1,24 @@
 package eu.tn.chaoscompiler.ast;
 
+import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
+import eu.tn.chaoscompiler.ast.nodes.declarations.VariableDeclaration;
+import eu.tn.chaoscompiler.ast.nodes.declarations.types.ArrayTypeDeclaration;
+import eu.tn.chaoscompiler.ast.nodes.declarations.types.NoRecordTypeDeclaration;
+import eu.tn.chaoscompiler.ast.nodes.declarations.types.RecordTypeDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.For;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.IfThenElse;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.Let;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
+import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
+import eu.tn.chaoscompiler.ast.nodes.operators.BinaryOperator;
+import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
 import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
+import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 
 public class VisitorTest implements AstVisitor<String> {
 
@@ -19,6 +29,36 @@ public class VisitorTest implements AstVisitor<String> {
 
     @Override
     public String visit(Program node) {
+        return null;
+    }
+
+    @Override
+    public String visit(Sequence node) {
+        return null;
+    }
+
+    @Override
+    public String visit(FunctionDeclaration node) {
+        return null;
+    }
+
+    @Override
+    public String visit(VariableDeclaration node) {
+        return null;
+    }
+
+    @Override
+    public String visit(ArrayTypeDeclaration node) {
+        return null;
+    }
+
+    @Override
+    public String visit(NoRecordTypeDeclaration node) {
+        return null;
+    }
+
+    @Override
+    public String visit(RecordTypeDeclaration node) {
         return null;
     }
 
@@ -34,6 +74,11 @@ public class VisitorTest implements AstVisitor<String> {
 
     @Override
     public String visit(IntegerNode node) {
+        return null;
+    }
+
+    @Override
+    public String visit(StringNode node) {
         return null;
     }
 
@@ -69,6 +114,11 @@ public class VisitorTest implements AstVisitor<String> {
 
     @Override
     public String visit(FieldCreate node) {
+        return null;
+    }
+
+    @Override
+    public String visit(FieldDeclaration node) {
         return null;
     }
 
