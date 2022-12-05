@@ -3,9 +3,9 @@ package eu.tn.chaoscompiler.ast.nodes.operators;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstVisitor;
 
-public class Addition extends BinaryOperator {
+public class InferiorOrEquals extends BinaryOperator {
 
-    public Addition(Ast leftValue, Ast rightValue) {
+    public InferiorOrEquals(Ast leftValue, Ast rightValue) {
         super(leftValue, rightValue);
     }
 
