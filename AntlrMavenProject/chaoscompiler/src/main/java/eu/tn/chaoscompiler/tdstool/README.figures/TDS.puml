@@ -1,0 +1,96 @@
+@startuml
+
+package tds {
+
+  class TDScontroller {
+    #TDS tds
+    +Variable find(String id)
+    +Bool exists(String id)
+    +void add(Variable var)
+
+    +void down()
+    +void up()
+  }
+
+  interface TDS {
+    +Variable find(String id)
+    +Bool exists(String id)
+    +void add(Variable var)
+  }
+
+  class TDSroot implements TDS {
+    #HashMap<String, Variable> hm
+    +Variable find(String id)
+    +Bool exists(String id)
+    +void add(Variable var)
+  }
+
+  class TDSlocal implements TDS {
+    #HashMap<String, Variable> hm
+    #TDS father
+    +Variable find(String id)
+    +Bool exists(String id)
+    +void add(Variable var)
+  }
+}
+
+package variable {
+
+  Interface Variable {
+    +Type getType()
+    +String getId()
+    +Int getToken()
+  }
+
+  class Type implements Variable {
+    #String id
+    #Int token
+
+    +Type getType() {return type;}
+    +String getId()
+    +Int getToken()
+  }
+
+  class RecordType extends Type {
+    +List<Value> attributs
+  }
+
+  class ArrayType extends Type {
+    +Type elementsType
+  }
+
+  class FunctionType extends Type {
+    +List<Type> inTypes
+    +Type outType
+  }
+
+  class Value implements Variable {
+    #Type type
+    #String id
+    #Int token
+
+    +Type getType()
+    +String getId()
+    +Int getToken()
+  }
+}
+
+package java.util #ff9999 {
+  class "HashMap<String, Variable>" {
+    ...
+    +put(String key, Variable value)
+    +get(String key)
+  }
+}
+
+TDScontroller *--"1" TDS
+TDSlocal *--"1" TDS
+TDSlocal *--"1" "HashMap<String, Variable>"
+TDSroot *--"1" "HashMap<String, Variable>"
+"HashMap<String, Variable>" *--"0..*" Variable
+Value *--"1" Type
+RecordType *--"0..*" Value
+ArrayType *--"1" Type
+FunctionType *--"0..*" Type
+FunctionType *--"1" Type
+@enduml
