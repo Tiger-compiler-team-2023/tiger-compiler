@@ -12,6 +12,20 @@ Membres du groupe :
 - Rida Moussaoui (gpe. 42, ISS)
 
 ---
+# Documents
+## Rapports
+- Semaine 46 : [Premier rapport d'activité](Documents/2022-11-18_RA_01.pdf).
+- Semaine 49 : [Deuxième rapport d'activité](Documents/2022-12-05_RA_02.pdf).
+## Réunions
+- 19 oct. 2022 : [Réunion 1](Documents/2022-10-19_CR_01.pdf).
+- 26 oct. 2022 : Réunion 2.
+- 09 nov. 2022 : [Réunion 3](Documents/2022-11-09_CR_03.pdf).
+- 16 nov. 2022 : [Réunion 4](Documents/2022-11-16_CR_04.pdf).
+- 23 nov. 2022 : [Réunion 5](Documents/2022-11-23_CR_05.pdf).
+- 30 nov. 2022 : [Réunion 6](Documents/2022-11-30_CR_06.pdf).
+- 07 dec. 2022 : [Réunion 7](Documents/2022-12-07_CR_07.pdf).
+
+---
 # MAVEN
 ## Utilisation de Maven
 ### Installer Maven
