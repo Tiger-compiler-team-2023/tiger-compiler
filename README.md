@@ -24,6 +24,7 @@ Membres du groupe :
 - 23 nov. 2022 : [Réunion 5](Documents/2022-11-23_CR_05.pdf).
 - 30 nov. 2022 : [Réunion 6](Documents/2022-11-30_CR_06.pdf).
 - 07 dec. 2022 : [Réunion 7](Documents/2022-12-07_CR_07.pdf).
+- 15 dec. 2022 : [Réunion 8](Documents/2022-12-15_CR_08.pdf).
 
 ---
 # MAVEN
