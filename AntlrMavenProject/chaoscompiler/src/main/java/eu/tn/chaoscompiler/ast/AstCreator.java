@@ -14,11 +14,14 @@ import eu.tn.chaoscompiler.ast.nodes.operators.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.ArrayList;
+
 /**
  * Cette classe est une implémentation de {@link ChaosVisitor},
  * qui permet de créer un Ast
  */
 public class AstCreator extends ChaosBaseVisitor<Ast> {
+
     // ----- Quelques fonctions pour factoriser un peu ce bazar
     public Ast getChildAst(int idx, ParserRuleContext ctx) {
         return ctx.getChild(idx).accept(this);
@@ -396,15 +399,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitLet(ChaosParser.LetContext ctx) {
-        return ctx.getChild(0).accept(this); // élimination d'un noeud unaire inutile
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Ast visitSequence(ChaosParser.SequenceContext ctx) {
-        // value : '(' expSeq ')'
-        var listAccumulator = (ListAccumulator<Ast>) getChildAst(1, ctx);
-        return new Sequence(listAccumulator.list); // on retourne la séquence sous-jacente
+        // value : letExp
+        return ctx.getChild(0).accept(this); // élimination d'un nœud unaire inutile
     }
 
     @Override
@@ -556,7 +552,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitEmptySequence(ChaosParser.EmptySequenceContext ctx) {
-        return null; // MOT VIDE donc null
+        return new Sequence(new ArrayList<>()); // Séquence vide
     }
 
     @Override
@@ -574,6 +570,14 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitEndSequence(ChaosParser.EndSequenceContext ctx) {
         return null; // MOT VIDE donc null
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Ast visitSequence(ChaosParser.SequenceContext ctx) {
+        // value : '(' expSeq ')'
+        var listAccumulator = (ListAccumulator<Ast>) getChildAst(1, ctx);
+        return new Sequence(listAccumulator.list); // on retourne la séquence sous-jacente
     }
     // --------------------------------
 
