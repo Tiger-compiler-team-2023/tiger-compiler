@@ -68,176 +68,489 @@ public class GraphVizVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(Sequence node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Sequence") ;
+
+        int n = node.instructions.size() ;
+        for (int i = 0 ; i < n ; i++) {
+            String instr = node.instructions.get(i).accept(this) ;
+            this.addTransition(nodeIdentifier, instr);
+        }
+
+        return nodeIdentifier ;
     }
 
     @Override
     public String visit(FunctionDeclaration node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "FunctionDeclaration") ;
+
+        for (FieldDeclaration arg:node.args) {
+            String argId = arg.accept(this) ;
+            this.addTransition(nodeIdentifier, argId) ;
+        }
+
+        String returnType = node.returnType.accept(this) ;
+        this.addTransition(nodeIdentifier, returnType) ;
+
+        String content = node.content.accept(this) ;
+        this.addTransition(nodeIdentifier, content);
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(VariableDeclaration node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "VariableDeclaration") ;
+
+        String typeId = node.typeId.accept(this) ;
+        this.addTransition(nodeIdentifier, typeId);
+
+        String value = node.value.accept(this) ;
+        this.addTransition(nodeIdentifier, value);
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(ArrayTypeDeclaration node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "ArrayTypeDeclaration") ;
+
+        String objectId = node.objectId.accept(this) ;
+        this.addTransition(nodeIdentifier, objectId);
+
+        String baseTypeId = node.baseTypeId.accept(this) ;
+        this.addTransition(nodeIdentifier, baseTypeId);
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(NoRecordTypeDeclaration node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "NoRecordTypeDeclaration") ;
+
+        String objectId = node.objectId.accept(this) ;
+        this.addTransition(nodeIdentifier, objectId);
+
+        String baseTypeId = node.baseTypeId.accept(this) ;
+        this.addTransition(nodeIdentifier, baseTypeId);
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(RecordTypeDeclaration node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "RecordTypeDeclaration") ;
+
+        String objectId = node.objectId.accept(this) ;
+        this.addTransition(nodeIdentifier, objectId);
+
+        for (FieldDeclaration field:node.fields) {
+            String fieldId = field.accept(this) ;
+            this.addTransition(nodeIdentifier, fieldId) ;
+        }
+
+        return nodeIdentifier;
     }
 
     @Override
-    public String visit(For forExpr) {
-        return null;
+    public String visit(For node) {
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "For") ;
+
+        String id = node.id.accept(this) ;
+        this.addTransition(nodeIdentifier, id) ;
+
+        String startExpr = node.startExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, startExpr) ;
+
+        String endExpr = node.endExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, endExpr) ;
+
+        String doExpr = node.doExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, doExpr) ;
+
+        return nodeIdentifier;
     }
 
     @Override
-    public String visit(IfThenElse ifThenElseExpr) {
-        return null;
+    public String visit(IfThenElse node) {
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "IfThenElse") ;
+
+        String condExpr = node.condExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, condExpr) ;
+
+        String thenExpr = node.thenExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, thenExpr) ;
+
+        String elseExpr = node.elseExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, elseExpr) ;
+
+        return nodeIdentifier;
     }
 
     @Override
-    public String visit(Let letExpr) {
-        return null;
+    public String visit(Let node) {
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Let") ;
+
+        int n = node.declarationList.size() ;
+        for (int i = 0 ; i < n ; i++) {
+            String dec = node.declarationList.get(i).accept(this) ;
+            this.addTransition(nodeIdentifier, dec) ;
+        }
+
+        String exprSeq = node.exprSeq.accept(this) ;
+        this.addTransition(nodeIdentifier, exprSeq) ;
+
+        return nodeIdentifier;
     }
 
     @Override
-    public String visit(While whileExpr) {
-        return null;
+    public String visit(While node) {
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "While") ;
+
+        String condExpr = node.condExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, condExpr) ;
+
+        String doExpr = node.doExpr.accept(this) ;
+        this.addTransition(nodeIdentifier, doExpr) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Addition node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Addition") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Affect node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Affect") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(And node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "And") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Division node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Division") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Equals node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Equals") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Inferior node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Inferior") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(InferiorOrEquals node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "InferiorOrEquals") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Multiplication node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Multiplication") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Negation node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Negation") ;
+
+        String negationTail = node.negationTail.accept(this) ;
+        this.addTransition(nodeIdentifier, negationTail) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(NotEquals node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "NotEquals") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Or node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Or") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Soustraction node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Soustraction") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Superior node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "Superior") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(SuperiorOrEquals node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "SuperiorOrEquals") ;
+
+        String left = node.leftValue.accept(this) ;
+        this.addTransition(nodeIdentifier, left) ;
+
+        String right = node.rightValue.accept(this) ;
+        this.addTransition(nodeIdentifier, right) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(ArrayAccess node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "ArrayAccess") ;
+
+        String exp = node.exp.accept(this) ;
+        this.addTransition(nodeIdentifier, exp) ;
+
+        String index = node.index.accept(this) ;
+        this.addTransition(nodeIdentifier, index) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(ArrayAssign node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "ArrayAssign") ;
+
+        String type = node.type.accept(this) ;
+        this.addTransition(nodeIdentifier, type) ;
+
+        String nombreDElements = node.nombreDElements.accept(this) ;
+        this.addTransition(nodeIdentifier, nombreDElements) ;
+
+        String element = node.element.accept(this) ;
+        this.addTransition(nodeIdentifier, element) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(FieldCreate node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "FieldCreate") ;
+
+        String id = node.id.accept(this) ;
+        this.addTransition(nodeIdentifier, id) ;
+
+        String expr = node.expr.accept(this) ;
+        this.addTransition(nodeIdentifier, expr) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(FieldDeclaration node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "FieldDeclaration") ;
+
+        String fieldId = node.fieldId.accept(this) ;
+        this.addTransition(nodeIdentifier, fieldId) ;
+
+        String baseType = node.baseType.accept(this) ;
+        this.addTransition(nodeIdentifier, baseType) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(FunctionCall node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "FunctionCall") ;
+
+        String id = node.id.accept(this) ;
+        this.addTransition(nodeIdentifier, id) ;
+
+        String argList = node.argList.accept(this) ;
+        this.addTransition(nodeIdentifier, argList) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(ParameterList node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "ParameterList") ;
+
+        int n = node.parameters.size() ;
+        for (int i = 0 ; i < n ; i++) {
+            String param = node.parameters.get(i).accept(this) ;
+            this.addTransition(nodeIdentifier, param);
+        }
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(RecordAccess node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "RecordAccess") ;
+
+        String exp = node.exp.accept(this) ;
+        this.addTransition(nodeIdentifier, exp) ;
+
+        String index = node.index.accept(this) ;
+        this.addTransition(nodeIdentifier, index) ;
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(RecordCreate node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "RecordCreate") ;
+
+        int n = node.args.size() ;
+        for (int i = 0 ; i < n ; i++) {
+            String arg = node.args.get(i).accept(this) ;
+            this.addTransition(nodeIdentifier, arg);
+        }
+
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(Id node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, node.identifier) ;
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(IntegerNode node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, Integer.toString(node.value)) ;
+        return nodeIdentifier;
     }
 
     @Override
     public String visit(StringNode node) {
-        return null;
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, '\"' + node.stringContent + '\"') ;
+        return nodeIdentifier;
     }
 }

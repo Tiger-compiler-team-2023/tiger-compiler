@@ -11,14 +11,14 @@ public class For implements Ast {
         return visitor.visit(this);
     }
 
-    public Ast Id;
+    public Ast id;
 
     public Ast startExpr;
     public Ast endExpr;
     public Ast doExpr;
 
-    public For(Ast Id, Ast startExpr, Ast endExpr, Ast doExpr) {
-        this.Id = Id;
+    public For(Ast id, Ast startExpr, Ast endExpr, Ast doExpr) {
+        this.id = id;
         this.startExpr = startExpr;
         this.endExpr = endExpr;
         this.doExpr = doExpr;

@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class FunctionCall implements Ast {
     public Ast id;
-    public Ast ArgList;
+    public Ast argList;
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
