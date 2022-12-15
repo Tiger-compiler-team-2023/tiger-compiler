@@ -5,6 +5,7 @@ import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstCreator;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
+import eu.tn.chaoscompiler.graphViz.GraphVizVisitor;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.engine.GraphvizEngine;
 import org.antlr.v4.gui.TreeViewer;
@@ -70,6 +71,12 @@ public class Main {
             AstCreator creator = new AstCreator();
             Ast ast = program.accept(creator);
             System.out.println(ast.toString());
+
+            //Afficher l'ast avec graphviz
+            GraphVizVisitor graphViz = new GraphVizVisitor() ;
+            ast.accept(graphViz) ;
+            graphViz.dumpGraph("./src/test/ressources/out/tree.dot");
+
         } catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }
