@@ -201,4 +201,7 @@ public class VisitorTest implements AstVisitor<String> {
     public String visit(Affect node) {
         return null;
     }
+
+    @Override
+    public String visit(DeclarationList node) {return null;}
 }

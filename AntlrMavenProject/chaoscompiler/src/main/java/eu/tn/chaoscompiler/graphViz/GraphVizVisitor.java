@@ -3,6 +3,7 @@ package eu.tn.chaoscompiler.graphViz;
 import eu.tn.chaoscompiler.ast.AstVisitor;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.VariableDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.types.ArrayTypeDeclaration;
@@ -100,6 +101,8 @@ public class GraphVizVisitor implements AstVisitor<String> {
 
         return nodeIdentifier;
     }
+
+
 
     @Override
     public String visit(VariableDeclaration node) {
@@ -203,11 +206,8 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String nodeIdentifier = this.nextState() ;
         this.addNode(nodeIdentifier, "Let") ;
 
-        int n = node.declarationList.size() ;
-        for (int i = 0 ; i < n ; i++) {
-            String dec = node.declarationList.get(i).accept(this) ;
-            this.addTransition(nodeIdentifier, dec) ;
-        }
+        String decList = node.decList.accept(this) ;
+        this.addTransition(nodeIdentifier, decList) ;
 
         String exprSeq = node.exprSeq.accept(this) ;
         this.addTransition(nodeIdentifier, exprSeq) ;
@@ -508,6 +508,19 @@ public class GraphVizVisitor implements AstVisitor<String> {
         }
 
         return nodeIdentifier;
+    }
+
+    @Override
+    public String visit(DeclarationList node) {
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "DeclarationList") ;
+
+        for (Declaration dec:node.list) {
+            String decId = dec.accept(this) ;
+            this.addTransition(nodeIdentifier, decId) ;
+        }
+
+            return nodeIdentifier ;
     }
 
     @Override

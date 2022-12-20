@@ -60,6 +60,7 @@ public interface AstVisitor<T> {
     public T visit(FieldCreate node);
     public T visit(FieldDeclaration node);
     public T visit(FunctionCall node);
+    public T visit(DeclarationList node);
     public T visit(ParameterList node);
     public T visit(RecordAccess node);
     public T visit(RecordCreate node);

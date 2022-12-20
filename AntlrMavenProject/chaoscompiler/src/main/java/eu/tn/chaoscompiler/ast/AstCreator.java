@@ -494,10 +494,10 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @SuppressWarnings("unchecked")
     public Ast visitLetExp(ChaosParser.LetExpContext ctx) {
         // letExp : 'let' declarationListOpt 'in' expSeqOpt 'end'
-        var listDeclaration = (ListAccumulator<Declaration>) getChildAst(1, ctx);
-        Ast exprSeq = getChildAst(3, ctx);
+        Ast decList = getChildAst(1, ctx) ;
+        Ast exprSeq = getChildAst(3, ctx) ;
 
-        return new Let((listDeclaration == null ? null : listDeclaration.list), exprSeq);
+        return new Let(decList, exprSeq);
     }
 
     @Override
@@ -597,28 +597,42 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitNonEmptyDeclarationList(ChaosParser.NonEmptyDeclarationListContext ctx) {
         // declarationListOpt : declarationList
-        return getChildAst(0, ctx);
+        DeclarationList res = new DeclarationList() ;
+
+        var child = (ChaosParser.DeclarationListContext) ctx.getChild(0);
+        res.addDeclaration((Declaration) getChildAst(0, child));
+
+        var decTail = (ChaosParser.DecTailContext) child.getChild(1) ;
+
+        while (decTail instanceof ChaosParser.NextDeclarationContext) {
+            res.addDeclaration((Declaration) getChildAst(0, decTail));
+            decTail = (ChaosParser.DecTailContext) decTail.getChild(1);
+        }
+
+        return res;
     }
 
     @Override
     public Ast visitEmptyDeclarationList(ChaosParser.EmptyDeclarationListContext ctx) {
+        // declarationListOpt :  /* mot vide */
         return null; // MOT VIDE donc null
     }
 
     @Override
     public Ast visitDeclarationList(ChaosParser.DeclarationListContext ctx) {
         // declarationList : declaration decTail
-        return this.<Declaration>getListNode(getChildAst(0, ctx), getChildAst(1, ctx));
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitNextDeclaration(ChaosParser.NextDeclarationContext ctx) {
         // decTail : declaration decTail
-        return this.<Declaration>getListNode(getChildAst(0, ctx), getChildAst(1, ctx));
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitDeclarationEnd(ChaosParser.DeclarationEndContext ctx) {
+        // decTail : /* mot vide */
         return null; // MOT VIDE donc null
     }
 
