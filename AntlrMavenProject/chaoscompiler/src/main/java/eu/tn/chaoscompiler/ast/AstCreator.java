@@ -430,7 +430,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitFunctionCall(ChaosParser.FunctionCallContext ctx) {
-        return null; // Inaccessible car traité dans son père
+        // idRef : '(' expValuedOrIfListOpt ')'
+        return getChildAst(1, ctx) ;
     }
 
     @Override
@@ -502,6 +503,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitParameter(ChaosParser.ParameterContext ctx) {
         // expValuedOrIfListOpt : expValuedList
+
         ParameterList res = new ParameterList();
         var evl = (ChaosParser.ExpValuedListContext) ctx.getChild(0);
 
@@ -515,32 +517,42 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitNoParameter(ChaosParser.NoParameterContext ctx) {
+        // expValuedOrIfListOpt : /* mot vide */
         return null; // MOT VIDE donc null
     }
 
     @Override
     public Ast visitExpValuedList(ChaosParser.ExpValuedListContext ctx) {
+        // expValuedList : expValuedOrIf expValuedListTail
         return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitNextParameter(ChaosParser.NextParameterContext ctx) {
+        //expValuedListTail : ',' expValuedList
         return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitEndParameters(ChaosParser.EndParametersContext ctx) {
+        // expValuedListTail : /* mot vide */
         return null; // MOT VIDE donc null
     }
 
     @Override
     public Ast visitIfValued(ChaosParser.IfValuedContext ctx) {
-        return null;
+        // expValuedOrIf : 'if' expValued 'then' exp elseOpt
+        Ast condExpr = ctx.getChild(1).accept(this);
+        Ast thenExpr = ctx.getChild(3).accept(this);
+        Ast elseExpr = ctx.getChild(4).accept(this);
+
+        return new IfThenElse(condExpr, thenExpr, elseExpr);
     }
 
     @Override
     public Ast visitExpValuedBis(ChaosParser.ExpValuedBisContext ctx) {
-        return null;
+        // expValuedOrIf : expValued
+        return getChildAst(0, ctx) ;
     }
 
     // ----------- Sequences ----------

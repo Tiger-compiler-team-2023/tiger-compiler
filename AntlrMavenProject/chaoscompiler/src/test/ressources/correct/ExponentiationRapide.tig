@@ -9,12 +9,16 @@ let
     function expo(a:int, n:int) : int =
         if (n = 0) then 1
         else (
-            if (modulo(n,2)) then (
-                expo(a,n/2) * expo(a,n/2) * a
-            )
-            else (
-                expo(a,n/2) * expo(a,n/2)
-            )
+            let
+                var temp := expo(a,n/2)
+            in
+                if (modulo(n,2)) then (
+                    temp * temp * a
+                )
+                else (
+                    temp * temp
+                )
+            end
         )
 
     in print(expo(val,exposant)) end
