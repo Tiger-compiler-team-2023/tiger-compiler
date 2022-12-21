@@ -1,5 +1,5 @@
 let
-  type tableau = array of int
+  type intArray = array of int
   type matrice_carree = { mat: tableau, size: int }
 
   function create(n: int) : matrice_carree =
