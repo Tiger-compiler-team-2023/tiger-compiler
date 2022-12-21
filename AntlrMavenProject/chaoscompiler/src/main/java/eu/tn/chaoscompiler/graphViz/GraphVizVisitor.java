@@ -565,6 +565,9 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String nodeIdentifier = this.nextState() ;
         this.addNode(nodeIdentifier, "RecordCreate") ;
 
+        String id = node.idObject.accept(this) ;
+        this.addTransition(nodeIdentifier, id);
+
         int n = node.args.size() ;
         for (int i = 0 ; i < n ; i++) {
             String arg = node.args.get(i).accept(this) ;
