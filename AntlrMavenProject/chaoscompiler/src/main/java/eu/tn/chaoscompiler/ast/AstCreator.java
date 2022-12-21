@@ -689,34 +689,46 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitDeclarationFunction(ChaosParser.DeclarationFunctionContext ctx) {
         // declaration : 'function' ID '(' fieldDecList ')' optType '=' exp
         var functionId = (Id) getChildAst(1, ctx);
-        var recordTypeDeclaration = (ListAccumulator<FieldDeclaration>) getChildAst(3, ctx);
+        var fields = (FieldDecList) getChildAst(3, ctx);
         var returnType = (Id) getChildAst(5, ctx);
         Ast content = getChildAst(7, ctx);
 
         return new FunctionDeclaration(functionId,
-                (recordTypeDeclaration == null ? null : recordTypeDeclaration.list),
+                (fields),
                 returnType, content);
     }
 
     @Override
     public Ast visitFieldDecElement(ChaosParser.FieldDecElementContext ctx) {
         // fieldDecList : fieldDec fieldDecTail
-        return this.<FieldDeclaration>getListNode(getChildAst(0, ctx), getChildAst(1, ctx));
+        FieldDecList res = new FieldDecList() ;
+
+        res.addFieldDec((FieldDeclaration) getChildAst(0, ctx));
+
+        var evl = (ChaosParser.FieldDecTailContext) ctx.getChild(1) ;
+        while (evl instanceof ChaosParser.NextFieldDecContext) {
+            res.addFieldDec((FieldDeclaration) getChildAst(1, evl));
+            evl = (ChaosParser.FieldDecTailContext) evl.getChild(2) ;
+        }
+
+        return res ;
     }
 
     @Override
     public Ast visitEmptyFieldDecList(ChaosParser.EmptyFieldDecListContext ctx) {
-        return null; // MOT VIDE
+        // fieldDecList : /* mot vide */
+        return new FieldDecList() ; // field dec list vide
     }
 
     @Override
     public Ast visitNextFieldDec(ChaosParser.NextFieldDecContext ctx) {
         // fieldDecTail : ',' fieldDec fieldDecTail
-        return this.<FieldDeclaration>getListNode(getChildAst(1, ctx), getChildAst(2, ctx));
+        return null ; // innaccessible car traité dans le père
     }
 
     @Override
     public Ast visitEndFieldDecList(ChaosParser.EndFieldDecListContext ctx) {
+        // fieldDecTail : /* mot vide */
         return null; // MOT VIDE donc null
     }
 

@@ -123,6 +123,9 @@ public class VisitorTest implements AstVisitor<String> {
     }
 
     @Override
+    public String visit(FieldDecList node) { return null; }
+
+    @Override
     public String visit(For forExpr) {
         return null;
     }

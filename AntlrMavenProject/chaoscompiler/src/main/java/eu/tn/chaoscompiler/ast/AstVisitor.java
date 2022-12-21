@@ -59,6 +59,7 @@ public interface AstVisitor<T> {
     public T visit(ArrayAssign node);
     public T visit(FieldCreate node);
     public T visit(FieldDeclaration node);
+    public T visit(FieldDecList node);
     public T visit(FunctionCall node);
     public T visit(DeclarationList node);
     public T visit(ParameterList node);
