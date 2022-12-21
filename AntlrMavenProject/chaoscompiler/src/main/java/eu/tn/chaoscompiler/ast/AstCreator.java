@@ -310,14 +310,18 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
          * | * mot vide * #NoIdTail
          * ;
          */
-        var idRefCtx = ctx.getChild(1);
-        if (idRefCtx instanceof FunctionCallContext) {
 
+        var idRefCtx = ctx.getChild(1);
+
+        // Si la suite correspond à un appel de fonction
+        if (idRefCtx instanceof FunctionCallContext) {
             return new FunctionCall(getChildAst(0, ctx), getChildAst(1, ctx));
-            // utilisation du pattern matching, voir la doc:
-            // https://docs.oracle.com/en/java/javase/17/language/pattern-matching-instanceof-operator.html
-        } else if (idRefCtx instanceof ArrayElementContext ae) {
+        }
+
+        // Si la suite correspond à l'accès à un élément de tableau
+        else if (idRefCtx instanceof ArrayElementContext ae) {
             // '[' expValuedOrIf ']' arrayCreateOpt #ArrayElement
+
             if (ae.getChild(3) instanceof ChaosParser.ArrayAssignContext) {
                 // On crée un tableau #ArrayAssign
                 return new ArrayAssign( // syntaxe: type [nombre] of element
@@ -327,23 +331,39 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
             } else {
                 return accessAux(ctx);
             }
-        } else if (idRefCtx instanceof RecordCreateContext rc) {
-            RecordCreate res = new RecordCreate();
 
-            if (!(rc.getChild(1) instanceof ChaosParser.NoIdFieldCreateContext)) {
-                // Enregistrement plein
-                var fc = (ChaosParser.FieldCreateOptParentContext) rc.getChild(1);
-                // fieldCreate : ID '=' expValued fieldCreateTail
-                res.addArg(new FieldCreate(getChildAst(0, fc), getChildAst(2, fc)));
-                while (fc.getChild(3) instanceof ChaosParser.FieldCreateTailAddContext) {
-                    fc = (ChaosParser.FieldCreateOptParentContext) fc.getChild(3).getChild(1);
-                    res.addArg(new FieldCreate(getChildAst(0, fc), getChildAst(2, fc)));
+        // Si la suite correspond à la creation d'un type record
+        } else if (idRefCtx instanceof RecordCreateContext rc) {
+            // idRef : '{' fieldCreateOpt '}'               #RecordCreate (rc)
+            /* fieldCreateOpt
+             *      : fieldCreate                           #FieldCreateOptParent
+             *      |    ;                                  #NoIdFieldCreate
+             * fieldCreate
+             *      : ID '=' expValued fieldCreateTail ;
+             * fieldCreateTail
+             *      : ',' fieldCreate                       #FieldCreateTailAdd
+             *      |    ;                                  #NoFieldCreateTail
+             */
+
+            RecordCreate res = new RecordCreate((Id) getChildAst(0, ctx));
+
+            if (rc.getChild(1) instanceof ChaosParser.FieldCreateOptParentContext) {
+                var fcCtx = (ChaosParser.FieldCreateContext) rc.getChild(1).getChild(0) ;
+
+                res.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
+
+                while (fcCtx.getChild(3) instanceof ChaosParser.FieldCreateTailAddContext) {
+                    fcCtx = (ChaosParser.FieldCreateContext) fcCtx.getChild(3).getChild(1) ;
+                    res.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
                 }
             }
+
             return res;
+
         } else if (idRefCtx instanceof StructFieldAccessContext) {
             return accessAux(ctx);
         }
+
         return getChildAst(0, ctx) /* gauche */;
     }
 
@@ -742,11 +762,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @SuppressWarnings("unchecked")
     public Ast visitRecTy(ChaosParser.RecTyContext ctx) {
         // recTy : '{' fieldDecList '}'
-        var listAcc = (ListAccumulator<FieldDeclaration>) getChildAst(1, ctx);
-        if (listAcc == null) {
-            return new RecordTypeDeclaration();
-        }
-        return new RecordTypeDeclaration(listAcc.list);
+        FieldDecList list = (FieldDecList) getChildAst(1, ctx) ;
+        return new RecordTypeDeclaration(list);
     }
 
     @Override

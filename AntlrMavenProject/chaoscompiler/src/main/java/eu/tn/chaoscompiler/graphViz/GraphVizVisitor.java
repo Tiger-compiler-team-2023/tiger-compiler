@@ -154,10 +154,8 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String objectId = node.objectId.accept(this) ;
         this.addTransition(nodeIdentifier, objectId);
 
-        for (FieldDeclaration field:node.fields) {
-            String fieldId = field.accept(this) ;
-            this.addTransition(nodeIdentifier, fieldId) ;
-        }
+        String fields = node.fields.accept(this) ;
+        this.addTransition(nodeIdentifier, fields) ;
 
         return nodeIdentifier;
     }
