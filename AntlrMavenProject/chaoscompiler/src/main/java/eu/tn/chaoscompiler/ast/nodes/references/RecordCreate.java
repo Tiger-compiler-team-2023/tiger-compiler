@@ -8,10 +8,10 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import lombok.AllArgsConstructor;
 
 public class RecordCreate implements Ast {
-    public Id idObject ;
+    public Ast idObject ;
     public ArrayList<Ast> args;
 
-    public RecordCreate(Id obj) {
+    public RecordCreate(Ast obj) {
         this.idObject = obj ;
         this.args = new ArrayList<Ast>();
     }

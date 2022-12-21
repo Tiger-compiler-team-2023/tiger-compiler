@@ -310,31 +310,35 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
          * | * mot vide * #NoIdTail
          * ;
          */
+        return accessAux(getChildAst(0, ctx), (IdRefContext) ctx.getChild(1)) ;
+    }
 
-        var idRefCtx = ctx.getChild(1);
+    // Fonction auxiliaire
+    Ast accessAux(Ast id, IdRefContext irCtx) {
 
-        // Si la suite correspond à un appel de fonction
-        if (idRefCtx instanceof FunctionCallContext) {
-            return new FunctionCall(getChildAst(0, ctx), getChildAst(1, ctx));
+        if (irCtx instanceof FunctionCallContext) {
+            // idRef : '(' expValuedOrIfListOpt ')'         #FunctionCall
+            return new FunctionCall(id, getChildAst(1, irCtx)) ;
         }
 
-        // Si la suite correspond à l'accès à un élément de tableau
-        else if (idRefCtx instanceof ArrayElementContext ae) {
-            // '[' expValuedOrIf ']' arrayCreateOpt #ArrayElement
+        else if (irCtx instanceof ArrayElementContext) {
+            // idRef : '[' expValuedOrIf ']' arrayCreateOpt         #ArrayElement   (irCtx)
+            //arrayCreateOpt : 'of' expValued                       #ArrayAssign    (acoCtx)
+            //               |  idRef                               #ArrayAccess
+            var acoCtx = (ChaosParser.ArrayCreateOptContext) irCtx.getChild(3) ;
 
-            if (ae.getChild(3) instanceof ChaosParser.ArrayAssignContext) {
-                // On crée un tableau #ArrayAssign
-                return new ArrayAssign( // syntaxe: type [nombre] of element
-                        getChildAst(0, ctx), // type
-                        getChildAst(1, ae), // nombre
-                        getChildAst(1, (ChaosParser.ArrayAssignContext) ae.getChild(3))); // element
-            } else {
-                return accessAux(ctx);
+            if (acoCtx instanceof ChaosParser.ArrayAssignContext) {
+                return new ArrayAssign(id, getChildAst(1, irCtx), getChildAst(1, acoCtx)) ;
             }
+            else if (acoCtx instanceof ChaosParser.ArrayAccessContext){
+                var irTailCtx = (ChaosParser.IdRefContext) acoCtx.getChild(0) ;
+                ArrayAccess aa = new ArrayAccess(id, getChildAst(1, irCtx)) ;
+                return accessAux(aa, irTailCtx) ;
+            }
+        }
 
-        // Si la suite correspond à la creation d'un type record
-        } else if (idRefCtx instanceof RecordCreateContext rc) {
-            // idRef : '{' fieldCreateOpt '}'               #RecordCreate (rc)
+        else if (irCtx instanceof RecordCreateContext) {
+            // idRef : '{' fieldCreateOpt '}'           #RecordCreate
             /* fieldCreateOpt
              *      : fieldCreate                           #FieldCreateOptParent
              *      |    ;                                  #NoIdFieldCreate
@@ -344,53 +348,30 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
              *      : ',' fieldCreate                       #FieldCreateTailAdd
              *      |    ;                                  #NoFieldCreateTail
              */
+            RecordCreate rc = new RecordCreate(id);
 
-            RecordCreate res = new RecordCreate((Id) getChildAst(0, ctx));
+            if (irCtx.getChild(1) instanceof ChaosParser.FieldCreateOptParentContext) {
+                var fcCtx = (ChaosParser.FieldCreateContext) irCtx.getChild(1).getChild(0) ;
 
-            if (rc.getChild(1) instanceof ChaosParser.FieldCreateOptParentContext) {
-                var fcCtx = (ChaosParser.FieldCreateContext) rc.getChild(1).getChild(0) ;
-
-                res.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
+                rc.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
 
                 while (fcCtx.getChild(3) instanceof ChaosParser.FieldCreateTailAddContext) {
                     fcCtx = (ChaosParser.FieldCreateContext) fcCtx.getChild(3).getChild(1) ;
-                    res.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
+                    rc.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
                 }
             }
 
-            return res;
-
-        } else if (idRefCtx instanceof StructFieldAccessContext) {
-            return accessAux(ctx);
+            return rc;
         }
 
-        return getChildAst(0, ctx) /* gauche */;
-    }
-
-    // Fonction auxiliaire
-    Ast accessAux(ParserRuleContext ctx) {
-        var c = ctx; // Copie pour parcours en profondeur
-        Ast res = getChildAst(0, ctx); // Init avec l'id
-
-        c = /* idref */ (ParserRuleContext) c.getChild(1);
-        while (c != null) {
-            if (c instanceof StructFieldAccessContext) { // Lecture d'un enregistrement
-                res = new RecordAccess(res, getChildAst(1, c));
-                c = /* idref */ (ParserRuleContext) c.getChild(3);
-            } else if (c instanceof ArrayElementContext) { // Lecture d'un tableau
-                res = new ArrayAccess(res, getChildAst(1, c));
-                c = /* arrayCreateOpt */ (ParserRuleContext) c.getChild(3);
-                if (c instanceof FieldCreateOptParentContext) {
-                    c = null; // Erreur
-                } else {
-                    c = /* idref */ (ParserRuleContext) c.getChild(0);
-                }
-            } else if (c instanceof NoIdTailContext) { // On a fini le parcours
-                c = null;
-            }
+        else if (irCtx instanceof ChaosParser.StructFieldAccessContext) {
+            // idRef : '.' ID idRef #StructFieldAccess
+            RecordAccess ra = new RecordAccess(id, getChildAst(1, irCtx)) ;
+            var irTailCtx = (ChaosParser.IdRefContext) irCtx.getChild(2) ;
+            return accessAux(ra, irTailCtx) ;
         }
 
-        return res;
+        return id ;
     }
 
     @Override
@@ -456,6 +437,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitArrayElement(ChaosParser.ArrayElementContext ctx) {
+        // idRef : '[' expValuedOrIf ']' arrayCreateOpt     #ArrayElement
         return null; // Inaccessible car traité dans son père
     }
 
@@ -476,11 +458,13 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitArrayAssign(ChaosParser.ArrayAssignContext ctx) {
+        //arrayCreateOpt : 'of' expValued                        #ArrayAssign
         return null;
     }
 
     @Override
     public Ast visitArrayAccess(ChaosParser.ArrayAccessContext ctx) {
+        // arrayCreateOpt :  idRef                                #ArrayAccess
         return null;
     }
 
