@@ -559,24 +559,33 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitNonEmptySequence(ChaosParser.NonEmptySequenceContext ctx) {
         // expSeqOpt : expSeq
-        return getChildAst(0, ctx); // on retourne la séquence sous-jacente
+        Sequence res = new Sequence();
+        var evl = (ChaosParser.ExpSeqContext) ctx.getChild(0);
+
+        res.addInstr(getChildAst(0, evl));
+        while (evl.getChild(1) instanceof ChaosParser.NextSeqElementContext) {
+            evl = (ChaosParser.ExpSeqContext) evl.getChild(1).getChild(1);
+            res.addInstr(getChildAst(0, evl));
+        }
+        return res;
     }
 
     @Override
     public Ast visitEmptySequence(ChaosParser.EmptySequenceContext ctx) {
-        return new Sequence(new ArrayList<>()); // Séquence vide
+        // expSeqOpt : /* mot vide */
+        return new Sequence(); // Séquence vide
     }
 
     @Override
     public Ast visitExpSeq(ChaosParser.ExpSeqContext ctx) {
         // expSeq : exp expSeqTail
-        return this.getListNode(getChildAst(0, ctx), getChildAst(1, ctx));
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
     public Ast visitNextSeqElement(ChaosParser.NextSeqElementContext ctx) {
         // expSeqTail : ';' expSeq
-        return getChildAst(1, ctx);
+        return null; // Inaccessible car traité dans son père
     }
 
     @Override
@@ -588,8 +597,15 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @SuppressWarnings("unchecked")
     public Ast visitSequence(ChaosParser.SequenceContext ctx) {
         // value : '(' expSeq ')'
-        var listAccumulator = (ListAccumulator<Ast>) getChildAst(1, ctx);
-        return new Sequence(listAccumulator.list); // on retourne la séquence sous-jacente
+        Sequence res = new Sequence();
+        var evl = (ChaosParser.ExpSeqContext) ctx.getChild(1);
+
+        res.addInstr(getChildAst(0, evl));
+        while (evl.getChild(1) instanceof ChaosParser.NextSeqElementContext) {
+            evl = (ChaosParser.ExpSeqContext) evl.getChild(1).getChild(1);
+            res.addInstr(getChildAst(0, evl));
+        }
+        return res;
     }
     // --------------------------------
 

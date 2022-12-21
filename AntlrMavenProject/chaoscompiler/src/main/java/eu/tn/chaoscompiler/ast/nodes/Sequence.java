@@ -13,8 +13,12 @@ public class Sequence implements Ast {
 
     public ArrayList<Ast> instructions;
 
-    public Sequence(ArrayList<Ast> list) {
-        this.instructions = list;
+    public Sequence() {
+        this.instructions = new ArrayList<Ast>();
+    }
+
+    public void addInstr(Ast instr) {
+        this.instructions.add(instr) ;
     }
 }
 

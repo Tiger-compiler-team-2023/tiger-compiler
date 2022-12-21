@@ -189,14 +189,14 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String nodeIdentifier = this.nextState() ;
         this.addNode(nodeIdentifier, "IfThenElse") ;
 
-        String condExpr = node.condExpr.accept(this) ;
-        this.addTransition(nodeIdentifier, condExpr) ;
+        String condExpr = node.condExpr.accept(this);
+        this.addTransition(nodeIdentifier, condExpr);
 
         String thenExpr = node.thenExpr.accept(this) ;
         this.addTransition(nodeIdentifier, thenExpr) ;
 
-        String elseExpr = node.elseExpr.accept(this) ;
-        this.addTransition(nodeIdentifier, elseExpr) ;
+        String elseExpr = node.elseExpr.accept(this);
+            this.addTransition(nodeIdentifier, elseExpr);
 
         return nodeIdentifier;
     }
@@ -332,8 +332,8 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String nodeIdentifier = this.nextState() ;
         this.addNode(nodeIdentifier, "Multiplication") ;
 
-        String left = node.leftValue.accept(this) ;
-        this.addTransition(nodeIdentifier, left) ;
+        String left = node.leftValue.accept(this);
+        this.addTransition(nodeIdentifier, left);
 
         String right = node.rightValue.accept(this) ;
         this.addTransition(nodeIdentifier, right) ;
