@@ -85,17 +85,27 @@ public class GraphVizVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(FunctionDeclaration node) {
+        //function id ( type-fieldsopt ) : type-id = expr
+
         String nodeIdentifier = this.nextState() ;
         this.addNode(nodeIdentifier, "FunctionDeclaration") ;
+        //nom de la fonction
+        String function_id=node.objectId.accept(this);
+        this.addTransition(nodeIdentifier,function_id);
 
-        String fields = node.fields.accept(this) ;
-        this.addTransition(nodeIdentifier, fields) ;
+        //le type de retour de la fonction(le type est optionnel)
+        if(node.returnType!=null){
+            String returnType = node.returnType.accept(this) ;
+            this.addTransition(nodeIdentifier, returnType) ;
+        }
 
-        String returnType = node.returnType.accept(this) ;
-        this.addTransition(nodeIdentifier, returnType) ;
-
+        //le contenu de la fonction
         String content = node.content.accept(this) ;
         this.addTransition(nodeIdentifier, content);
+
+        //Les arguments de la fonction (la fonction peut ne pas contenir des arguments)
+        String fields = node.fields.accept(this) ;
+        this.addTransition(nodeIdentifier, fields) ;
 
         return nodeIdentifier;
     }
