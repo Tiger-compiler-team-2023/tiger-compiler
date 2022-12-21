@@ -205,8 +205,10 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String thenExpr = node.thenExpr.accept(this) ;
         this.addTransition(nodeIdentifier, thenExpr) ;
 
-        String elseExpr = node.elseExpr.accept(this);
+        if (node.elseExpr != null) {
+            String elseExpr = node.elseExpr.accept(this);
             this.addTransition(nodeIdentifier, elseExpr);
+        }
 
         return nodeIdentifier;
     }
