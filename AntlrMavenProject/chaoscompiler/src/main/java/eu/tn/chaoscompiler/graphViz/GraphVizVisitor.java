@@ -106,12 +106,16 @@ public class GraphVizVisitor implements AstVisitor<String> {
     public String visit(VariableDeclaration node) {
         String nodeIdentifier = this.nextState() ;
         this.addNode(nodeIdentifier, "VariableDeclaration") ;
+        //ajout du nom de la variable
+        String varId=node.objectId.accept(this);
+        this.addTransition(nodeIdentifier,varId);
 
+        //ajout de type de la variable (le type est optionnel)
         if (node.typeId != null) {
             String typeId = node.typeId.accept(this);
             this.addTransition(nodeIdentifier, typeId);
         }
-
+        //ajout de la valeur de la variable
         String value = node.value.accept(this) ;
         this.addTransition(nodeIdentifier, value);
 
