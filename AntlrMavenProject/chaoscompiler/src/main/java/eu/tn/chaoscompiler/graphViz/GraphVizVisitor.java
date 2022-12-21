@@ -515,7 +515,6 @@ public class GraphVizVisitor implements AstVisitor<String> {
         String argList = node.argList.accept(this);
         this.addTransition(nodeIdentifier, argList);
 
-
         return nodeIdentifier;
     }
 

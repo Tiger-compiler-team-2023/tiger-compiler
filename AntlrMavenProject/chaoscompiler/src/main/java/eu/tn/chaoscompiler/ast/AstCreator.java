@@ -538,7 +538,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitNoParameter(ChaosParser.NoParameterContext ctx) {
         // expValuedOrIfListOpt : /* mot vide */
-        return null; // MOT VIDE donc null
+        return new ParameterList() ; // Liste vide
     }
 
     @Override
