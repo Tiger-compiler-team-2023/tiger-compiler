@@ -414,7 +414,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitNegInteger(ChaosParser.NegIntegerContext ctx) {
         // negInteger : INT
         // Même chose que pour Integer avec '-' devant
-        return new IntegerNode(-Integer.parseInt(ctx.getChild(0).toString()));
+        return new IntegerNode(Integer.parseInt(ctx.getChild(0).toString()));
     }
 
     @Override
