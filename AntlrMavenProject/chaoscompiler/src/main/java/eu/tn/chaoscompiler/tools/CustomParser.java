@@ -6,11 +6,12 @@ import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
 
 import java.io.File;
 
 public class CustomParser {
-    public static void parse(File file) {
+    public static ChaosParser parse(File file) {
         try {
             //chargement du fichier et construction du parser
             // Le programme lit d'abord une chaîne de caractères
@@ -27,14 +28,16 @@ public class CustomParser {
             CommonTokenStream stream = new CommonTokenStream(lexer);
             //  Pour finir, on analyse syntaxiquement (parse) la chaine de
             //  Token grâce à la classe de parser générée par antlr.
+            // https://stackoverflow.com/questions/18132078/handling-errors-in-antlr4
             ChaosParser parser = new ChaosParser(stream);
             parser.removeErrorListeners();
             parser.addErrorListener(GestionnaireErreur.getInstance());
+            return parser;
 
             // obtenir l'arbre syntaxique
-            parser.program();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

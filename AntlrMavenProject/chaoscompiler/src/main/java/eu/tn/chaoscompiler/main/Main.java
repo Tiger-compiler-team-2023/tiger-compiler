@@ -5,9 +5,9 @@ import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstCreator;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
+import eu.tn.chaoscompiler.graphViz.GraphDisplayer;
 import eu.tn.chaoscompiler.graphViz.GraphVizVisitor;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.engine.GraphvizEngine;
+import eu.tn.chaoscompiler.tools.CustomParser;
 import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -29,29 +29,8 @@ public class Main {
         }
         String testFile = args[0];
         try {
-
-            System.out.println("Working Directory = " + System.getProperty("user.dir"));
-            //chargement du fichier et construction du parser
-            // Le programme lit d'abord une chaîne de caractères
-            CharStream input = CharStreams.fromFileName(testFile);
-            // il la passe à l'analyseur lexical.
-            // Ceci permet de transformer la chaîne de caractères en une
-            // suite de mots (ou token) du langage (par exemple 'if')
-            ChaosLexer lexer = new ChaosLexer(input);
-            lexer.removeErrorListeners();
-            lexer.addErrorListener(GestionnaireErreur.getInstance());
-
-            // On utilise ensuite le lexer pour transformer la chaîne
-            // de départ en chaîne de token
-            CommonTokenStream stream = new CommonTokenStream(lexer);
-            //  Pour finir, on analyse syntaxiquement (parse) la chaine de
-            //  Token grâce à la classe de parser générée par antlr.
-            // https://stackoverflow.com/questions/18132078/handling-errors-in-antlr4
-            ChaosParser parser = new ChaosParser(stream);
-            parser.removeErrorListeners();
-            parser.addErrorListener(GestionnaireErreur.getInstance());
-            // obtenir l'arbre syntaxique
-            System.out.println("----");
+            // Parsing du fichier et obtention de l'arbre syntaxique
+            ChaosParser parser = CustomParser.parse(new File(testFile));
             ChaosParser.ProgramContext program = parser.program();
 
             // code d'affichage de l'arbre syntaxique
@@ -65,18 +44,16 @@ public class Main {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
             frame.setVisible(true);
-            //System.out.println(program.getChild(0).getChild(1).getText());
-            System.out.println(program.getChild(0).getChild(1));
 
             AstCreator creator = new AstCreator();
             Ast ast = program.accept(creator);
-            System.out.println(ast.toString());
 
-            //Afficher l'ast avec graphviz
-            GraphVizVisitor graphViz = new GraphVizVisitor() ;
-            ast.accept(graphViz) ;
+            // Génération du code graphviz pour l'AST
+            GraphVizVisitor graphViz = new GraphVizVisitor();
+            ast.accept(graphViz);
             graphViz.dumpGraph("./src/test/ressources/out/tree.dot");
-
+            // Affichage du graphe dans le navigateur
+            GraphDisplayer.displayDotFile("./src/test/ressources/out/tree.dot");
         } catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }
