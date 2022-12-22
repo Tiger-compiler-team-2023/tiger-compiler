@@ -407,7 +407,9 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitNegReference(ChaosParser.NegReferenceContext ctx) {
         // negationTail : ID idRef
-        return getChildAst(0, ctx); // La négation est gérée par le nœud parent
+        //gérée par la fonction auxiliare : accessAux qui gère tous les différents contexes de IdRef
+        return accessAux(new Id(ctx.getChild(0).toString()),(ChaosParser.IdRefContext)ctx.getChild(1));
+        //return getChildAst(0, ctx); // La négation est gérée par le nœud parent
     }
 
     @Override
