@@ -1,0 +1,33 @@
+public String visit(FieldDecList node) {
+        String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "FieldDecList") ;
+
+        for (FieldDeclaration field:node.list) {
+            String fieldId = field.accept(this) ;
+            this.addTransition(nodeIdentifier, fieldId) ;
+        }
+
+        return nodeIdentifier;
+    }
+
+
+
+String str_id_record=ctx.getChild(1).toString();
+        Ast id_record=new Id(str_id_record);
+        Ast res = (Ast) ctx.getChild(2);
+        if( res instanceof StructFieldAccessContext && res!=null){
+            res = ctx.getChild(2).accept(this);
+        }
+        return new RecordAccess(res,id_record);
+ String nodeIdentifier = this.nextState() ;
+        this.addNode(nodeIdentifier, "RecordAccess") ;
+
+        if(node.exp!=null && node.exp instanceof RecordAccess){
+            this.visit((RecordAccess) node.exp);
+        }
+        addTransition(nodeIdentifier,node.id_record.toString());
+
+        return nodeIdentifier;
+Ast id_record=new Id(ctx.getChild(1).toString());
+        Ast exp=ctx.getChild(2).accept(this);
+        return new RecordAccess(exp,id_record);

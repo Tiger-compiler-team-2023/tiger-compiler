@@ -424,9 +424,18 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     }
 
     @Override
-    public Ast visitNegSequence(ChaosParser.NegSequenceContext ctx) {
+    public Ast visitNegSequence(NegSequenceContext ctx) {
         // negationTail : '(' expSeq ')'
-        return getChildAst(1, ctx); // La négation est gérée par le nœud parent
+        //même comportement que visitSequence
+        Sequence res = new Sequence();
+        var evl = (ChaosParser.ExpSeqContext) ctx.getChild(1);
+
+        res.addInstr(getChildAst(0, evl));
+        while (evl.getChild(1) instanceof ChaosParser.NextSeqElementContext) {
+            evl = (ChaosParser.ExpSeqContext) evl.getChild(1).getChild(1);
+            res.addInstr(getChildAst(0, evl));
+        }
+        return res;
     }
 
     @Override
