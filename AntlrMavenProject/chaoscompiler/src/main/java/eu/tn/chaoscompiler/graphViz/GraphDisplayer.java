@@ -19,7 +19,8 @@ public class GraphDisplayer {
                 dotFileString.append(line).append("\n");
             }
             String encoded = URLEncoder.encode(dotFileString.toString(), StandardCharsets.UTF_8).replace("+", "%20");
-            String url = "http://dreampuf.github.io/GraphvizOnline/#" + encoded;
+            //String url = "http://dreampuf.github.io/GraphvizOnline/#" + encoded;
+            String url = "https://nicolas-frache.github.io/GraphvizOnline/#" + encoded;
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
 
         } catch (IOException e) {
