@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 
 import java.util.ArrayList;
 
-public class Sequence implements Ast {
+public class Sequence extends Ast  {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

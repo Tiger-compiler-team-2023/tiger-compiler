@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class Negation implements Ast {
+public class Negation extends Ast  {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

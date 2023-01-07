@@ -34,7 +34,7 @@ public class Main {
             ChaosParser.ProgramContext program = parser.program();
 
             // code d'affichage de l'arbre syntaxique
-            JFrame frame = new JFrame("Antlr AST");
+            JFrame frame = new JFrame("Arbre syntaxique");
             JPanel panel = new JPanel();
             TreeViewer viewer = new TreeViewer(Arrays.asList(
                     parser.getRuleNames()), program);
@@ -43,7 +43,7 @@ public class Main {
             frame.add(panel);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
-            frame.setVisible(true);
+            //frame.setVisible(true);
 
             AstCreator creator = new AstCreator();
             Ast ast = program.accept(creator);

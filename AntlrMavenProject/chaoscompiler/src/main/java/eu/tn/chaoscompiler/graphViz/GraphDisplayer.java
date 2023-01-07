@@ -11,9 +11,9 @@ public class GraphDisplayer {
      * Affiche le graphe dans un navigateur web
      */
     public static void displayDotFile(String dotFilePath) {
-        // Lecture du fichier dans une chaîne de caractères
         StringBuilder dotFileString = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(dotFilePath))) {
+            // Lecture du fichier dans une chaîne de caractères
             String line;
             while ((line = br.readLine()) != null) {
                 dotFileString.append(line).append("\n");

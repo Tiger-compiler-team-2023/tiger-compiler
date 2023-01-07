@@ -28,5 +28,4 @@ public class TigerAssert extends Assert {
         assertNbErreurs(path, 0);
     }
 
-
 }

@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class ArrayAccess implements Ast {
+public class ArrayAccess extends Ast  {
     public Ast exp;
     public Ast index;
 

@@ -7,7 +7,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import lombok.AllArgsConstructor;
 
-public class RecordCreate implements Ast {
+public class RecordCreate extends Ast  {
     public Ast idObject ;
     public ArrayList<Ast> args;
 

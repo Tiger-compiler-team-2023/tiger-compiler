@@ -5,12 +5,11 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class Program implements Ast {
+public class Program extends Ast  {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 
     public Ast expression;
-
 }

@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 
-public class FieldDecList implements Ast {
+public class FieldDecList extends Ast  {
 
     public ArrayList<FieldDeclaration> list ;
 

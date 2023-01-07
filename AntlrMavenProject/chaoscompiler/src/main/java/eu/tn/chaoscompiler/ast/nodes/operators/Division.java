@@ -2,6 +2,7 @@ package eu.tn.chaoscompiler.ast.nodes.operators;
 
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstVisitor;
+import lombok.Setter;
 
 public class Division extends BinaryOperator {
 

@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * classe au garbage collector.
  */
 @NoArgsConstructor
-public class ListAccumulator<T extends Ast> implements Ast {
+public class ListAccumulator<T extends Ast> extends Ast {
     public ArrayList<T> list;
 
     public ListAccumulator(T firstElement) {

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstVisitor;
 
-public class ParameterList implements Ast {
+public class ParameterList extends Ast  {
     public ArrayList<Ast> parameters;
 
     public ParameterList() {

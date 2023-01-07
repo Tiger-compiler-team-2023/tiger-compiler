@@ -6,7 +6,7 @@ import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 
 import java.util.ArrayList;
 
-public class DeclarationList implements Ast {
+public class DeclarationList extends Ast  {
     public ArrayList<Declaration> list ;
 
     public DeclarationList() {

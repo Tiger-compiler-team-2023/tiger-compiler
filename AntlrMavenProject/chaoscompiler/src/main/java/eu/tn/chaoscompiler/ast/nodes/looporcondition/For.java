@@ -4,7 +4,7 @@ import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstVisitor;
 
 
-public class For implements Ast {
+public class For extends Ast  {
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {

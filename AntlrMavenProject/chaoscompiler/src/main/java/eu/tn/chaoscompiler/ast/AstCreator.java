@@ -14,8 +14,6 @@ import eu.tn.chaoscompiler.ast.nodes.operators.*;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-
 /**
  * Cette classe est une implémentation de {@link ChaosVisitor},
  * qui permet de créer un Ast
@@ -24,7 +22,11 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     // ----- Quelques fonctions pour factoriser un peu ce bazar
     public Ast getChildAst(int idx, ParserRuleContext ctx) {
-        return ctx.getChild(idx).accept(this);
+        Ast node = ctx.getChild(idx).accept(this);
+        if(node != null){
+            node.setNumLigne(ctx.start.getLine());
+        }
+        return node;
     }
 
     /**
@@ -92,7 +94,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitLoopOrCondition(ChaosParser.LoopOrConditionContext ctx) {
-        return ctx.getChild(0).accept(this); // Elimination d'un noeud unaire inutile
+        return getChildAst(0, ctx); // Elimination d'un noeud unaire inutile
     }
 
     @Override
@@ -111,8 +113,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitWhile(ChaosParser.WhileContext ctx) {
-        Ast condExpr = ctx.getChild(1).accept(this);
-        Ast doExpr = ctx.getChild(3).accept(this);
+        Ast condExpr = getChildAst(1, ctx);
+        Ast doExpr = getChildAst(3, ctx);
         return new While(condExpr, doExpr);
     }
 
@@ -120,24 +122,24 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitFor(ChaosParser.ForContext ctx) {
         String str_Id = ctx.getChild(1).toString();
         Ast Id = new Id(str_Id);
-        Ast startExpr = ctx.getChild(3).accept(this);
-        Ast endExpr = ctx.getChild(5).accept(this);
-        Ast doExpr = ctx.getChild(7).accept(this);
+        Ast startExpr = getChildAst(3, ctx);
+        Ast endExpr = getChildAst(5, ctx);
+        Ast doExpr = getChildAst(7, ctx);
         return new For(Id, startExpr, endExpr, doExpr);
     }
 
     @Override
     public Ast visitIf(ChaosParser.IfContext ctx) {
-        Ast condExpr = ctx.getChild(1).accept(this);
-        Ast thenExpr = ctx.getChild(3).accept(this);
-        Ast elseExpr = ctx.getChild(4).accept(this);
+        Ast condExpr = getChildAst(1, ctx);
+        Ast thenExpr = getChildAst(3, ctx);
+        Ast elseExpr = getChildAst(4, ctx);
 
         return new IfThenElse(condExpr, thenExpr, elseExpr);
     }
 
     @Override
     public Ast visitElse(ChaosParser.ElseContext ctx) {
-        return ctx.getChild(1).accept(this);
+        return getChildAst(1, ctx);
     }
 
     @Override
@@ -401,7 +403,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitLet(ChaosParser.LetContext ctx) {
         // value : letExp
-        return ctx.getChild(0).accept(this); // élimination d'un nœud unaire inutile
+        return getChildAst(0, ctx); // élimination d'un nœud unaire inutile
     }
 
     @Override
@@ -429,12 +431,23 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitNegSequence(NegSequenceContext ctx) {
         // negationTail : '(' expSeq ')'
         //même comportement que visitSequence
+        return commonVisitSequence((ExpSeqContext) ctx.getChild(1), ctx);
+    }
+
+    @Override
+    public Ast visitSequence(ChaosParser.SequenceContext ctx) {
+        // value : '(' expSeq ')'
+        return commonVisitSequence((ExpSeqContext) ctx.getChild(1), ctx);
+    }
+
+    // Car visitNegSequence et visitSequence ont le même comportement
+    private Ast commonVisitSequence(ExpSeqContext child, ParserRuleContext ctx) {
         Sequence res = new Sequence();
-        var evl = (ChaosParser.ExpSeqContext) ctx.getChild(1);
+        var evl = child;
 
         res.addInstr(getChildAst(0, evl));
-        while (evl.getChild(1) instanceof ChaosParser.NextSeqElementContext) {
-            evl = (ChaosParser.ExpSeqContext) evl.getChild(1).getChild(1);
+        while (evl.getChild(1) instanceof NextSeqElementContext) {
+            evl = (ExpSeqContext) evl.getChild(1).getChild(1);
             res.addInstr(getChildAst(0, evl));
         }
         return res;
@@ -506,7 +519,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Ast visitLetExp(ChaosParser.LetExpContext ctx) {
         // letExp : 'let' declarationListOpt 'in' expSeqOpt 'end'
         Ast decList = getChildAst(1, ctx) ;
@@ -557,9 +569,9 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitIfValued(ChaosParser.IfValuedContext ctx) {
         // expValuedOrIf : 'if' expValued 'then' exp elseOpt
-        Ast condExpr = ctx.getChild(1).accept(this);
-        Ast thenExpr = ctx.getChild(3).accept(this);
-        Ast elseExpr = ctx.getChild(4).accept(this);
+        Ast condExpr = getChildAst(1, ctx);
+        Ast thenExpr = getChildAst(3, ctx);
+        Ast elseExpr = getChildAst(4, ctx);
 
         return new IfThenElse(condExpr, thenExpr, elseExpr);
     }
@@ -608,20 +620,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
         return null; // MOT VIDE donc null
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public Ast visitSequence(ChaosParser.SequenceContext ctx) {
-        // value : '(' expSeq ')'
-        Sequence res = new Sequence();
-        var evl = (ChaosParser.ExpSeqContext) ctx.getChild(1);
-
-        res.addInstr(getChildAst(0, evl));
-        while (evl.getChild(1) instanceof ChaosParser.NextSeqElementContext) {
-            evl = (ChaosParser.ExpSeqContext) evl.getChild(1).getChild(1);
-            res.addInstr(getChildAst(0, evl));
-        }
-        return res;
-    }
     // --------------------------------
 
     // ----------- Declaration ----------
