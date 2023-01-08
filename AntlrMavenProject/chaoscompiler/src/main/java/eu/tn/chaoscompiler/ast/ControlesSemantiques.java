@@ -111,7 +111,30 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(IfThenElse ifThenElseExpr) {
-        return null;
+        tdsController.down();
+        Type conditionType=ifThenElseExpr.condExpr.accept(this);
+        //Vérifier si le type de condition est entier
+        if(!conditionType.equals(Type.INT_TYPE)){
+            GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"l'expression de la condition dans If est de type."+conditionType.getId()+" Or, elle doit avoir un type \u001B[31m entier");
+        }
+        Type thenType=ifThenElseExpr.thenExpr.accept(this);
+        if(ifThenElseExpr.elseExpr!=null){
+            Type elseType=ifThenElseExpr.elseExpr.accept(this);
+            //Vérifier si thenExpr et ElseExpr ont le même type
+            if(!(thenType.equals(elseType))){
+                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"les expressions then et else renvoient respectivement des types " + thenType.getId()+" "+ elseType.getId()+ ".Or, elles doivent avoir le même type");
+            }
+            tdsController.up();
+            return thenType;
+        }
+        else{
+            //Vérifier si le type de l'expression
+            if(!thenType.equals(Type.VOID_TYPE)){
+                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"l'expression then renvoie un type"+thenType.getId() + " Or, elle doit avoir un type \u001B[31m void");
+            }
+            tdsController.up();
+            return Type.VOID_TYPE;
+        }
     }
 
     @Override
@@ -134,7 +157,8 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Affect node) {
-        return null;
+        //l'affectation envoie un type void
+        return Type.VOID_TYPE;
     }
 
     @Override
