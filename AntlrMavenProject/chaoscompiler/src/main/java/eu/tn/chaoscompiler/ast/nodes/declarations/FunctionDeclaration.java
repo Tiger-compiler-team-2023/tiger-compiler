@@ -9,7 +9,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import java.util.ArrayList;
 
 public class FunctionDeclaration extends Declaration {
-    public FieldDecList fields ;
+    public FieldDecList fields;
     public Id returnType;
     public Ast content;
 

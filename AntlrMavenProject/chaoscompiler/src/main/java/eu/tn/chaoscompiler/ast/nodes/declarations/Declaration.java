@@ -9,7 +9,8 @@ import lombok.experimental.Accessors;
 
 @Accessors(chain = true)
 @Setter
-@AllArgsConstructor @NoArgsConstructor
-public abstract class Declaration extends Ast  {
+@AllArgsConstructor
+@NoArgsConstructor
+public abstract class Declaration extends Ast {
     public Id objectId;
 }

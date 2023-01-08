@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @Setter
 @AllArgsConstructor
-public abstract class BinaryOperator extends Ast  {
+public abstract class BinaryOperator extends Ast {
     public Ast leftValue;
     public Ast rightValue;
 

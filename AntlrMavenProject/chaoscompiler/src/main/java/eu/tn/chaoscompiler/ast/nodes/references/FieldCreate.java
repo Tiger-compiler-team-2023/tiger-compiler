@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class FieldCreate extends Ast  {
+public class FieldCreate extends Ast {
     public Ast id;
     public Ast expr;
 

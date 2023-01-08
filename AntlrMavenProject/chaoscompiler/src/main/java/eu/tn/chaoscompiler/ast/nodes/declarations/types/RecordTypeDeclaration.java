@@ -12,7 +12,8 @@ import java.util.ArrayList;
 @NoArgsConstructor
 public class RecordTypeDeclaration extends Declaration {
 
-    public FieldDecList fields ;
+    public FieldDecList fields;
+
     public RecordTypeDeclaration(FieldDecList list) {
         super();
         this.fields = list;

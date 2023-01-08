@@ -7,7 +7,7 @@ import eu.tn.chaoscompiler.ast.nodes.references.DeclarationList;
 
 import java.util.ArrayList;
 
-public class Let extends Ast  {
+public class Let extends Ast {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

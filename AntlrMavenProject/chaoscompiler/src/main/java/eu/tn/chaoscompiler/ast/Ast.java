@@ -1,18 +1,23 @@
 package eu.tn.chaoscompiler.ast;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * Interface représentant un nœud de l'AST
  */
 @Accessors(chain = true)
 public abstract class Ast {
-    @Setter @Getter private int numLigne;
+    @Getter private int numLigne, numColonne;
+
     /**
      * Méthode permettant de parcourir le nœud d'AST donné en paramètre
      */
     public abstract <T> T accept(AstVisitor<T> visitor);
+
+    public Ast setligneEtColonne(int ligne, int colonne) {
+        this.numLigne = ligne;
+        this.numColonne = colonne;
+        return this;
+    }
 }

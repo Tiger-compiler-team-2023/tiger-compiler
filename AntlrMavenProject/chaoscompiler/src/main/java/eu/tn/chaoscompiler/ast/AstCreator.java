@@ -6,8 +6,6 @@ import eu.tn.chaoscompiler.ast.nodes.*;
 import eu.tn.chaoscompiler.ast.nodes.declarations.*;
 import eu.tn.chaoscompiler.ast.nodes.declarations.types.*;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.*;
-import eu.tn.chaoscompiler.ast.nodes.declarations.types.RecordTypeDeclaration;
-import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.*;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
@@ -23,8 +21,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     // ----- Quelques fonctions pour factoriser un peu ce bazar
     public Ast getChildAst(int idx, ParserRuleContext ctx) {
         Ast node = ctx.getChild(idx).accept(this);
-        if(node != null){
-            node.setNumLigne(ctx.start.getLine());
+        if (node != null) {
+            node.setligneEtColonne(ctx.start.getLine(), ctx.start.getCharPositionInLine());
         }
         return node;
     }
@@ -88,8 +86,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitProgram(ChaosParser.ProgramContext ctx) {
-        // return new Program(getChildAst(0, ctx));
-        return getChildAst(0, ctx);
+        return new Program(getChildAst(0, ctx));
+        //return getChildAst(0, ctx);
     }
 
     @Override
@@ -312,7 +310,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
          * | * mot vide * #NoIdTail
          * ;
          */
-        return accessAux(getChildAst(0, ctx), (IdRefContext) ctx.getChild(1)) ;
+        return accessAux(getChildAst(0, ctx), (IdRefContext) ctx.getChild(1));
     }
 
     // Fonction auxiliaire
@@ -320,26 +318,21 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
         if (irCtx instanceof FunctionCallContext) {
             // idRef : '(' expValuedOrIfListOpt ')'         #FunctionCall
-            return new FunctionCall(id, getChildAst(1, irCtx)) ;
-        }
-
-        else if (irCtx instanceof ArrayElementContext) {
+            return new FunctionCall(id, getChildAst(1, irCtx));
+        } else if (irCtx instanceof ArrayElementContext) {
             // idRef : '[' expValuedOrIf ']' arrayCreateOpt         #ArrayElement   (irCtx)
             //arrayCreateOpt : 'of' expValued                       #ArrayAssign    (acoCtx)
             //               |  idRef                               #ArrayAccess
-            var acoCtx = (ChaosParser.ArrayCreateOptContext) irCtx.getChild(3) ;
+            var acoCtx = (ChaosParser.ArrayCreateOptContext) irCtx.getChild(3);
 
             if (acoCtx instanceof ChaosParser.ArrayAssignContext) {
-                return new ArrayAssign(id, getChildAst(1, irCtx), getChildAst(1, acoCtx)) ;
+                return new ArrayAssign(id, getChildAst(1, irCtx), getChildAst(1, acoCtx));
+            } else if (acoCtx instanceof ChaosParser.ArrayAccessContext) {
+                var irTailCtx = (ChaosParser.IdRefContext) acoCtx.getChild(0);
+                ArrayAccess aa = new ArrayAccess(id, getChildAst(1, irCtx));
+                return accessAux(aa, irTailCtx);
             }
-            else if (acoCtx instanceof ChaosParser.ArrayAccessContext){
-                var irTailCtx = (ChaosParser.IdRefContext) acoCtx.getChild(0) ;
-                ArrayAccess aa = new ArrayAccess(id, getChildAst(1, irCtx)) ;
-                return accessAux(aa, irTailCtx) ;
-            }
-        }
-
-        else if (irCtx instanceof RecordCreateContext) {
+        } else if (irCtx instanceof RecordCreateContext) {
             // idRef : '{' fieldCreateOpt '}'           #RecordCreate
             /* fieldCreateOpt
              *      : fieldCreate                           #FieldCreateOptParent
@@ -353,27 +346,25 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
             RecordCreate rc = new RecordCreate(id);
 
             if (irCtx.getChild(1) instanceof ChaosParser.FieldCreateOptParentContext) {
-                var fcCtx = (ChaosParser.FieldCreateContext) irCtx.getChild(1).getChild(0) ;
+                var fcCtx = (ChaosParser.FieldCreateContext) irCtx.getChild(1).getChild(0);
 
                 rc.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
 
                 while (fcCtx.getChild(3) instanceof ChaosParser.FieldCreateTailAddContext) {
-                    fcCtx = (ChaosParser.FieldCreateContext) fcCtx.getChild(3).getChild(1) ;
+                    fcCtx = (ChaosParser.FieldCreateContext) fcCtx.getChild(3).getChild(1);
                     rc.addArg(new FieldCreate(getChildAst(0, fcCtx), getChildAst(2, fcCtx)));
                 }
             }
 
             return rc;
-        }
-
-        else if (irCtx instanceof ChaosParser.StructFieldAccessContext) {
+        } else if (irCtx instanceof ChaosParser.StructFieldAccessContext) {
             // idRef : '.' ID idRef #StructFieldAccess
-            RecordAccess ra = new RecordAccess(id, getChildAst(1, irCtx)) ;
-            var irTailCtx = (ChaosParser.IdRefContext) irCtx.getChild(2) ;
-            return accessAux(ra, irTailCtx) ;
+            RecordAccess ra = new RecordAccess(id, getChildAst(1, irCtx));
+            var irTailCtx = (ChaosParser.IdRefContext) irCtx.getChild(2);
+            return accessAux(ra, irTailCtx);
         }
 
-        return id ;
+        return id;
     }
 
     @Override
@@ -393,9 +384,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitNegation(ChaosParser.NegationContext ctx) {
         // '-' negationTail
         Ast tail = getChildAst(1, ctx);
-        /*if (tail instanceof IntegerNode) {
-            return tail; // le nœud fils gère la négation -> C : pourquoi ? nos entiers ne peuvent pas etre negatifs
-        }*/
+
         // Dans les autres cas pas d'autre choix que de passer par un nouveau nœud
         return new Negation(tail);
     }
@@ -410,7 +399,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     public Ast visitNegReference(ChaosParser.NegReferenceContext ctx) {
         // negationTail : ID idRef
         //gérée par la fonction auxiliare : accessAux qui gère tous les différents contexes de IdRef
-        return accessAux(new Id(ctx.getChild(0).toString()),(ChaosParser.IdRefContext)ctx.getChild(1));
+        return accessAux(new Id(ctx.getChild(0).toString()), (ChaosParser.IdRefContext) ctx.getChild(1));
         //return getChildAst(0, ctx); // La négation est gérée par le nœud parent
     }
 
@@ -444,19 +433,19 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     private Ast commonVisitSequence(ExpSeqContext child, ParserRuleContext ctx) {
         Sequence res = new Sequence();
         var evl = child;
-
         res.addInstr(getChildAst(0, evl));
         while (evl.getChild(1) instanceof NextSeqElementContext) {
             evl = (ExpSeqContext) evl.getChild(1).getChild(1);
             res.addInstr(getChildAst(0, evl));
         }
-        return res;
+        return res.setligneEtColonne(ctx.start.getLine(), ctx.start.getCharPositionInLine());
+
     }
 
     @Override
     public Ast visitFunctionCall(ChaosParser.FunctionCallContext ctx) {
         // idRef : '(' expValuedOrIfListOpt ')'
-        return getChildAst(1, ctx) ;
+        return getChildAst(1, ctx);
     }
 
     @Override
@@ -521,8 +510,8 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitLetExp(ChaosParser.LetExpContext ctx) {
         // letExp : 'let' declarationListOpt 'in' expSeqOpt 'end'
-        Ast decList = getChildAst(1, ctx) ;
-        Ast exprSeq = getChildAst(3, ctx) ;
+        Ast decList = getChildAst(1, ctx);
+        Ast exprSeq = getChildAst(3, ctx);
 
         return new Let(decList, exprSeq);
     }
@@ -545,7 +534,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitNoParameter(ChaosParser.NoParameterContext ctx) {
         // expValuedOrIfListOpt : /* mot vide */
-        return new ParameterList() ; // Liste vide
+        return new ParameterList(); // Liste vide
     }
 
     @Override
@@ -579,7 +568,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitExpValuedBis(ChaosParser.ExpValuedBisContext ctx) {
         // expValuedOrIf : expValued
-        return getChildAst(0, ctx) ;
+        return getChildAst(0, ctx);
     }
 
     // ----------- Sequences ----------
@@ -594,7 +583,7 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
             evl = (ChaosParser.ExpSeqContext) evl.getChild(1).getChild(1);
             res.addInstr(getChildAst(0, evl));
         }
-        return res;
+        return res.setligneEtColonne(ctx.start.getLine(), ctx.start.getCharPositionInLine());
     }
 
     @Override
@@ -626,12 +615,12 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitNonEmptyDeclarationList(ChaosParser.NonEmptyDeclarationListContext ctx) {
         // declarationListOpt : declarationList
-        DeclarationList res = new DeclarationList() ;
+        DeclarationList res = new DeclarationList();
 
         var child = (ChaosParser.DeclarationListContext) ctx.getChild(0);
         res.addDeclaration((Declaration) getChildAst(0, child));
 
-        var decTail = (ChaosParser.DecTailContext) child.getChild(1) ;
+        var decTail = (ChaosParser.DecTailContext) child.getChild(1);
 
         while (decTail instanceof ChaosParser.NextDeclarationContext) {
             res.addDeclaration((Declaration) getChildAst(0, decTail));
@@ -698,7 +687,6 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Ast visitDeclarationFunction(ChaosParser.DeclarationFunctionContext ctx) {
         // declaration : 'function' ID '(' fieldDecList ')' optType '=' exp
         var functionId = (Id) getChildAst(1, ctx);
@@ -714,29 +702,29 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     @Override
     public Ast visitFieldDecElement(ChaosParser.FieldDecElementContext ctx) {
         // fieldDecList : fieldDec fieldDecTail
-        FieldDecList res = new FieldDecList() ;
+        FieldDecList res = new FieldDecList();
 
         res.addFieldDec((FieldDeclaration) getChildAst(0, ctx));
 
-        var evl = (ChaosParser.FieldDecTailContext) ctx.getChild(1) ;
+        var evl = (ChaosParser.FieldDecTailContext) ctx.getChild(1);
         while (evl instanceof ChaosParser.NextFieldDecContext) {
             res.addFieldDec((FieldDeclaration) getChildAst(1, evl));
-            evl = (ChaosParser.FieldDecTailContext) evl.getChild(2) ;
+            evl = (ChaosParser.FieldDecTailContext) evl.getChild(2);
         }
 
-        return res ;
+        return res;
     }
 
     @Override
     public Ast visitEmptyFieldDecList(ChaosParser.EmptyFieldDecListContext ctx) {
         // fieldDecList : /* mot vide */
-        return new FieldDecList() ; // field dec list vide
+        return new FieldDecList(); // field dec list vide
     }
 
     @Override
     public Ast visitNextFieldDec(ChaosParser.NextFieldDecContext ctx) {
         // fieldDecTail : ',' fieldDec fieldDecTail
-        return null ; // innaccessible car traité dans le père
+        return null; // innaccessible car traité dans le père
     }
 
     @Override
@@ -752,10 +740,9 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Ast visitRecTy(ChaosParser.RecTyContext ctx) {
         // recTy : '{' fieldDecList '}'
-        FieldDecList list = (FieldDecList) getChildAst(1, ctx) ;
+        FieldDecList list = (FieldDecList) getChildAst(1, ctx);
         return new RecordTypeDeclaration(list);
     }
 

@@ -7,20 +7,20 @@ import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 
-public class FieldDecList extends Ast  {
+public class FieldDecList extends Ast {
 
-    public ArrayList<FieldDeclaration> list ;
+    public ArrayList<FieldDeclaration> list;
 
     public FieldDecList() {
-        this.list = new ArrayList<FieldDeclaration>() ;
+        this.list = new ArrayList<FieldDeclaration>();
     }
 
     public void addFieldDec(FieldDeclaration field) {
-        this.list.add(field) ;
+        this.list.add(field);
     }
 
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
-        return visitor.visit(this) ;
+        return visitor.visit(this);
     }
 }

@@ -6,7 +6,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class FieldDeclaration extends Ast  {
+public class FieldDeclaration extends Ast {
     @Override
     public <T> T accept(AstVisitor<T> visitor) {
         return visitor.visit(this);

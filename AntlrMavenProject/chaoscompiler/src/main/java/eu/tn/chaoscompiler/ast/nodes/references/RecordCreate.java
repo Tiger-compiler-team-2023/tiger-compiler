@@ -7,12 +7,12 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import lombok.AllArgsConstructor;
 
-public class RecordCreate extends Ast  {
-    public Ast idObject ;
+public class RecordCreate extends Ast {
+    public Ast idObject;
     public ArrayList<Ast> args;
 
     public RecordCreate(Ast obj) {
-        this.idObject = obj ;
+        this.idObject = obj;
         this.args = new ArrayList<Ast>();
     }
 

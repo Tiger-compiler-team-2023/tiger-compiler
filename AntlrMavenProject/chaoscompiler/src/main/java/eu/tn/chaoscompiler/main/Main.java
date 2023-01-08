@@ -4,6 +4,7 @@ import eu.tn.chaoscompiler.ChaosLexer;
 import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstCreator;
+import eu.tn.chaoscompiler.ast.ControlesSemantiques;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.graphViz.GraphDisplayer;
 import eu.tn.chaoscompiler.graphViz.GraphVizVisitor;
@@ -54,6 +55,11 @@ public class Main {
             graphViz.dumpGraph("./src/test/ressources/out/tree.dot");
             // Affichage du graphe dans le navigateur
             GraphDisplayer.displayDotFile("./src/test/ressources/out/tree.dot");
+
+            // Tests sémantiques
+            ast.accept(new ControlesSemantiques());
+            GestionnaireErreur.getInstance().afficherErreurs();
+
         } catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }

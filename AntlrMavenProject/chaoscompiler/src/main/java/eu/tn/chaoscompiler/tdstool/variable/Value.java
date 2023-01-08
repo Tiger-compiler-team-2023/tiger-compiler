@@ -3,31 +3,31 @@ package eu.tn.chaoscompiler.tdstool.variable;
 import eu.tn.chaoscompiler.tdstool.TokenGiver;
 
 public class Value implements Variable {
-  protected Type type;
-  protected String id;
-  protected int token;
+    protected Type type;
+    protected String id;
+    protected int token;
 
-  public Value(Type type, String id) {
-    this.type = type;
-    this.id = id;
-    this.token = TokenGiver.getToken();
-  }
+    public Value(Type type, String id) {
+        this.type = type;
+        this.id = id;
+        this.token = TokenGiver.getToken();
+    }
 
-  public Type getType() {
-    return this.type;
-  }
+    public Type getType() {
+        return this.type;
+    }
 
-  public String getId() {
-    return this.id;
-  }
+    public String getId() {
+        return this.id;
+    }
 
-  public int getToken() {
-    return this.token;
-  }
+    public int getToken() {
+        return this.token;
+    }
 
-  @Override
-  public String toString() {
-    return "\n\u001B[32m{[Value]\u001B[0mtype: " + this.type.toString() + ", id: \u001B[46m" + this.id
-        + "\u001B[0m, token: \u001B[43m" + this.token + "\u001B[0m\n\u001B[32m}\u001B[0m";
-  }
+    @Override
+    public String toString() {
+        return "\n\u001B[32m{[Value]\u001B[0mtype: " + this.type.toString() + ", id: \u001B[46m" + this.id
+                + "\u001B[0m, token: \u001B[43m" + this.token + "\u001B[0m\n\u001B[32m}\u001B[0m";
+    }
 }

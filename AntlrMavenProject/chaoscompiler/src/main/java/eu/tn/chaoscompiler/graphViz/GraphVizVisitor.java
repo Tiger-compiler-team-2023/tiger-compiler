@@ -25,7 +25,7 @@ import java.io.IOException;
 public class GraphVizVisitor implements AstVisitor<String> {
 
     public enum NodeType {
-        ID, OPERATION, DECLARATION, CONTROL, TYPE, SEQUENCE, VALUE, ACCESS, LET, DEFAULT;
+        PROGRAM, ID, OPERATION, DECLARATION, CONTROL, TYPE, SEQUENCE, VALUE, ACCESS, LET, DEFAULT;
     }
 
     private int state;
@@ -75,8 +75,9 @@ public class GraphVizVisitor implements AstVisitor<String> {
             case ACCESS -> "folder";
             case DEFAULT -> "rectangle";
             case LET -> "Mdiamond";
+            case PROGRAM -> "Msquare";
         };
-        String color = switch (type){
+        String color = switch (type) {
             case ID -> "pink";
             case OPERATION -> "brown1";
             case DECLARATION -> "aquamarine";
@@ -87,19 +88,20 @@ public class GraphVizVisitor implements AstVisitor<String> {
             case ACCESS -> "grey";
             case DEFAULT -> "gray88";
             case LET -> "darkgoldenrod1";
+            case PROGRAM -> "lightcoral";
         };
         this.nodeBuffer += String.format("\t%s [label=\"%s\", shape=\"%s\", fillcolor=\"%s\"];\n",
                 node, label, shape, color);
     }
 
     @Override
-    public String visit(Program node) {
+    public Void visit(Program node) {
         String nodeIdentifier = this.nextState();
         String instructionsState = node.expression.accept(this);
 
-        this.addNode(nodeIdentifier, "Program");
+        this.addNode(nodeIdentifier, "Program", NodeType.PROGRAM);
         this.addTransition(nodeIdentifier, instructionsState);
-        return nodeIdentifier;
+        return null;
     }
 
     @Override

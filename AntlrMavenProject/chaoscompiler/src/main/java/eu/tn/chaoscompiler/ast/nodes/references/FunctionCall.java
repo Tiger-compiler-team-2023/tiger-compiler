@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class FunctionCall extends Ast  {
+public class FunctionCall extends Ast {
     public Ast id;
     public Ast argList;
 

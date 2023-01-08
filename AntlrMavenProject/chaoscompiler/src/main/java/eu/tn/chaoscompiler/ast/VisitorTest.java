@@ -11,7 +11,6 @@ import eu.tn.chaoscompiler.ast.nodes.looporcondition.IfThenElse;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.Let;
 import eu.tn.chaoscompiler.ast.nodes.looporcondition.While;
 import eu.tn.chaoscompiler.ast.nodes.operators.Addition;
-import eu.tn.chaoscompiler.ast.nodes.operators.BinaryOperator;
 import eu.tn.chaoscompiler.ast.nodes.operators.Negation;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
 import eu.tn.chaoscompiler.ast.nodes.references.*;
@@ -28,7 +27,7 @@ public class VisitorTest implements AstVisitor<String> {
     }
 
     @Override
-    public String visit(Program node) {
+    public Void visit(Program node) {
         return null;
     }
 
@@ -123,7 +122,9 @@ public class VisitorTest implements AstVisitor<String> {
     }
 
     @Override
-    public String visit(FieldDecList node) { return null; }
+    public String visit(FieldDecList node) {
+        return null;
+    }
 
     @Override
     public String visit(For forExpr) {
@@ -206,5 +207,7 @@ public class VisitorTest implements AstVisitor<String> {
     }
 
     @Override
-    public String visit(DeclarationList node) {return null;}
+    public String visit(DeclarationList node) {
+        return null;
+    }
 }

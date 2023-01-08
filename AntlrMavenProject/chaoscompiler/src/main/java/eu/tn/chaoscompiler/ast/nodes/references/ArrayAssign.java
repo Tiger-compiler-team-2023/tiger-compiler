@@ -5,7 +5,7 @@ import eu.tn.chaoscompiler.ast.AstVisitor;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class ArrayAssign extends Ast  {
+public class ArrayAssign extends Ast {
     public Ast type;
     public Ast nombreDElements;
     public Ast element;

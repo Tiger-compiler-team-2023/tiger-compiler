@@ -1,12 +1,12 @@
 package eu.tn.chaoscompiler.tdstool.variable;
 
 public interface Variable {
-  public Type getType();
+    public Type getType();
 
-  public String getId();
+    public String getId();
 
-  public int getToken();
+    public int getToken();
 
-  @Override
-  String toString();
+    @Override
+    String toString();
 }

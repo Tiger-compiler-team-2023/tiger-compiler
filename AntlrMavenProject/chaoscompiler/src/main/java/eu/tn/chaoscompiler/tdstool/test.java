@@ -13,15 +13,9 @@ public class test {
 
     public static void main(String[] args) {
         System.out.println(ANSI_BLUE + "[TEST] Testing counter." + ANSI_RESET);
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
-        System.out.println(TokenGiver.getToken());
+        for (int i = 0; i < 10; i++) {
+            System.out.println(TokenGiver.getToken());
+        }
         System.out.println(ANSI_BLUE + "--> [TEST] Done." + ANSI_RESET);
 
         TokenGiver.reset();

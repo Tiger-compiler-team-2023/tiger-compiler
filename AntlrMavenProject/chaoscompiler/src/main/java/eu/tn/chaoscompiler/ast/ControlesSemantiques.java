@@ -16,195 +16,252 @@ import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
+import eu.tn.chaoscompiler.errors.GestionnaireErreur;
+import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
+import eu.tn.chaoscompiler.tdstool.variable.Type;
+import eu.tn.chaoscompiler.tdstool.variable.Value;
+import lombok.NoArgsConstructor;
 
-public class ControlesSemantiques implements AstVisitor<Void> {
+import java.util.Objects;
+
+@NoArgsConstructor
+public class ControlesSemantiques implements AstVisitor<Type> {
+    private TDScontroller tdsController;
+
+    public void checkIfTypeExist(String type, Ast node) {
+        if (!tdsController.exists(type)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, "Le type " + type + " n'est pas déclaré");
+        }
+    }
+
+    // --------------------------------------------
+    // |             VISITEURS                    |
+    // --------------------------------------------
+
     @Override
     public Void visit(Program node) {
+        tdsController = new TDScontroller();
+        tdsController.add(Type.INT_TYPE);
+        tdsController.add(Type.STRING_TYPE);
+        tdsController.add(Type.VOID_TYPE);
+        node.expression.accept(this);
         return null;
     }
 
     @Override
-    public Void visit(Sequence node) {
+    public Type visit(Let letExpr) {
+        tdsController.down();
+        letExpr.decList.accept(this);
+        Type typeSequence = letExpr.exprSeq.accept(this);
+        tdsController.up();
+        // "letExp: If the body is empty, the type is void, otherwise, the type is that of the last body expression"
+        return typeSequence;
+    }
+
+    @Override
+    public Type visit(Sequence node) {
+        tdsController.down();
+        // Applique la fonction visit sur chaque élément de la séquence et retourne le type de la dernière expression
+        // Si la séquence est vide, retourne le type void
+        Type typeSeq =  node.instructions.stream().map(instr -> instr.accept(this)).reduce((a, b) -> b).orElse(Type.VOID_TYPE);
+        tdsController.up();
+        return typeSeq;
+    }
+
+    @Override
+    public Type visit(FunctionDeclaration node) {
         return null;
     }
 
     @Override
-    public Void visit(FunctionDeclaration node) {
+    public Type visit(VariableDeclaration node) {
+        Type typeValue = node.value.accept(this);;
+        if(node.typeId != null){
+            checkIfTypeExist(node.typeId.identifier, node);
+            if (!typeValue.getId().equals(node.typeId.identifier)) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Une valeur de type %s ne peut pas être affectée à une variable de type %s", typeValue, node.typeId.identifier));
+            }
+        }
+        tdsController.add(new Value(typeValue, node.objectId.identifier));
+
+        // Une déclaration n'a pas de type
+        return Type.VOID_TYPE;
+    }
+
+    @Override
+    public Type visit(ArrayTypeDeclaration node) {
         return null;
     }
 
     @Override
-    public Void visit(VariableDeclaration node) {
+    public Type visit(NoRecordTypeDeclaration node) {
         return null;
     }
 
     @Override
-    public Void visit(ArrayTypeDeclaration node) {
+    public Type visit(RecordTypeDeclaration node) {
         return null;
     }
 
     @Override
-    public Void visit(NoRecordTypeDeclaration node) {
+    public Type visit(For forExpr) {
         return null;
     }
 
     @Override
-    public Void visit(RecordTypeDeclaration node) {
+    public Type visit(IfThenElse ifThenElseExpr) {
         return null;
     }
 
     @Override
-    public Void visit(For forExpr) {
+    public Type visit(While whileExpr) {
         return null;
     }
 
     @Override
-    public Void visit(IfThenElse ifThenElseExpr) {
+    public Type visit(Addition node) {
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'additionner des types %s et %s", type1.getId(), type2.getId()));
+        }
+        // "+, -, *, /: The operands must be of type int and the result type is int"
+        return Type.INT_TYPE;
+    }
+
+    @Override
+    public Type visit(Affect node) {
         return null;
     }
 
     @Override
-    public Void visit(Let letExpr) {
+    public Type visit(And node) {
         return null;
     }
 
     @Override
-    public Void visit(While whileExpr) {
+    public Type visit(Division node) {
         return null;
     }
 
     @Override
-    public Void visit(Addition node) {
+    public Type visit(Equals node) {
         return null;
     }
 
     @Override
-    public Void visit(Affect node) {
+    public Type visit(Inferior node) {
         return null;
     }
 
     @Override
-    public Void visit(And node) {
+    public Type visit(InferiorOrEquals node) {
         return null;
     }
 
     @Override
-    public Void visit(Division node) {
+    public Type visit(Multiplication node) {
         return null;
     }
 
     @Override
-    public Void visit(Equals node) {
+    public Type visit(Negation node) {
         return null;
     }
 
     @Override
-    public Void visit(Inferior node) {
+    public Type visit(NotEquals node) {
         return null;
     }
 
     @Override
-    public Void visit(InferiorOrEquals node) {
+    public Type visit(Or node) {
         return null;
     }
 
     @Override
-    public Void visit(Multiplication node) {
+    public Type visit(Soustraction node) {
         return null;
     }
 
     @Override
-    public Void visit(Negation node) {
+    public Type visit(Superior node) {
         return null;
     }
 
     @Override
-    public Void visit(NotEquals node) {
+    public Type visit(SuperiorOrEquals node) {
         return null;
     }
 
     @Override
-    public Void visit(Or node) {
+    public Type visit(ArrayAccess node) {
         return null;
     }
 
     @Override
-    public Void visit(Soustraction node) {
+    public Type visit(ArrayAssign node) {
         return null;
     }
 
     @Override
-    public Void visit(Superior node) {
+    public Type visit(FieldCreate node) {
         return null;
     }
 
     @Override
-    public Void visit(SuperiorOrEquals node) {
+    public Type visit(FieldDeclaration node) {
         return null;
     }
 
     @Override
-    public Void visit(ArrayAccess node) {
+    public Type visit(FieldDecList node) {
         return null;
     }
 
     @Override
-    public Void visit(ArrayAssign node) {
+    public Type visit(FunctionCall node) {
         return null;
     }
 
     @Override
-    public Void visit(FieldCreate node) {
+    public Type visit(DeclarationList node) {
+        node.list.forEach(declaration -> declaration.accept(this));
+        return Type.VOID_TYPE;
+    }
+
+    @Override
+    public Type visit(ParameterList node) {
         return null;
     }
 
     @Override
-    public Void visit(FieldDeclaration node) {
+    public Type visit(RecordAccess node) {
         return null;
     }
 
     @Override
-    public Void visit(FieldDecList node) {
+    public Type visit(RecordCreate node) {
         return null;
     }
 
     @Override
-    public Void visit(FunctionCall node) {
+    public Type visit(Id node) {
         return null;
     }
 
     @Override
-    public Void visit(DeclarationList node) {
-        return null;
+    public Type visit(IntegerNode node) {
+        // Par construction ce nœud est un int valide
+        return Type.INT_TYPE;
     }
 
     @Override
-    public Void visit(ParameterList node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(RecordAccess node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(RecordCreate node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(Id node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(IntegerNode node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(StringNode node) {
-        return null;
+    public Type visit(StringNode node) {
+        // Par construction ce nœud est un string valide
+        return Type.STRING_TYPE;
     }
 }

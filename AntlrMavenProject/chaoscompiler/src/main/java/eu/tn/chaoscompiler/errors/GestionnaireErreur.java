@@ -1,5 +1,6 @@
 package eu.tn.chaoscompiler.errors;
 
+import eu.tn.chaoscompiler.ast.Ast;
 import lombok.Setter;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
@@ -10,11 +11,11 @@ import java.util.ArrayList;
 
 public class GestionnaireErreur extends BaseErrorListener {
     private static GestionnaireErreur INSTANCE;
-    private ArrayList<SyntaxError> errors;
+    private ArrayList<ChaosError> errors;
     private @Setter boolean throwException = false;
 
     public GestionnaireErreur() {
-        this.errors = new ArrayList<SyntaxError>();
+        this.errors = new ArrayList<>();
     }
 
     // Pattern Singleton
@@ -39,7 +40,19 @@ public class GestionnaireErreur extends BaseErrorListener {
         if (throwException) {
             throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
         }
-        errors.add(new SyntaxError(line, charPositionInLine, msg));
+        errors.add(new ChaosError(line, charPositionInLine, msg, ChaosError.typeError.SYNTAX_ERROR));
+    }
+
+    public void addSemanticError(Ast ast, String msg) {
+        errors.add(new ChaosError(ast.getNumLigne(), ast.getNumColonne(), msg, ChaosError.typeError.SEMANTIC_ERROR));
+    }
+
+    public void afficherErreurs() {
+        StringBuilder sb = new StringBuilder();
+        for (ChaosError error : errors) {
+            sb.append(error.getErrorMessage()).append("\n");
+        }
+        System.out.println(sb);
     }
 
     public static int getNbErreur() {
