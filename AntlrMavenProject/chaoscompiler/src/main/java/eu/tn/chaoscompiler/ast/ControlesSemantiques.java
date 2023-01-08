@@ -115,14 +115,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type conditionType=ifThenElseExpr.condExpr.accept(this);
         //Vérifier si le type de condition est entier
         if(!conditionType.equals(Type.INT_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"l'expression de la condition dans If est de type."+conditionType.getId()+" Or, elle doit avoir un type \u001B[31m entier");
+            GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"l'expression de la condition dans If est de type "+conditionType.getId()+". Or, elle doit avoir un type \u001B[31m entier");
         }
         Type thenType=ifThenElseExpr.thenExpr.accept(this);
         if(ifThenElseExpr.elseExpr!=null){
             Type elseType=ifThenElseExpr.elseExpr.accept(this);
             //Vérifier si thenExpr et ElseExpr ont le même type
             if(!(thenType.equals(elseType))){
-                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"les expressions then et else renvoient respectivement des types " + thenType.getId()+" "+ elseType.getId()+ ".Or, elles doivent avoir le même type");
+                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"les expressions then et else renvoient respectivement des types " + thenType.getId()+" "+ elseType.getId()+ ". Or, elles doivent avoir le même type");
             }
             tdsController.up();
             return thenType;
@@ -139,7 +139,20 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(While whileExpr) {
-        return null;
+        tdsController.down();
+        Type whilecond = whileExpr.condExpr.accept(this);
+        //Vérifier que la condition est de type entier
+        if(!whilecond.equals(Type.INT_TYPE)){
+            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,"l'expression de la condition dans While est de type "+whilecond.getId()+". Or, elle doit avoir un type \u001B[31m entier");
+        }
+        //vérifier que l'expression à l'intérieur de block while est de type void
+        Type typedoexpr=whileExpr.doExpr.accept(this);
+        if(!typedoexpr.equals(Type.VOID_TYPE)){
+            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,"l'expression à l'intérieru de while est de type "+typedoexpr.getId()+". Or, elle doit avoir un type \u001B[31m void");
+        }
+        tdsController.up();
+        //While renvoie un type void
+        return typedoexpr;
     }
 
     @Override
