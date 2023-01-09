@@ -26,12 +26,11 @@ import java.util.Objects;
 
 @NoArgsConstructor
 public class ControlesSemantiques implements AstVisitor<Type> {
-    //Couleurs pour l'affichage
+    // Couleurs pour l'affichage
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
 
     private TDScontroller tdsController;
-
 
     public void checkIfTypeExist(String type, Ast node) {
         if (!tdsController.existsType(type)) {
@@ -40,7 +39,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     }
 
     // --------------------------------------------
-    // |             VISITEURS                    |
+    // | VISITEURS |
     // --------------------------------------------
 
     @Override
@@ -59,16 +58,19 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         letExpr.decList.accept(this);
         Type typeSequence = letExpr.exprSeq.accept(this);
         tdsController.up();
-        // "letExp: If the body is empty, the type is void, otherwise, the type is that of the last body expression"
+        // "letExp: If the body is empty, the type is void, otherwise, the type is that
+        // of the last body expression"
         return typeSequence;
     }
 
     @Override
     public Type visit(Sequence node) {
         tdsController.down();
-        // Applique la fonction visit sur chaque élément de la séquence et retourne le type de la dernière expression
+        // Applique la fonction visit sur chaque élément de la séquence et retourne le
+        // type de la dernière expression
         // Si la séquence est vide, retourne le type void
-        Type typeSeq =  node.instructions.stream().map(instr -> instr.accept(this)).reduce((a, b) -> b).orElse(Type.VOID_TYPE);
+        Type typeSeq = node.instructions.stream().map(instr -> instr.accept(this)).reduce((a, b) -> b)
+                .orElse(Type.VOID_TYPE);
         tdsController.up();
         return typeSeq;
     }
@@ -80,12 +82,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(VariableDeclaration node) {
-        Type typeValue = node.value.accept(this);;
-        if(node.typeId != null){
+        Type typeValue = node.value.accept(this);
+        ;
+        if (node.typeId != null) {
             checkIfTypeExist(node.typeId.identifier, node);
             if (!typeValue.getId().equals(node.typeId.identifier)) {
                 GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("Une valeur de type %s ne peut pas être affectée à une variable de type %s", typeValue, node.typeId.identifier));
+                        String.format("Une valeur de type %s ne peut pas être affectée à une variable de type %s",
+                                typeValue, node.typeId.identifier));
             }
         }
         tdsController.add(new Value(typeValue, node.objectId.identifier));
@@ -112,58 +116,63 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(For forExpr) {
         tdsController.down();
-        //Vérifier l'expression de  départ est de type entier
-        Type type_start_for=forExpr.startExpr.accept(this);
-        if(!type_start_for.equals(Type.INT_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(forExpr.startExpr,"le départ de l'indice de  la boucle for est de type "+type_start_for.getId()+". Or, il doit avoir un type "+ANSI_RED+ " entier"+ANSI_RESET);
+        // Vérifier l'expression de départ est de type entier
+        Type type_start_for = forExpr.startExpr.accept(this);
+        if (!type_start_for.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(forExpr.startExpr,
+                    "le départ de l'indice de  la boucle for est de type " + type_start_for.getId()
+                            + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
-        //Vérifier que l'expression de la fin doit être entière
-        Type type_end_for=forExpr.endExpr.accept(this);
-        if(!type_end_for.equals(Type.INT_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(forExpr.endExpr,"la fin de la boucle for est de type "+type_end_for.getId()+". Or, il doit avoir un type " +ANSI_RED+ " entier"+ANSI_RESET);
+        // Vérifier que l'expression de la fin doit être entière
+        Type type_end_for = forExpr.endExpr.accept(this);
+        if (!type_end_for.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(forExpr.endExpr, "la fin de la boucle for est de type "
+                    + type_end_for.getId() + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
-        //Vérifier que le contenu de la boucle est de type void
-        Type typedoexpr=forExpr.doExpr.accept(this);
-        if(!typedoexpr.equals(Type.VOID_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,"l'expression à l'intérieur de for est de type "+typedoexpr.getId()+". Or, elle doit avoir un type "+ANSI_RED+" void"+ANSI_RESET);
+        // Vérifier que le contenu de la boucle est de type void
+        Type typedoexpr = forExpr.doExpr.accept(this);
+        if (!typedoexpr.equals(Type.VOID_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,
+                    "l'expression à l'intérieur de for est de type " + typedoexpr.getId()
+                            + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
         }
 
-        //Vérifier que l'indice de la boucle n'est pas assigné
-        Ast id=forExpr.id;
-        //TO DO
-
-
-
-
+        // Vérifier que l'indice de la boucle n'est pas assigné
+        Ast id = forExpr.id;
+        // TO DO
 
         tdsController.up();
         return typedoexpr;
-
 
     }
 
     @Override
     public Type visit(IfThenElse ifThenElseExpr) {
         tdsController.down();
-        Type conditionType=ifThenElseExpr.condExpr.accept(this);
-        //Vérifier si le type de condition est entier
-        if(!conditionType.equals(Type.INT_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"l'expression de la condition dans If est de type "+conditionType.getId()+". Or, elle doit avoir un type "+ANSI_RED+" entier"+ANSI_RESET);
+        Type conditionType = ifThenElseExpr.condExpr.accept(this);
+        // Vérifier si le type de condition est entier
+        if (!conditionType.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
+                    "l'expression de la condition dans If est de type " + conditionType.getId()
+                            + ". Or, elle doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
-        Type thenType=ifThenElseExpr.thenExpr.accept(this);
-        if(ifThenElseExpr.elseExpr!=null){
-            Type elseType=ifThenElseExpr.elseExpr.accept(this);
-            //Vérifier si thenExpr et ElseExpr ont le même type
-            if(!(thenType.equals(elseType))){
-                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"les expressions then et else renvoient respectivement des types " + thenType.getId()+" "+ elseType.getId()+ ". Or, elles doivent avoir le même type");
+        Type thenType = ifThenElseExpr.thenExpr.accept(this);
+        if (ifThenElseExpr.elseExpr != null) {
+            Type elseType = ifThenElseExpr.elseExpr.accept(this);
+            // Vérifier si thenExpr et ElseExpr ont le même type
+            if (!(thenType.equals(elseType))) {
+                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
+                        "les expressions then et else renvoient respectivement des types " + thenType.getId() + " "
+                                + elseType.getId() + ". Or, elles doivent avoir le même type");
             }
             tdsController.up();
             return thenType;
-        }
-        else{
-            //Vérifier si le type de l'expression
-            if(!thenType.equals(Type.VOID_TYPE)){
-                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,"l'expression then renvoie un type"+thenType.getId() + " Or, elle doit avoir un type "+ANSI_RED+" void"+ANSI_RESET);
+        } else {
+            // Vérifier si le type de l'expression
+            if (!thenType.equals(Type.VOID_TYPE)) {
+                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
+                        "l'expression then renvoie un type" + thenType.getId() + " Or, elle doit avoir un type "
+                                + ANSI_RED + " void" + ANSI_RESET);
             }
             tdsController.up();
             return Type.VOID_TYPE;
@@ -174,17 +183,21 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(While whileExpr) {
         tdsController.down();
         Type whilecond = whileExpr.condExpr.accept(this);
-        //Vérifier que la condition est de type entier
-        if(!whilecond.equals(Type.INT_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,"l'expression de la condition dans While est de type "+whilecond.getId()+". Or, elle doit avoir un type "+ANSI_RED+" entier"+ANSI_RESET);
+        // Vérifier que la condition est de type entier
+        if (!whilecond.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,
+                    "l'expression de la condition dans While est de type " + whilecond.getId()
+                            + ". Or, elle doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
-        //vérifier que l'expression à l'intérieur de block while est de type void
-        Type typedoexpr=whileExpr.doExpr.accept(this);
-        if(!typedoexpr.equals(Type.VOID_TYPE)){
-            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,"l'expression à l'intérieur de while est de type "+typedoexpr.getId()+". Or, elle doit avoir un type "+ANSI_RED+" void"+ANSI_RESET);
+        // vérifier que l'expression à l'intérieur de block while est de type void
+        Type typedoexpr = whileExpr.doExpr.accept(this);
+        if (!typedoexpr.equals(Type.VOID_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,
+                    "l'expression à l'intérieur de while est de type " + typedoexpr.getId()
+                            + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
         }
         tdsController.up();
-        //While renvoie un type void
+        // While renvoie un type void
         return typedoexpr;
     }
 
@@ -203,7 +216,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Affect node) {
-        //l'affectation envoie un type void
+        // l'affectation envoie un type void
         return Type.VOID_TYPE;
     }
 
@@ -238,8 +251,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     }
 
     @Override
-    public Type visit(Negation node) {
-        return null;
+    w {
+        Type entree = node.negationTail.accept(this);
+        if (entree != Type.INT_TYPE) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Une négation s'applique uniquement sur un type int ; type actuel : %s.",
+                            entree));
+        }
+        return Type.INT_TYPE;
     }
 
     @Override
