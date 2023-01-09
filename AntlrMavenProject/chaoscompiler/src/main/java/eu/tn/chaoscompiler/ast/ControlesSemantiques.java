@@ -34,7 +34,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
 
     public void checkIfTypeExist(String type, Ast node) {
-        if (!tdsController.exists(type)) {
+        if (!tdsController.existsType(type)) {
             GestionnaireErreur.getInstance().addSemanticError(node, "Le type " + type + " n'est pas déclaré");
         }
     }

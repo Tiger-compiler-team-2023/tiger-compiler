@@ -4,8 +4,15 @@ package tds {
 
   class TDScontroller {
     #TDS tds
-    +Variable find(String id)
-    +Bool exists(String id)
+    +Variable getTypeOfId(String id)
+    +Variable getVariableOfId(String id)
+
+    +Variable findType(String id)
+    +Bool existsType(String id)
+
+    +Variable findVari(String id)
+    +Bool existsVari(String id)
+
     +void add(Variable var)
 
     +void down()
@@ -13,23 +20,35 @@ package tds {
   }
 
   interface TDS {
-    +Variable find(String id)
-    +Bool exists(String id)
+    +Variable findType(String id)
+    +Bool existsType(String id)
+
+    +Variable findVari(String id)
+    +Bool existsVari(String id)
+
     +void add(Variable var)
   }
 
   class TDSroot implements TDS {
     #HashMap<String, Variable> hm
-    +Variable find(String id)
-    +Bool exists(String id)
+    +Variable findType(String id)
+    +Bool existsType(String id)
+
+    +Variable findVari(String id)
+    +Bool existsVari(String id)
+    
     +void add(Variable var)
   }
 
-  class TDSlocal implements TDS {
+  class TDSlocal extends TDSroot {
     #HashMap<String, Variable> hm
     #TDS father
-    +Variable find(String id)
-    +Bool exists(String id)
+    +Variable findType(String id)
+    +Bool existsType(String id)
+
+    +Variable findVari(String id)
+    +Bool existsVari(String id)
+    
     +void add(Variable var)
   }
 }
@@ -76,6 +95,8 @@ package variable {
 }
 
 package java.util #ff9999 {
+  class "HashMap<String, Variable>"
+  note left: On utilise deux HashMaps : une pour les types\net l'autre pour les variables.
   class "HashMap<String, Variable>" {
     ...
     +put(String key, Variable value)
@@ -85,8 +106,8 @@ package java.util #ff9999 {
 
 TDScontroller *--"1" TDS
 TDSlocal *--"1" TDS
-TDSlocal *--"1" "HashMap<String, Variable>"
-TDSroot *--"1" "HashMap<String, Variable>"
+TDSlocal *--"2" "HashMap<String, Variable>"
+TDSroot *--"2" "HashMap<String, Variable>"
 "HashMap<String, Variable>" *--"0..*" Variable
 Value *--"1" Type
 RecordType *--"0..*" Value

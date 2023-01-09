@@ -3,9 +3,11 @@ package eu.tn.chaoscompiler.tdstool.tds;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
 
 public interface TDS {
-    Variable find(String id);
+    Variable findType(String id);
+    Boolean existsType(String id);
 
-    Boolean exists(String id);
+    Variable findVari(String id);
+    Boolean existsVari(String id);
 
     void add(Variable var);
 

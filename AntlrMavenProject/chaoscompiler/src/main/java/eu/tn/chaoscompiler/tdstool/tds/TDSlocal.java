@@ -4,12 +4,11 @@ import java.util.HashMap;
 
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
 
-public class TDSlocal implements TDS {
-    protected HashMap<String, Variable> hm;
+public class TDSlocal extends TDSroot {
     protected TDS father;
 
     public TDSlocal(TDS father) {
-        this.hm = new HashMap<String, Variable>();
+        super();
         this.father = father;
     }
 
@@ -17,20 +16,8 @@ public class TDSlocal implements TDS {
         return this.father;
     }
 
-    public Variable find(String id) {
-        return this.hm.get(id);
-    }
-
-    public Boolean exists(String id) {
-        return this.hm.containsKey(id);
-    }
-
-    public void add(Variable var) {
-        this.hm.put(var.getId(), var);
-    }
-
     @Override
     public String toString() {
-        return "\n{[TDSlocal]" + this.hm.toString() + " father:" + this.father.toString() + "\n}";
+        return "\n{[TDSlocal]" +"Types:" + this.hmType.toString() + "Variables:" + this.hmVari.toString() + "father:" + this.father.toString() + "\n}";
     }
 }
