@@ -1,0 +1,1 @@
+let function a(b:int, c:string):int = (print(c); b+4) in a("coucou", "coucou") end

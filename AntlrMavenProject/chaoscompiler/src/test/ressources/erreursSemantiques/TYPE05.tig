@@ -1,0 +1,1 @@
+let var a := "coucou" in -a end

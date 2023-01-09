@@ -1,0 +1,1 @@
+let type rec = {int i, string s} var r := rec {s:="coucou", i:=5} in end

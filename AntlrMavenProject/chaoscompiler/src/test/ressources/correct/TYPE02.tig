@@ -1,0 +1,1 @@
+let type tbl = array of int var vec := tbl [5] of 0 var b := vec[3] in end

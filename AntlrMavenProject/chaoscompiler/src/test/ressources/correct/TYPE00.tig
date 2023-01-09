@@ -1,0 +1,1 @@
+let function a() = print("coucou") in a() end

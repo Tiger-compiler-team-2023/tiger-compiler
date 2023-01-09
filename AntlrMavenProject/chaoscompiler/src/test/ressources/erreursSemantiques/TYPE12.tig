@@ -1,0 +1,1 @@
+let var r := int {i:=5, s:="coucou"} in end
