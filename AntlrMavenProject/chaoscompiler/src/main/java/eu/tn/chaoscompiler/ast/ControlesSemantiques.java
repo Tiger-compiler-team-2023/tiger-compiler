@@ -19,6 +19,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.ArrayType;
+import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import lombok.NoArgsConstructor;
@@ -78,7 +79,27 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(FunctionDeclaration node) {
-        return null;
+        Type retour ;
+        if (node.returnType != null) {
+            retour = new Type(node.returnType.identifier) ;
+        }
+        else {
+            retour = Type.VOID_TYPE ;
+        }
+
+        Type content = node.content.accept(this) ;
+
+        // verifier type de retour existe
+        checkIfTypeExist(retour.getId(), node);
+
+        // verifier type de retour coherent avec contenu de la fonction
+        if (!retour.getId().equals(content.getId())) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type de retour %s de la fonction %s" +
+                    "est différent du type %s de la valeur retournée", retour, node.objectId.identifier, content));
+        }
+
+        // une declaration n'a pas de type
+        return Type.VOID_TYPE;
     }
 
     @Override
@@ -236,12 +257,28 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Division node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible de diviser des types %s et %s", type1.getId(), type2.getId()));
+        }
+        // "+, -, *, /: The operands must be of type int and the result type is int"
+        return Type.INT_TYPE;
     }
 
     @Override
     public Type visit(Equals node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(type2)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible de comparer les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
@@ -256,7 +293,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Multiplication node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible de multiplier des types %s et %s", type1.getId(), type2.getId()));
+        }
+        // "+, -, *, /: The operands must be of type int and the result type is int"
+        return Type.INT_TYPE;
     }
 
     @Override
@@ -272,7 +317,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(NotEquals node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(type2)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible de comparer les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
@@ -282,7 +335,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Soustraction node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible de soustraire des types %s et %s", type1.getId(), type2.getId()));
+        }
+        // "+, -, *, /: The operands must be of type int and the result type is int"
+        return Type.INT_TYPE;
     }
 
     @Override
@@ -297,7 +358,26 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ArrayAccess node) {
-        return null;
+        // verifier que l'exp designe bien un tableau
+        Type tableau = node.exp.accept(this) ;
+        Type tabElem ;
+        if (! (tableau instanceof ArrayType)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("L'expression ne désigne pas un tableau" +
+                    "mais est de type %s", tableau.getId()));
+            tabElem = Type.VOID_TYPE ;
+        }
+        else {
+            tabElem = ((ArrayType) tableau).getType() ;
+        }
+
+        // verfier que l'index est un entier
+        Type index = node.index.accept(this) ;
+        if (!index.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("L'index d'accès au tableau n'est pas de type int mais de type %s", index.getId()));
+        }
+
+        // Retourner le type des elem du tableau
+        return tabElem;
     }
 
     @Override
@@ -322,7 +402,42 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(FunctionCall node) {
-        return null;
+        // verifier que l'id est l'id d'une fonction qui existe et recuperer son type de retour
+        Type func = node.id.accept(this) ;
+        Type retour ;
+        checkIfTypeExist(func.getId(), node);
+        if (! (func instanceof FunctionType)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("La variable %s n'est pas une" +
+                    "fonction", ((Id) node.id).identifier));
+            retour = Type.VOID_TYPE ;
+        }
+        else if (!tdsController.existsType(func.getId())) {
+            retour = Type.VOID_TYPE ;
+        }
+        else {
+            retour = ((FunctionType) func).outType ;
+        }
+
+        // verifier le nombre d'arguments
+        int nbArgsCall = ((ParameterList) node.argList).parameters.size() ;
+        int nbArgsExpected = ((FunctionType) func).inTypes.size() ;
+        if (nbArgsCall != nbArgsExpected) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Il y a %d arguments " +
+                    "alors que %d arguments sont attendus", nbArgsCall, nbArgsExpected));
+        }
+
+        // verifier le type des arguments
+        for (int i = 0 ; (i < nbArgsCall) && (i < nbArgsExpected) ; i++) {
+            Type argType = ((ParameterList) node.argList).parameters.get(i).accept(this) ;
+            Type argTypeExpected = ((FunctionType) func).inTypes.get(i) ;
+            if (!argType.equals(argTypeExpected)) {
+                GestionnaireErreur.getInstance().addSemanticError(node, String.format("L'argument %d " +
+                        "est de type %s alors qu'il est attendu de type %s", i, argType.getId(), argTypeExpected.getId()));
+            }
+        }
+
+        // renvoyer le type de retour de la fonction
+        return retour;
     }
 
     @Override
