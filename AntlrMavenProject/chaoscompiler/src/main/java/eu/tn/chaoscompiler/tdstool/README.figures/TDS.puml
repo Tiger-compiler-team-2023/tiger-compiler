@@ -3,7 +3,6 @@
 package tds {
 
   class TDScontroller {
-    #TDS tds
     +Variable getTypeOfId(String id)
     +Variable getVariableOfId(String id)
 
@@ -30,7 +29,6 @@ package tds {
   }
 
   class TDSroot implements TDS {
-    #HashMap<String, Variable> hm
     +Variable findType(String id)
     +Bool existsType(String id)
 
@@ -41,15 +39,7 @@ package tds {
   }
 
   class TDSlocal extends TDSroot {
-    #HashMap<String, Variable> hm
-    #TDS father
-    +Variable findType(String id)
-    +Bool existsType(String id)
-
-    +Variable findVari(String id)
-    +Bool existsVari(String id)
-    
-    +void add(Variable var)
+    +TDS getFather()
   }
 }
 
@@ -106,7 +96,6 @@ package java.util #ff9999 {
 
 TDScontroller *--"1" TDS
 TDSlocal *--"1" TDS
-TDSlocal *--"2" "HashMap<String, Variable>"
 TDSroot *--"2" "HashMap<String, Variable>"
 "HashMap<String, Variable>" *--"0..*" Variable
 Value *--"1" Type
