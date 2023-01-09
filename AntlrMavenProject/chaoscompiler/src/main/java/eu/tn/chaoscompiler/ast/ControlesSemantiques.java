@@ -18,6 +18,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
+import eu.tn.chaoscompiler.tdstool.variable.ArrayType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import lombok.NoArgsConstructor;
@@ -100,7 +101,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ArrayTypeDeclaration node) {
-        return null;
+        Type elementType = tdsController.getTypeOfId(node.baseTypeId.identifier);
+        if (elementType == null) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Le type %s n'existe pas.",
+                            node.baseTypeId.identifier));
+        } else {
+            tdsController.add(new ArrayType(node.baseTypeId.identifier, elementType));
+        }
+        return Type.VOID_TYPE;
     }
 
     @Override
