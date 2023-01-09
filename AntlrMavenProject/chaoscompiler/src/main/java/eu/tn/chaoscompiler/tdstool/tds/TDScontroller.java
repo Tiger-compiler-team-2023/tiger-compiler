@@ -8,9 +8,17 @@ import eu.tn.chaoscompiler.tdstool.variable.Variable;
  */
 public class TDScontroller {
     protected TDS tds;
+    private static TDScontroller tdsController;
 
     public TDScontroller() {
         this.tds = new TDSroot();
+    }
+
+    public static TDScontroller getInstance() {
+        if (tdsController == null) {
+            tdsController = new TDScontroller();
+        }
+        return tdsController;
     }
 
     public Variable find(String id) {
