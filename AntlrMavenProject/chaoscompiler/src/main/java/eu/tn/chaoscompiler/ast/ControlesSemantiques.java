@@ -251,7 +251,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     }
 
     @Override
-    w {
+    public Type visit(Negation node) {
         Type entree = node.negationTail.accept(this);
         if (entree != Type.INT_TYPE) {
             GestionnaireErreur.getInstance().addSemanticError(node,
