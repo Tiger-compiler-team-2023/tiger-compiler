@@ -2,12 +2,8 @@
 
 package tds {
 
-  class TDScontroller
-  note left: Pattern Singleton
   class TDScontroller {
     #TDS tds
-    +TDScontroller getInstance()
-
     +Variable find(String id)
     +Bool exists(String id)
     +void add(Variable var)
