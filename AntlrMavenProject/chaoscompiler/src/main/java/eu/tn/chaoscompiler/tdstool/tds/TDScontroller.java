@@ -1,5 +1,7 @@
 package eu.tn.chaoscompiler.tdstool.tds;
 
+import eu.tn.chaoscompiler.tdstool.variable.Type;
+import eu.tn.chaoscompiler.tdstool.variable.Value;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
 
 /**
@@ -14,8 +16,8 @@ public class TDScontroller {
         this.tds = new TDSroot();
     }
 
-    public Variable getTypeOfId(String id) {
-        Variable res = findType(id);
+    public Type getTypeOfId(String id) {
+        Type res = findType(id);
         if (res == null) {
             // ERREUR
             throw new IllegalStateException("Le type " + id + " n'existe pas.");
@@ -24,7 +26,7 @@ public class TDScontroller {
         }
     }
 
-    public Variable findType(String id) {
+    public Type findType(String id) {
         if (this.tds instanceof TDSlocal) {
             if (this.tds.existsType(id)) {
                 return this.tds.findType(id);
@@ -44,8 +46,8 @@ public class TDScontroller {
         }
     }
 
-    public Variable getVariableOfId(String id) {
-        Variable res = findVari(id);
+    public Value getVariableOfId(String id) {
+        Value res = findVari(id);
         if (res == null) {
             // ERREUR
             throw new IllegalStateException("La variable " + id + " n'existe pas.");
@@ -54,7 +56,7 @@ public class TDScontroller {
         }
     }
 
-    public Variable findVari(String id) {
+    public Value findVari(String id) {
         if (this.tds instanceof TDSlocal) {
             if (this.tds.existsVari(id)) {
                 return this.tds.findVari(id);

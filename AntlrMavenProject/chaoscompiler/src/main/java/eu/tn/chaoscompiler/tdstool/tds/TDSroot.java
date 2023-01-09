@@ -2,19 +2,20 @@ package eu.tn.chaoscompiler.tdstool.tds;
 
 import java.util.HashMap;
 
+import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
 
 public class TDSroot implements TDS {
-    protected HashMap<String, Variable> hmType;
-    protected HashMap<String, Variable> hmVari;
+    protected HashMap<String, Type> hmType;
+    protected HashMap<String, Value> hmVari;
 
     public TDSroot() {
-        this.hmType = new HashMap<String, Variable>();
-        this.hmVari = new HashMap<String, Variable>();
+        this.hmType = new HashMap<String, Type>();
+        this.hmVari = new HashMap<String, Value>();
     }
 
-    public Variable findType(String id) {
+    public Type findType(String id) {
         return this.hmType.get(id);
     }
 
@@ -22,7 +23,7 @@ public class TDSroot implements TDS {
         return this.hmType.containsKey(id);
     }
 
-    public Variable findVari(String id) {
+    public Value findVari(String id) {
         return this.hmVari.get(id);
     }
 
@@ -32,9 +33,9 @@ public class TDSroot implements TDS {
 
     public void add(Variable var) {
         if (var instanceof Value) {
-            this.hmVari.put(var.getId(), var);
+            this.hmVari.put(var.getId(), (Value) var);
         } else {
-            this.hmType.put(var.getId(), var);
+            this.hmType.put(var.getId(), (Type) var);
         }
     }
 
