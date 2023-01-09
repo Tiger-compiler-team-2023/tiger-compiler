@@ -166,14 +166,31 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     "l'expression à l'intérieur de for est de type " + typedoexpr.getId()
                             + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
         }
-
         // Vérifier que l'indice de la boucle n'est pas assigné
-        Ast id = forExpr.id;
-        // TO DO
 
+        Id id =(Id) forExpr.id;
+        // Récupérer le nom de l'indice de la boucle
+        String id_str=id.identifier;
+        Sequence sequence=(Sequence) forExpr.doExpr;
+        for(Ast instruction:sequence.instructions){
+            //Vérifier s'il y a une instruction d'affectation
+            if(instruction instanceof Affect){
+                //Vérifier si la partie gauche de l'instruction est un Id
+                if(((Affect) instruction).leftValue instanceof Id){
+                    String id_left_value=((Id) ((Affect) instruction).leftValue).identifier;
+                    //Vérifier si la valeur d'id est égale à l'indice de la boucle
+                    if(id_left_value.equals(id_str)){
+                        GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,
+                                "l'indice "+ANSI_RED+" "+id_left_value+ ANSI_RESET+" de For ne doit pas être assigné à l'intérieur de la boucle");
+                        //Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est assigné plusieurs fois dans la séquence
+                        tdsController.up();
+                        return typedoexpr;
+                    }
+                }
+            }
+        }
         tdsController.up();
         return typedoexpr;
-
     }
 
     @Override
