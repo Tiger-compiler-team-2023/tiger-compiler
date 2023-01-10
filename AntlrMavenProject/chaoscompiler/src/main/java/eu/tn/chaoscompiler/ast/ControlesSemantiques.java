@@ -1,5 +1,6 @@
 package eu.tn.chaoscompiler.ast;
 
+import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
@@ -39,6 +40,55 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             GestionnaireErreur.getInstance().addSemanticError(node, "Le type " + type + " n'est pas déclaré");
         }
     }
+    //Fonctions auxiliaires pour vérfier si le break existe en dehors des boucles
+    public void checkIfBreakExistsAsId(Id id){
+        if(id.identifier.equals("break")){
+            GestionnaireErreur.getInstance().addSemanticError(id,"Interdit d'utiliser break à l'extérieur des boucles For ou While");
+        }
+    }
+    public void checkIfBreakExistsInBinaryOp(BinaryOperator bop){
+        if(bop.leftValue instanceof Id){
+            checkIfBreakExistsAsId((Id)bop.leftValue);
+        }
+        else if(bop.rightValue instanceof Id){
+            checkIfBreakExistsAsId((Id)bop.rightValue);
+        }
+    }
+    public void checkIfBreakExistsInDecList(DeclarationList decList){
+        //Vérifier si l'instruction de type Id
+        for(Ast expression:decList.list){
+            if(expression instanceof Id){
+                if(((Id) expression).identifier.equals("break")){
+                    GestionnaireErreur.getInstance().addSemanticError(decList,"Interdit d'utiliser break à l'extérieur des boucles For ou While");
+                    break;
+                }
+            }
+            else if(expression instanceof BinaryOperator){
+                checkIfBreakExistsInBinaryOp((BinaryOperator) expression);
+                break;
+            }
+        }
+
+
+    }
+
+    public void checkIfBreakExistsInExprSeq(Sequence sequence){
+        //Vérifier si l'instruction de type Id
+        for(Ast expression:sequence.instructions){
+            if(expression instanceof Id){
+                if(((Id) expression).identifier.equals("break")){
+                    GestionnaireErreur.getInstance().addSemanticError(sequence,"Interdit d'utiliser break à l'extérieur des boucles For ou While");
+                    break;
+                }
+            }
+            else if(expression instanceof BinaryOperator){
+                checkIfBreakExistsInBinaryOp((BinaryOperator) expression);
+                break;
+            }
+        }
+
+
+    }
 
     // --------------------------------------------
     // | VISITEURS |
@@ -59,6 +109,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         tdsController.down();
         letExpr.decList.accept(this);
         Type typeSequence = letExpr.exprSeq.accept(this);
+        //Vérifier le cas d'utilisation de break
+        if(letExpr.exprSeq!=null){
+            checkIfBreakExistsInExprSeq((Sequence)letExpr.exprSeq);
+        }
+        //C'est pas utile de vérifier si break existe dans decList puisque elle consititue une erreur syntaxique
         tdsController.up();
         // "letExp: If the body is empty, the type is void, otherwise, the type is that
         // of the last body expression"
