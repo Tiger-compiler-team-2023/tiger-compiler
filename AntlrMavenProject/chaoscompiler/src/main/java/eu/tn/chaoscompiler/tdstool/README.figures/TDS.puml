@@ -62,6 +62,7 @@ package variable {
 
   class RecordType extends Type {
     +List<Value> attributs
+    +void addAttribut()
   }
 
   class ArrayType extends Type {
@@ -71,6 +72,7 @@ package variable {
   class FunctionType extends Type {
     +List<Type> inTypes
     +Type outType
+    +void addIn()
   }
 
   class Value implements Variable {

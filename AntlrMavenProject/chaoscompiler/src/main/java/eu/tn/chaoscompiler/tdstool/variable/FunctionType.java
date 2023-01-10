@@ -12,6 +12,16 @@ public class FunctionType extends Type {
         this.outType = outType;
     }
 
+    public FunctionType(String id, Type outType) {
+        super(id);
+        this.inTypes = new ArrayList<Type>();
+        this.outType = outType;
+    }
+
+    public void addIn(Type in) {
+        this.inTypes.add(in);
+    }
+
     @Override
     public String toString() {
         return "\n\u001B[35m{[FunctionType]\u001B[0m" + super.toString() + ", inTypes: " + this.inTypes.toString()

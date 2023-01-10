@@ -10,6 +10,15 @@ public class RecordType extends Type {
         this.attributs = attributs;
     }
 
+    public RecordType(String id) {
+        super(id);
+        this.attributs = new ArrayList<Value>();
+    }
+
+    public void addAttribut(Value val) {
+        this.attributs.add(val);
+    }
+
     @Override
     public String toString() {
         return "\n\u001B[35m{[ReccordType]\u001B[0m" + super.toString() + ", attributs: " + this.attributs.toString()
