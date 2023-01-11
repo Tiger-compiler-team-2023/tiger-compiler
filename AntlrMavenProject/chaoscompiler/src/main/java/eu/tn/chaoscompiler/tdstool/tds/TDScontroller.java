@@ -46,6 +46,10 @@ public class TDScontroller {
         }
     }
 
+    public Boolean existsLocalType(String id) {
+        return this.tds.existsType(id);
+    }
+
     public Value getVariableOfId(String id) {
         Value res = findVari(id);
         if (res == null) {
@@ -74,6 +78,10 @@ public class TDScontroller {
         } else {
             return this.tds.existsVari(id);
         }
+    }
+
+    public Boolean existsLocalVari(String id) {
+        return this.tds.existsVari(id);
     }
 
     public void add(Variable var) {

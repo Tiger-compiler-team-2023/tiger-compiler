@@ -8,9 +8,11 @@ package tds {
 
     +Variable findType(String id)
     +Bool existsType(String id)
+    +Bool existsLocalType(String id)
 
     +Value findVari(String id)
     +Bool existsVari(String id)
+    +Bool existsLocalVari(String id)
 
     +void add(Variable var)
 
