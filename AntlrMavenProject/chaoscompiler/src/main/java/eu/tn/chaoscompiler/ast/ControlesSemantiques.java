@@ -241,14 +241,20 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(NoRecordTypeDeclaration node) {
-        if (!tdsController.existsLocalType(node.objectId.identifier)) {
+
+        // verifier que le type n'existe pas deja
+        if (tdsController.existsLocalType(node.objectId.identifier)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
+            // verifier que le type de base existe
+            checkIfTypeExist(node.baseTypeId.identifier, node)
+        }
+        else {
+            // verifier que le type de base existe
             if (checkIfTypeExist(node.baseTypeId.identifier, node)) {
                 tdsController.add(new TypeRename(node.objectId.identifier, tdsController.getTypeOfId(node.baseTypeId.identifier)));
             }
         }
-        else {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
-        }
+
         return Type.VOID_TYPE;
     }
 
