@@ -69,6 +69,10 @@ package variable {
     +Type elementsType
   }
 
+  class TypeRename extends Type {
+    +Type origType
+  }
+
   class FunctionType extends Type {
     +List<Type> inTypes
     +Type outType
@@ -108,6 +112,7 @@ TDSroot *--"1" "HashMap<String, Value>"
 Value *--"1" Type
 RecordType *--"0..*" Value
 ArrayType *--"1" Type
+TypeRename *--"1" Type
 FunctionType *--"0..*" Type
 FunctionType *--"1" Type
 @enduml
