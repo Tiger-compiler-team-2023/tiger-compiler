@@ -135,7 +135,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(FunctionDeclaration node) {
+
         boolean correct = true ;
+
+        if (tdsController.existsLocalVari(node.objectId.identifier)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("La variable %s a déjà été définie", node.objectId.identifier));
+            correct = false ;
+        }
 
         tdsController.down();
 
@@ -183,26 +189,33 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             tdsController.add(new Value(fType, node.objectId.identifier)) ;
         }
 
+
         return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(VariableDeclaration node) {
-        Type typeValue = node.value.accept(this);
 
-        if (node.typeId != null) {
-            Type declaredType = tdsController.getTypeOfId(node.typeId.identifier);
-            checkIfTypeExist(declaredType.getId(), node);
-            if (!typeValue.getId().equals(node.typeId.identifier)) {
-                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                        "Une valeur de type %s ne peut pas être affectée à une variable de type %s",
-                        typeValue, node.typeId.identifier));
+        if (tdsController.existsLocalVari(node.objectId.identifier)) {
+            Type typeValue = node.value.accept(this);
+
+            if (node.typeId != null) {
+                Type declaredType = tdsController.getTypeOfId(node.typeId.identifier);
+                checkIfTypeExist(declaredType.getId(), node);
+                if (!typeValue.getId().equals(node.typeId.identifier)) {
+                    GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                            "Une valeur de type %s ne peut pas être affectée à une variable de type %s",
+                            typeValue, node.typeId.identifier));
+                }
+                // Si le type est explicite on s'en sert pour créer la variable
+                tdsController.add(new Value(declaredType, node.objectId.identifier));
+            } else {
+                // Sinon on s'adapte au type implicite
+                tdsController.add(new Value(typeValue, node.objectId.identifier));
             }
-            // Si le type est explicite on s'en sert pour créer la variable
-            tdsController.add(new Value(declaredType, node.objectId.identifier));
-        } else {
-            // Sinon on s'adapte au type implicite
-            tdsController.add(new Value(typeValue, node.objectId.identifier));
+        }
+        else {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("La variable %s a déjà été définie", node.objectId.identifier));
         }
 
         return Type.VOID_TYPE;
@@ -210,13 +223,18 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ArrayTypeDeclaration node) {
-        if (node.baseTypeId == null) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    "Le type du tableau doit être défini");
-        } else if(checkIfTypeExist(node.baseTypeId.identifier, node)){
+        if (!tdsController.existsLocalType(node.objectId.identifier)) {
+            if (node.baseTypeId == null) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        "Le type du tableau doit être défini");
+            } else if (checkIfTypeExist(node.baseTypeId.identifier, node)) {
 
-            Type elementType = tdsController.getTypeOfId(node.baseTypeId.identifier);
-            tdsController.add(new ArrayType(node.baseTypeId.identifier, elementType));
+                Type elementType = tdsController.getTypeOfId(node.baseTypeId.identifier);
+                tdsController.add(new ArrayType(node.baseTypeId.identifier, elementType));
+            }
+        }
+        else {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
         }
         return Type.VOID_TYPE;
     }
@@ -227,6 +245,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             if (checkIfTypeExist(node.baseTypeId.identifier, node)) {
                 tdsController.add(new TypeRename(node.objectId.identifier, tdsController.getTypeOfId(node.baseTypeId.identifier)));
             }
+        }
+        else {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
         }
         return Type.VOID_TYPE;
     }
