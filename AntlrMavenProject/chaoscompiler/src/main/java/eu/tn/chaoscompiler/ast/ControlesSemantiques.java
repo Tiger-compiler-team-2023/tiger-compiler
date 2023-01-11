@@ -255,26 +255,27 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(RecordTypeDeclaration node) {
 
-        if (!tdsController.existsLocalType(node.objectId.identifier)) {
-            boolean correct = true;
+        boolean correct = true ;
 
-            RecordType rType = new RecordType(node.objectId.identifier);
+        // verifier que le type n'existe pas deja
+        if (tdsController.existsLocalType(node.objectId.identifier)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
+            correct = false;
+        }
 
-            // verifier types des attributs existe
-            for (FieldDeclaration fd : node.fields.list) {
-                if (checkIfTypeExist(fd.baseType.identifier, node)) {
-                    rType.addAttribut(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier));
-                } else {
-                    correct = false;
-                }
-            }
+        RecordType rType = new RecordType(node.objectId.identifier);
 
-            if (correct) {
-                tdsController.add(rType);
+        // verifier types des attributs existe
+        for (FieldDeclaration fd : node.fields.list) {
+            if (checkIfTypeExist(fd.baseType.identifier, node)) {
+                rType.addAttribut(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier));
+            } else {
+                correct = false;
             }
         }
-        else {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
+
+        if (correct) {
+            tdsController.add(rType);
         }
 
         return Type.VOID_TYPE;
