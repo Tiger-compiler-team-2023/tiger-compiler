@@ -19,10 +19,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
-import eu.tn.chaoscompiler.tdstool.variable.ArrayType;
-import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
-import eu.tn.chaoscompiler.tdstool.variable.Type;
-import eu.tn.chaoscompiler.tdstool.variable.Value;
+import eu.tn.chaoscompiler.tdstool.variable.*;
 import lombok.NoArgsConstructor;
 
 import java.util.Objects;
@@ -226,12 +223,40 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(NoRecordTypeDeclaration node) {
-        return null;
+        if (!tdsController.existsLocalType(node.objectId.identifier)) {
+            if (checkIfTypeExist(node.baseTypeId.identifier, node)) {
+                tdsController.add(new TypeRename(node.objectId.identifier, tdsController.getTypeOfId(node.baseTypeId.identifier)));
+            }
+        }
+        return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(RecordTypeDeclaration node) {
-        return null;
+
+        if (!tdsController.existsLocalType(node.objectId.identifier)) {
+            boolean correct = true;
+
+            RecordType rType = new RecordType(node.objectId.identifier);
+
+            // verifier types des attributs existe
+            for (FieldDeclaration fd : node.fields.list) {
+                if (checkIfTypeExist(fd.baseType.identifier, node)) {
+                    rType.addAttribut(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier));
+                } else {
+                    correct = false;
+                }
+            }
+
+            if (correct) {
+                tdsController.add(rType);
+            }
+        }
+        else {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
+        }
+
+        return Type.VOID_TYPE;
     }
 
     @Override
@@ -354,13 +379,42 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Affect node) {
+
+        // verifier membre de gauche conforme
+        if (node.leftValue instanceof Id leftId) {
+            if (!tdsController.existsVari(leftId.identifier)) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("La variable %s n'est pas définie", leftId.identifier));
+            }
+        }
+        else if (!((node.leftValue instanceof ArrayAccess) || (node.leftValue instanceof RecordAccess))) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Le membre de gauche ne correspond pas à une variable, impossible d'y affecter une valeur"));
+        }
+
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(type2)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible affecter une valeur de type %s à une variable de type %s", type2.getId(), type1.getId()));
+        }
+
         // l'affectation envoie un type void
         return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(And node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(type2)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'effectuer l'opération & sur les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
