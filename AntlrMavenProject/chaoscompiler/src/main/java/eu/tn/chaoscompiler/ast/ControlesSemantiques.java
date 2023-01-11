@@ -246,7 +246,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if (tdsController.existsLocalType(node.objectId.identifier)) {
             GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
             // verifier que le type de base existe
-            checkIfTypeExist(node.baseTypeId.identifier, node)
+            checkIfTypeExist(node.baseTypeId.identifier, node) ;
         }
         else {
             // verifier que le type de base existe
