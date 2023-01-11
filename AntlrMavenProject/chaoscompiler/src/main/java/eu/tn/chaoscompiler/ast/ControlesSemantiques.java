@@ -223,19 +223,23 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ArrayTypeDeclaration node) {
-        if (!tdsController.existsLocalType(node.objectId.identifier)) {
-            if (node.baseTypeId == null) {
+
+        boolean correct = true ;
+
+        // verifier que le type n'existe pas deja
+        if (tdsController.existsLocalType(node.objectId.identifier)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
+            correct = false ;
+        }
+
+        if (node.baseTypeId == null) {
                 GestionnaireErreur.getInstance().addSemanticError(node,
                         "Le type du tableau doit être défini");
-            } else if (checkIfTypeExist(node.baseTypeId.identifier, node)) {
-
+        } else if (checkIfTypeExist(node.baseTypeId.identifier, node) && correct) {
                 Type elementType = tdsController.getTypeOfId(node.baseTypeId.identifier);
                 tdsController.add(new ArrayType(node.baseTypeId.identifier, elementType));
-            }
         }
-        else {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Le type %s a déjà été défini", node.objectId.identifier));
-        }
+        
         return Type.VOID_TYPE;
     }
 
