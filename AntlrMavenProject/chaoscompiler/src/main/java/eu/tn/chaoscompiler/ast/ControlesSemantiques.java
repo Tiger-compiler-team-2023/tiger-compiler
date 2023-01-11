@@ -449,9 +449,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
 
-        if (!type1.equals(type2)) {
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
             GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer l'opération & sur les types %s et %s", type1.getId(), type2.getId()));
+                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
         }
         // le resultat est un booleen represente par un int
         return Type.INT_TYPE;
@@ -485,12 +485,28 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Inferior node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
     public Type visit(InferiorOrEquals node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
@@ -532,7 +548,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Or node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
@@ -550,12 +574,28 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Superior node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
     public Type visit(SuperiorOrEquals node) {
-        return null;
+        Type type1 = node.leftValue.accept(this);
+        Type type2 = node.rightValue.accept(this);
+
+        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
+        }
+        // le resultat est un booleen represente par un int
+        return Type.INT_TYPE;
     }
 
     @Override
