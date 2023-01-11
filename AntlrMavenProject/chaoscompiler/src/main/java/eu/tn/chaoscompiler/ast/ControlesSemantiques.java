@@ -138,23 +138,54 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(FunctionDeclaration node) {
+        boolean correct = true ;
+
+        tdsController.down();
+
         Type retour;
         if (node.returnType != null) {
             String returnStr = node.returnType.identifier;
-            checkIfTypeExist(returnStr, node);
-            retour = tdsController.getTypeOfId(returnStr);
+
+            correct = checkIfTypeExist(returnStr, node) ;
+
+            if (correct) {
+                retour = tdsController.getTypeOfId(returnStr);
+            }
+            else {
+                retour = Type.VOID_TYPE ;
+            }
+
         } else {
             retour = Type.VOID_TYPE;
         }
-
-        Type content = node.content.accept(this);
+        FunctionType fType = new FunctionType(node.objectId.identifier, retour) ;
 
         // verifier type de retour coherent avec contenu de la fonction
-        if (!retour.getId().equals(content.getId())) {
+        Type content = node.content.accept(this);
+        if (!retour.equals(content)) {
             GestionnaireErreur.getInstance().addSemanticError(node, String.format(
                     "Le type de retour %s de la fonction %s est incompatible avec le type %s de la valeur retournée",
-                    retour, node.objectId.identifier, content));
+                    retour, node.objectId.identifier, content.getId()));
+            correct = false ;
         }
+
+        // Verifier que les types des arguments existent
+        for (FieldDeclaration fd:node.fields.list) {
+            if (checkIfTypeExist(fd.baseType.identifier, node)) {
+                tdsController.add(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier)) ;
+                fType.addIn(tdsController.getTypeOfId(fd.baseType.identifier));
+            }
+            else {
+                correct = false ;
+            }
+        }
+
+        tdsController.up();
+
+        if (correct) {
+            tdsController.add(new Value(fType, node.objectId.identifier)) ;
+        }
+
         return Type.VOID_TYPE;
     }
 
