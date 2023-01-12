@@ -786,8 +786,48 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(RecordCreate node) {
-        // a faire
-        return null;
+
+        Type resType = Type.VOID_TYPE ;
+
+        //verifier que variable existe
+        if (tdsController.existsVari(((Id) node.idObject).identifier)) {
+
+            Type varType = tdsController.getVariableOfId(((Id) node.idObject).identifier).getType() ;
+            // verifier que type de la variable correspond à un record
+            if (varType instanceof RecordType rt) {
+
+                // verifier que les attributs existent
+                for (Ast fc:node.args) {
+
+                    Value v = rt.getAttribut(((Id) ((FieldCreate) fc).id).identifier) ;
+                    if (v != null) {
+                        // verifier que la valeur affectee est du bon type
+                        Type expType = ((FieldCreate) fc).expr.accept(this) ;
+                        if (!(expType.equals(v.getType()))) {
+                            GestionnaireErreur.getInstance().addSemanticError(node,
+                                    String.format("La valeur affectée à l'attribut %s doit être de type %s, pas de type %s",
+                                            v.getId(), v.getType().getId(), expType.getId()));
+                        }
+                    }
+                    else {
+                        GestionnaireErreur.getInstance().addSemanticError(node,
+                                String.format("Le type record %s n'a pas d'attribut %s",
+                                        rt.getId(), ((Id) ((FieldCreate) fc).id).identifier));
+                    }
+                }
+            }
+            else {
+                GestionnaireErreur.getInstance().addSemanticError((node,
+                        String.format("Le type %s ne correspond pas à un record", varType.getId()));
+            }
+
+        }
+        else {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("La variable %s n'est pas définie", ((Id) node.idObject).identifier));
+        }
+
+        return resType;
     }
 
     @Override
