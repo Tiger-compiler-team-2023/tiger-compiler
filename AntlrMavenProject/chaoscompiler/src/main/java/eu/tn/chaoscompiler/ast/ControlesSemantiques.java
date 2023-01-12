@@ -233,7 +233,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             if (!typeValue.equals(declaredType)) {
                 GestionnaireErreur.getInstance().addSemanticError(node, String.format(
                             "Une valeur de type %s ne peut pas être affectée à une variable de type %s",
-                            typeValue, node.typeId.identifier));
+                            typeValue.getId(), node.typeId.identifier));
                 correct = false ;
             }
             // Si le type est explicite on s'en sert pour créer la variable
