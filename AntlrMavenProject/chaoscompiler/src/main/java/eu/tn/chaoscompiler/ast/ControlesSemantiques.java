@@ -493,10 +493,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(Addition node) {
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'additionner des types %s et %s", type1.getId(), type2.getId()));
+        if(type1!=null && type2!=null){
+            if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Impossible d'additionner des types %s et %s", type1.getId(), type2.getId()));
+            }
         }
         // "+, -, *, /: The operands must be of type int and the result type is int"
         return Type.INT_TYPE;
