@@ -63,8 +63,8 @@ package variable {
   }
 
   class RecordType extends Type {
-    +List<Value> attributs
-    +void addAttribut()
+    +void addAttribut(Value v)
+    +Value getAttribut()
   }
 
   class ArrayType extends Type {
