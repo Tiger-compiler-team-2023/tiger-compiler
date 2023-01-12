@@ -192,6 +192,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             tdsController.add(new Value(fType, node.objectId.identifier)) ;
         }
         //vérifier si le break est utilisé dans la Function Declaration
+        //Vérifier si le nom de la fonction n'est pas celui d'un mot clé
+        if(node.objectId!=null){
+            if(node.objectId.identifier.equals("break")){
+                GestionnaireErreur.getInstance().addSemanticError(node.objectId,"Interdit d'utiliser le mot clé 'break' comme nom de déclaration d'une fonction");
+            }
+        }
+
         //Vérifier si break est dans le corps de la fonction
         if(node.content!=null){
             if(node.content instanceof Sequence){
