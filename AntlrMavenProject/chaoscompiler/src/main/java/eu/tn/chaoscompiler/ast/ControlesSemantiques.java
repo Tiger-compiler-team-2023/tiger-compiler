@@ -43,48 +43,74 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     /**
      * Fonctions auxiliaires pour vérfier si le break existe en dehors des boucles
      */
-    public void checkIfBreakExistsAsId(Id id) {
+    public boolean checkIfBreakExistsAsId(Id id) {
         if (id.identifier.equals("break")) {
             GestionnaireErreur.getInstance().addSemanticError(id, "Interdit d'utiliser break à l'extérieur des boucles For ou While");
+            return true;
         }
+        return false;
     }
 
-    public void checkIfBreakExistsInBinaryOp(BinaryOperator bop) {
+    public boolean checkIfBreakExistsInBinaryOp(BinaryOperator bop) {
         if (bop.leftValue instanceof Id) {
-            checkIfBreakExistsAsId((Id) bop.leftValue);
+            if( checkIfBreakExistsAsId((Id) bop.leftValue)){
+                return true;
+            }
         } else if (bop.rightValue instanceof Id) {
-            checkIfBreakExistsAsId((Id) bop.rightValue);
+            if (checkIfBreakExistsAsId((Id) bop.rightValue)){
+                return true;
+            }
         }
+        return false;
     }
 
-    public void checkIfBreakExistsInDecList(DeclarationList decList) {
+    public boolean checkIfBreakExistsInDecList(DeclarationList decList) {
         //Vérifier si l'instruction de type Id
         for (Ast expression : decList.list) {
             if (expression instanceof Id) {
                 if (((Id) expression).identifier.equals("break")) {
                     GestionnaireErreur.getInstance().addSemanticError(decList, "Interdit d'utiliser break à l'extérieur des boucles For ou While");
-                    break;
+                    return true;
                 }
             } else if (expression instanceof BinaryOperator) {
-                checkIfBreakExistsInBinaryOp((BinaryOperator) expression);
-                break;
+                if(checkIfBreakExistsInBinaryOp((BinaryOperator) expression)){
+                    return true;
+                }
             }
         }
+        return false;
     }
 
-    public void checkIfBreakExistsInExprSeq(Sequence sequence) {
+    public boolean checkIfBreakExistsInExprSeq(Sequence sequence) {
         //Vérifier si l'instruction de type Id
         for (Ast expression : sequence.instructions) {
             if (expression instanceof Id) {
                 if (((Id) expression).identifier.equals("break")) {
                     GestionnaireErreur.getInstance().addSemanticError(sequence, "Interdit d'utiliser break à l'extérieur des boucles For ou While");
-                    break;
+                    return  true;
                 }
             } else if (expression instanceof BinaryOperator) {
-                checkIfBreakExistsInBinaryOp((BinaryOperator) expression);
-                break;
+                if(checkIfBreakExistsInBinaryOp((BinaryOperator) expression)){
+                    return true;
+                }
             }
         }
+        return false;
+    }
+    public boolean checkIfBreakExistsInIfThenElse(Ast field){
+        //the field is eighter a condExpr, thenExpr or ElseExpr
+        if(field instanceof Id){
+            if(((Id) field).identifier.equals("break")){
+                GestionnaireErreur.getInstance().addSemanticError(field, "Interdit d'utiliser le mot clé 'break' à l'intérieur de IfThenElse");
+                return true;
+            }
+        }
+        if(field instanceof Sequence){
+            if(checkIfBreakExistsInExprSeq((Sequence) field)){
+                return true;
+            }
+        }
+        return false;
     }
 
     // --------------------------------------------
@@ -386,22 +412,46 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(IfThenElse ifThenElseExpr) {
+        boolean continuer=true;
         tdsController.down();
         Type conditionType = ifThenElseExpr.condExpr.accept(this);
-        // Vérifier si le type de condition est entier
-        if (!conditionType.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
-                    "l'expression de la condition dans If est de type " + conditionType.getId()
-                            + ". Or, elle doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
+        if(conditionType!=null){
+            // Vérifier si le type de condition est entier
+            if (!conditionType.equals(Type.INT_TYPE)) {
+                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
+                        "l'expression de la condition dans If est de type " + conditionType.getId()
+                                + ". Or, elle doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
+            }
         }
+
+        //Vérifier si le champs condition ne contient pas break
+        //la condExpr est toujours non nul, sinon une exception sera levée
+        if(checkIfBreakExistsInIfThenElse(ifThenElseExpr.condExpr)){
+            continuer=false;
+        }
+
+
         Type thenType = ifThenElseExpr.thenExpr.accept(this);
+
+        //thenExp est toujours non nulle sinon on aura un exception levée
+        if(continuer){
+            if(checkIfBreakExistsInIfThenElse(ifThenElseExpr.thenExpr)){
+                continuer=false;
+            }
+        }
         if (ifThenElseExpr.elseExpr != null) {
             Type elseType = ifThenElseExpr.elseExpr.accept(this);
-            // Vérifier si thenExpr et ElseExpr ont le même type
-            if (!(thenType.equals(elseType))) {
-                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
-                        "les expressions then et else renvoient respectivement des types " + thenType.getId() + " "
-                                + elseType.getId() + ". Or, elles doivent avoir le même type");
+            //voir si else block contient break
+            if(ifThenElseExpr.elseExpr!=null && continuer){
+                checkIfBreakExistsInIfThenElse(ifThenElseExpr.elseExpr);
+            }
+            if(thenType!=null){
+                // Vérifier si thenExpr et ElseExpr ont le même type
+                if (!(thenType.equals(elseType))) {
+                    GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
+                            "les expressions then et else renvoient respectivement des types " + thenType.getId() + " "
+                                    + elseType.getId() + ". Or, elles doivent avoir le même type");
+                }
             }
             tdsController.up();
             return thenType;
@@ -409,7 +459,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             // Vérifier si le type de l'expression
             if (!thenType.equals(Type.VOID_TYPE)) {
                 GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
-                        "l'expression then renvoie un type" + thenType.getId() + " Or, elle doit avoir un type "
+                        "l'expression then renvoie un type " + thenType.getId() + " Or, elle doit avoir un type "
                                 + ANSI_RED + " void" + ANSI_RESET);
             }
             tdsController.up();
@@ -443,10 +493,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(Addition node) {
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'additionner des types %s et %s", type1.getId(), type2.getId()));
+        if(type1!=null && type2!=null){
+            if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Impossible d'additionner des types %s et %s", type1.getId(), type2.getId()));
+            }
         }
         // "+, -, *, /: The operands must be of type int and the result type is int"
         return Type.INT_TYPE;
