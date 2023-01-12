@@ -245,6 +245,20 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             tdsController.add(new Value(typeValue, node.objectId.identifier));
         }
 
+        //Vérifier si le nom de la varaible n'est pas break
+        if(node.objectId!=null){
+            if(node.objectId.identifier.equals("break")){
+                GestionnaireErreur.getInstance().addSemanticError(node.objectId, "Interdit d'utiliser le mot clé 'break' comme nom de déclaration d'une variable");
+            }
+        }
+        if(node.value!=null){
+            if(node.value instanceof  Id){
+                if(((Id) node.value).identifier.equals("break")){
+                    GestionnaireErreur.getInstance().addSemanticError(node.objectId, "Interdit d'utiliser le mot clé 'break' comme valeur d'une variable déclarée");
+                }
+            }
+        }
+
         return Type.VOID_TYPE;
     }
 

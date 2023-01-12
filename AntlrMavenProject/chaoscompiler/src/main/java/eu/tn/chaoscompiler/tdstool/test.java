@@ -12,6 +12,7 @@ public class test {
     public static final String ANSI_BLUE = "\u001B[34m";
 
     public static void main(String[] args) {
+        /*
         System.out.println(ANSI_BLUE + "[TEST] Testing counter." + ANSI_RESET);
         for (int i = 0; i < 10; i++) {
             System.out.println(TokenGiver.getToken());
@@ -68,5 +69,7 @@ public class test {
         System.out.println("Expecting: false.");
         System.out.println("Got  --> " + my_tds.existsVari("my_var") + ".");
         System.out.println(ANSI_BLUE + "--> [TEST] Done." + ANSI_RESET);
+
+         */
     }
 }
