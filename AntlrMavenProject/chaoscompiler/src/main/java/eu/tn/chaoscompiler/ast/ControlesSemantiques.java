@@ -656,8 +656,40 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ArrayAssign node) {
-        // a faire
-        return null;
+
+        Type arrayType = Type.VOID_TYPE ;
+
+        // verifier que le type est bien un type d'array
+        if (checkIfTypeExist(((Id) node.type).identifier, node)) {
+            arrayType = tdsController.findType(((Id) node.type).identifier) ;
+            
+            if (arrayType instanceof ArrayType at) {
+
+                // verifier valeur d'initialisation est conforme au type de l'array
+                Type contentType = node.element.accept(this) ;
+                if (!(contentType.equals(at.elementsType))) {
+                    GestionnaireErreur.getInstance().addSemanticError(node,
+                            String.format("La valeur d'initialisation est attendue de type %s mais est de type %s",
+                                    at.elementsType.getId(), contentType.getId()));
+                }
+
+            }
+            else {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Le type %s ne correspond pas à un array", arrayType.getId()));
+                arrayType = Type.VOID_TYPE ;
+            }
+        }
+
+        // verifier taille est entiere
+        Type nbElemType = node.nombreDElements.accept(this) ;
+        if (!nbElemType.equals(Type.INT_TYPE)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("La taille de l'array n'est pas un int mais un %s", nbElemType.getId()));
+        }
+
+        // renvoyer le type de l'array
+        return arrayType;
     }
 
     @Override
