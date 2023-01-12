@@ -90,6 +90,10 @@ package variable {
     +String getId()
     +Int getToken()
   }
+
+  class ArrayValue extends Value {
+    +Int size
+  }
 }
 
 package java.util #ff9999 {
