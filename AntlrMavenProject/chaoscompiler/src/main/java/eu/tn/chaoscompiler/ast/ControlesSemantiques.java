@@ -868,7 +868,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 }
             }
             else {
-                GestionnaireErreur.getInstance().addSemanticError((node,
+                GestionnaireErreur.getInstance().addSemanticError(node,
                         String.format("Le type %s ne correspond pas à un record", varType.getId()));
             }
 
