@@ -656,22 +656,23 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ArrayAssign node) {
+        // a faire
         return null;
     }
 
     @Override
     public Type visit(FieldCreate node) {
-        return null;
+        return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(FieldDeclaration node) {
-        return null;
+        return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(FieldDecList node) {
-        return null;
+        return Type.VOID_TYPE;
     }
 
     @Override
@@ -720,16 +721,19 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(ParameterList node) {
-        return null;
+        return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(RecordAccess node) {
+
+        // a faire
         return null;
     }
 
     @Override
     public Type visit(RecordCreate node) {
+        // a faire
         return null;
     }
 
@@ -739,6 +743,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if(node.identifier.equals("break")){
             return Type.VOID_TYPE;
         }
+        // a faire : si il est dans la tds, type de la variable
+
+        // sinon
         return null;
     }
 
