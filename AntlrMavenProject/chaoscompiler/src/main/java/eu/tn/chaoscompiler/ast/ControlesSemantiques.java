@@ -334,6 +334,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(For forExpr) {
+        boolean continuer=true;
         tdsController.down();
         // Vérifier l'expression de départ est de type entier
         Type type_start_for = forExpr.startExpr.accept(this);
@@ -364,16 +365,17 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         for (Ast instruction : sequence.instructions) {
             //Vérifier s'il y a une instruction d'affectation
             if (instruction instanceof Affect) {
-                //Vérifier si la partie gauche de l'instruction est un Id
-                if (((Affect) instruction).leftValue instanceof Id) {
-                    String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
-                    //Vérifier si la valeur d'id est égale à l'indice de la boucle
-                    if (id_left_value.equals(id_str)) {
-                        GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,
-                                "l'indice " + ANSI_RED + " " + id_left_value + ANSI_RESET + " de For ne doit pas être assigné à l'intérieur de la boucle");
-                        //Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est assigné plusieurs fois dans la séquence
-                        tdsController.up();
-                        return typedoexpr;
+                if(continuer){
+                    //Vérifier si la partie gauche de l'instruction est un Id
+                    if (((Affect) instruction).leftValue instanceof Id) {
+                        String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
+                        //Vérifier si la valeur d'id est égale à l'indice de la boucle
+                        if (id_left_value.equals(id_str)) {
+                            GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,
+                                    "l'indice " + ANSI_RED + " " + id_left_value + ANSI_RESET + " de For ne doit pas être assigné à l'intérieur de la boucle");
+                            //Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est assigné plusieurs fois dans la séquence
+                            continuer=false;
+                        }
                     }
                 }
             }
