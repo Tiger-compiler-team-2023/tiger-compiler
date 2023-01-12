@@ -70,8 +70,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 break;
             }
         }
-
-
     }
 
     public void checkIfBreakExistsInExprSeq(Sequence sequence) {
@@ -87,8 +85,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 break;
             }
         }
-
-
     }
 
     // --------------------------------------------
@@ -109,8 +105,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(Let letExpr) {
         tdsController.down();
         letExpr.decList.accept(this);
+        //Vérifier le cas d'utilisation de break dans DecList
+        if (letExpr.decList != null) {
+            checkIfBreakExistsInDecList((DeclarationList) letExpr.decList);
+        }
         Type typeSequence = letExpr.exprSeq.accept(this);
-        //Vérifier le cas d'utilisation de break
+        //Vérifier le cas d'utilisation de break dans Sequence
         if (letExpr.exprSeq != null) {
             checkIfBreakExistsInExprSeq((Sequence) letExpr.exprSeq);
         }
@@ -171,7 +171,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if (!retour.equals(content)) {
             GestionnaireErreur.getInstance().addSemanticError(node, String.format(
                     "Le type de retour %s de la fonction %s est incompatible avec le type %s de la valeur retournée",
-                    retour, node.objectId.identifier, content.getId()));
+                    retour.getId(), node.objectId.identifier, content.getId()));
             correct = false ;
         }
 
@@ -191,7 +191,19 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if (correct) {
             tdsController.add(new Value(fType, node.objectId.identifier)) ;
         }
-
+        //vérifier si le break est utilisé dans la Function Declaration
+        //Vérifier si break est dans le corps de la fonction
+        if(node.content!=null){
+            if(node.content instanceof Sequence){
+                checkIfBreakExistsInExprSeq((Sequence) node.content);
+            }
+            else if(node.content instanceof DeclarationList){
+                checkIfBreakExistsInExprSeq((Sequence) node.content);
+            }
+            else if(node.content instanceof Id){
+                checkIfBreakExistsAsId((Id) node.content);
+            }
+        }
 
         return Type.VOID_TYPE;
     }
@@ -434,12 +446,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(type2)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible affecter une valeur de type %s à une variable de type %s", type2.getId(), type1.getId()));
+        if(type1!=null && type2!=null){
+            if (!type1.equals(type2)) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Impossible affecter une valeur de type %s à une variable de type %s", type2.getId(), type1.getId()));
+            }
         }
-
         // l'affectation envoie un type void
         return Type.VOID_TYPE;
     }
@@ -702,6 +714,10 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Id node) {
+        //si le noeud contient le mot clé break, il retourne un type void
+        if(node.identifier.equals("break")){
+            return Type.VOID_TYPE;
+        }
         return null;
     }
 
