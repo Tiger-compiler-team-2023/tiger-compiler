@@ -19,6 +19,15 @@ public class RecordType extends Type {
         this.attributs.add(val);
     }
 
+    public Value getAttribut(String id) {
+        for (Value v:this.attributs) {
+            if (v.getId().equals(id)) {
+                return v ;
+            }
+        }
+        return null ;
+    }
+
     @Override
     public String toString() {
         return "\n\u001B[35m{[ReccordType]\u001B[0m" + super.toString() + ", attributs: " + this.attributs.toString()

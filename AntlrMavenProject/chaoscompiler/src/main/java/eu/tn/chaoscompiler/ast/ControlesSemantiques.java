@@ -761,8 +761,27 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(RecordAccess node) {
 
-        // a faire
-        return null;
+        Type resType = Type.VOID_TYPE ;
+
+        // verifier que le membre de gauche est bien de type record
+        Type rType = node.exp.accept(this) ;
+        if (rType instanceof RecordType rt) {
+            // verifier que l'attribut existe
+            Value v = rt.getAttribut(((Id) node.index).identifier) ;
+            if (v == null) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Le type record %s n'a pas d'attribut %s", rt.getId(), ((Id) node.index).identifier));
+            }
+            else {
+                resType = v.getType() ;
+            }
+        }
+        else {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Le type %s n'est pas un record", rType.getId())) ;
+        }
+
+        return resType;
     }
 
     @Override
@@ -778,6 +797,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             return Type.VOID_TYPE;
         }
         // a faire : si il est dans la tds, type de la variable
+
 
         // sinon
         return null;
