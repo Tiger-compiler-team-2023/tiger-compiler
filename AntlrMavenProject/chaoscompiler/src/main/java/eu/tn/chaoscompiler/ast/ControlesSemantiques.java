@@ -1,6 +1,5 @@
 package eu.tn.chaoscompiler.ast;
 
-import eu.tn.chaoscompiler.ChaosParser;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
@@ -21,8 +20,6 @@ import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.*;
 import lombok.NoArgsConstructor;
-
-import java.util.Objects;
 
 @NoArgsConstructor
 public class ControlesSemantiques implements AstVisitor<Type> {
@@ -489,19 +486,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         return typedoexpr;
     }
 
-    @Override
-    public Type visit(Addition node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-        if(type1!=null && type2!=null){
-            if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-                GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("Impossible d'additionner des types %s et %s", type1.getId(), type2.getId()));
-            }
-        }
-        // "+, -, *, /: The operands must be of type int and the result type is int"
-        return Type.INT_TYPE;
-    }
 
     @Override
     public Type visit(Affect node) {
@@ -530,82 +514,26 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         return Type.VOID_TYPE;
     }
 
-    @Override
-    public Type visit(And node) {
+    public Type equalOrInequal(BinaryOperator node){
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
 
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+        if (!(type1.equals(type2))) {
             GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
+                    String.format("Impossible de comparer les types %s et %s", type1.getId(), type2.getId()));
         }
-        // le resultat est un booleen represente par un int
+        // le resultat est un booleen representé par un int
         return Type.INT_TYPE;
     }
 
     @Override
-    public Type visit(Division node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible de diviser des types %s et %s", type1.getId(), type2.getId()));
-        }
-        // "+, -, *, /: The operands must be of type int and the result type is int"
-        return Type.INT_TYPE;
+    public Type visit(NotEquals node) {
+        return equalOrInequal(node);
     }
 
     @Override
     public Type visit(Equals node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(type2)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible de comparer les types %s et %s", type1.getId(), type2.getId()));
-        }
-        // le resultat est un booleen represente par un int
-        return Type.INT_TYPE;
-    }
-
-    @Override
-    public Type visit(Inferior node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
-        }
-        // le resultat est un booleen represente par un int
-        return Type.INT_TYPE;
-    }
-
-    @Override
-    public Type visit(InferiorOrEquals node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
-        }
-        // le resultat est un booleen represente par un int
-        return Type.INT_TYPE;
-    }
-
-    @Override
-    public Type visit(Multiplication node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible de multiplier des types %s et %s", type1.getId(), type2.getId()));
-        }
-        // "+, -, *, /: The operands must be of type int and the result type is int"
-        return Type.INT_TYPE;
+        return equalOrInequal(node);
     }
 
     @Override
@@ -619,70 +547,80 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         return Type.INT_TYPE;
     }
 
-    @Override
-    public Type visit(NotEquals node) {
+    public Type operation(BinaryOperator node, String operation){
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
 
-        if (!type1.equals(type2)) {
+        if (!(type1.equals(Type.INT_TYPE)) || !(type2.equals(Type.INT_TYPE))) {
             GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible de comparer les types %s et %s", type1.getId(), type2.getId()));
+                    String.format("Impossible d'effectuer %s sur les types %s et %s", operation, type1.getId(), type2.getId()));
         }
-        // le resultat est un booleen represente par un int
         return Type.INT_TYPE;
     }
 
     @Override
-    public Type visit(Or node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
-        }
-        // le resultat est un booleen represente par un int
-        return Type.INT_TYPE;
+    public Type visit(Multiplication node) {
+        return operation(node, "une multiplication");
     }
 
     @Override
     public Type visit(Soustraction node) {
+        return operation(node, "une soustraction");
+    }
+
+    @Override
+    public Type visit(Addition node) {
+        return operation(node, "une addition");
+    }
+
+    @Override
+    public Type visit(Division node) {
+        return operation(node, "une division");
+    }
+
+    @Override
+    public Type visit(And node) {
+        return operation(node, "un et logique");
+    }
+
+    @Override
+    public Type visit(Or node) {
+        return operation(node, "un ou logique");
+    }
+
+    public Type comparison(BinaryOperator node) {
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
 
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
+        if (!(type1.equals(Type.INT_TYPE) || type1.equals(Type.STRING_TYPE))
+                || !(type2.equals(Type.INT_TYPE) || type2.equals(Type.STRING_TYPE))) {
             GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible de soustraire des types %s et %s", type1.getId(), type2.getId()));
+                    String.format("Impossible d'effectuer une comparaison sur les types %s et %s", type1.getId(), type2.getId()));
         }
-        // "+, -, *, /: The operands must be of type int and the result type is int"
+        // le resultat est un booleen represente par un int
         return Type.INT_TYPE;
     }
 
     @Override
     public Type visit(Superior node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
-        }
-        // le resultat est un booleen represente par un int
-        return Type.INT_TYPE;
+        return comparison(node);
     }
 
     @Override
     public Type visit(SuperiorOrEquals node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-
-        if (!type1.equals(Type.INT_TYPE) || !type2.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une opération logique sur les types %s et %s", type1.getId(), type2.getId()));
-        }
-        // le resultat est un booleen represente par un int
-        return Type.INT_TYPE;
+        return comparison(node);
     }
+
+    @Override
+    public Type visit(Inferior node) {
+        return equalOrInequal(node);
+    }
+
+    @Override
+    public Type visit(InferiorOrEquals node) {
+        return equalOrInequal(node);
+    }
+
 
     @Override
     public Type visit(ArrayAccess node) {
