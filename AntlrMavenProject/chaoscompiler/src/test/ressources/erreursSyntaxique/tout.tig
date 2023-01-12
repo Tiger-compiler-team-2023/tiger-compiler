@@ -1,0 +1,160 @@
+let
+    
+    type tblty = array of int
+    var tbl := tblty [5] of 5
+    var i:int = 0
+    var s:string = ""
+    function max(first:int, second:int):int = if first >= second then first else second
+    function abs(number:int):int = max(number, -number)
+    function min(first:int, second:int):int = -max(-first, -second)
+    function norme1(x:int, y:int):returnType = abs(x) + abs(y)
+    type recty = {first:int, second:string}
+
+    /* TYPE01 OK */
+    var a := 5
+
+    /* SCOPE00 ER */
+    var b:int := c /* ER : c n'est pas definie */
+    var c := a
+
+    /* SCOPE02 OK */
+    type c = int
+
+    /* TYPE01 ER, TYPE03 OK */
+    var a:int := "kayak" /* ER : type attendu int mais type string */
+
+    /* SCOPE00 OK */
+    function printhello() = print("Hello")
+    function printhello2() = printhello()
+
+    /* TYPE00 ER */
+    function add5(k:int) = k + 5 /* ER : le type de retour est void mais retourne int */ 
+
+    /* TYPE02 ER */
+    var e := tbl[s] /* ER : l'indice d'un tableau doit etre un entier */
+
+    /* TYPE11 ER */
+    var mon_beau_tableau = int [42] of 18 /* ER : int n'est pas un type de tableau */
+
+    /* TYPE11 ER */
+    var mon_beau_tableau = tblty ["NaN"] of 18 /* ER : le nombre d'elements du tableau doit etre un int */
+
+    /* TYPE11 ER */
+    var mon_beau_tableau = tblty [42] of "NaN" /* ER : le type de l'element d'initialisation du tableau doit correspondre au type d'un element du tableau */
+
+    /* TYPE12 ER */
+    var mon_bel_enregistrement = int {first = 1, second = "2"} /* ER : int n'est pas un type d'enregistrement */
+
+    /* TYPE12 ER */
+    var mon_bel_enregistrement = int {first = 1, second = 2} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, second:int} */
+
+    /* TYPE12 ER */
+    var mon_bel_enregistrement = int {first = 1, seond = "2", third = "3"} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, second:string, third:string} */
+    
+    /* TYPE12 ER */
+    var mon_bel_enregistrement = int {first = 1, third = "3"} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, third:string} */
+
+    /* TYPE12 OK */
+    var mon_bel_enregistrement = recty {first = 1, second = "2"}
+
+in
+    /* SCOPE01 OK */
+    let
+        var a = 71 /* OK */
+    in
+    end;
+
+    /* TYPE04 OK */
+    s := (printhello(); "Never gonna give you up\nNever gonna let you down");
+
+    /* TYPE04 ER */
+    i := (printhello(); printhello2()); /* ER : type attendu int mais type void */
+
+    /* TYPE05 OK */
+    a := -5;
+
+    /* TYPE05 ER */
+    a := -d; /* ER : la negation s'applique à des entiers */
+
+    /* TYPE06 ER */
+    i := max(14); /* ER : nombre d'arguments attendu 2 mais seul 1 donne */
+
+    /* TYPE07 ER */
+    i := max(14, "12"); /* ER : type d'arguments attendus (int, int) mais (int, string) donne */
+
+    /* TYPE08 ER */
+    i := 2 + "14"; /* ER : types pour une addition int+int, donne int+string */
+
+    /* TYPE08 ER */
+    i := 2 - "14"; /* ER : types pour une soustraction int-int, donne int-string */
+
+    /* TYPE08 ER */
+    i := 2 / "14"; /* ER : types pour une division int/int, donne int/string */
+
+    /* TYPE08 ER */
+    i := 2 * "14"; /* ER : types pour une addition int*int, donne int*string */
+
+    /* TYPE08 ER */
+    i := 2 & "14"; /* ER : types pour une conjonction int&int, donne int&string */
+
+    /* TYPE08 ER */
+    i := 2 | "14"; /* ER : types pour une disjonction int|int, donne int|string */
+
+    /* BONUS00 ER */
+    i := 2 / 0; /* ER : division par zero explicit */
+
+    /* TYPE09 ER */
+    i := 2 <> "14"; /* ER : les deux types de la differences doivent etre identiques */
+
+    /* TYPE09 ER */
+    i := 2 = "14"; /* ER : les deux types de l'egalite doivent etre identiques */
+
+    /* TYPE10 ER */
+    i := 2 < "14"; /* ER : les deux types de la comparaison doivent etre identiques */
+
+    /* TYPE10 ER */
+    i := 2 <= "14"; /* ER : les deux types de la comparaison doivent etre identiques */
+
+    /* TYPE10 ER */
+    i := 2 > "14"; /* ER : les deux types de la comparaison doivent etre identiques */
+
+    /* TYPE10 ER */
+    i := 2 >= "14"; /* ER : les deux types de la comparaison doivent etre identiques */
+
+    /* TYPE10 OK */
+    i := "5" > "15";
+
+    /* TYPE15 ER */
+    i := if "NaN" then 1 else 5; /* ER : une condition doit etre de type int */
+
+    /* TYPE15 ER */
+    i := if 1 then 1 else "5"; /* ER : le then et le else doivent etre de meme type */
+
+    /* TYPE16 ER */
+    i := if 1 then 1; /* ER : le then d'un if-then (sans else) doit etre de type void */
+
+    /* TYPE17 ER */
+    while "NaN" do print("m"); /* ER : le type de la condition doit etre un int */
+
+    /* TYPE17 ER */
+    while 1 do 1; /* ER : le contenu de la boucle while doit etre de type void */
+
+    /* TYPE18 ER */
+    for j := "0" to 18 do printhello(); /* ER : le depart de la boucle for doit etre de type int */
+
+    /* TYPE18 ER */
+    for j := 0 to "18" do printhello(); /* ER : l'arrivee de la boucle for doit etre de type int */
+
+    /* TYPE18 ER */
+    for j := 0 to 18 do j := 4; /* ER : la variable d'incrementation ne doit pas etre assignee dans la boucle for */
+
+    /* TYPE18 ER */
+    for j := 0 to 18 do 4; /* ER : le contenu de la boucle for doit etre de type void */
+
+    /* TYPE19 ER */
+    break; /* ER : break ne peut etre utilise que dans une boucle */
+
+    /* TYPE20 OK */
+    i := let in 5 end;
+
+end
