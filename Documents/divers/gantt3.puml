@@ -1,0 +1,59 @@
+@startgantt
+Project starts 2022-12-5
+
+2022-12-17 to 2023-01-03 are colored in lightblue
+
+-- Réunions --
+
+[Rapport 2] happens at 2022-12-05
+
+2022-12-07 is colored in salmon
+[Réunion 7] happens at 2022-12-07
+
+2022-12-15 is colored in salmon
+[Réunion 8] happens at 2022-12-15
+
+2023-01-03 is colored in salmon
+[Réunion 9] happens at 2023-01-03
+
+2023-01-10 is colored in salmon
+[Réunion 10] happens at 2023-01-10
+
+2023-01-12 is colored in salmon
+[Réunion 11] happens at 2023-01-12
+
+[Rapport 3] happens at 2023-01-16
+
+[Soutenance 1] happens at 2023-01-18
+
+-- Tâches --
+[Deboggage AST] starts 2022-12-05 and ends 2023-01-03 and is colored in Coral/Black
+[Affichage AST] starts 2022-12-05 and ends 2023-01-03 and is colored in Coral/Black
+
+[Conception TDS] starts 2022-12-05 and ends 2022-12-15 and is colored in SeaGreen/Black
+then [Implémentation de la TDS] starts 2022-12-16 and ends 2023-01-03 and is colored in SeaGreen/Black
+
+[Liste TS] starts 2022-12-26 and ends 2023-01-03 and is colored in IndianRed/Black
+[Scripts tests] starts 2022-12-26 and ends 2023-01-03 and is colored in IndianRed/Black
+
+[Implémentation TS] starts at [Scripts tests]'s end
+[Implémentation TS] starts at [Liste TS]'s end
+[Implémentation TS] starts at [Affichage AST]'s end
+[Implémentation TS] starts at [Deboggage AST]'s end
+[Correction TDS] starts at [Scripts tests]'s end
+[Correction TDS] starts at [Liste TS]'s end
+[Correction TDS] starts at [Affichage AST]'s end
+[Correction TDS] starts at [Deboggage AST]'s end
+
+[Implémentation TS] starts 2023-01-04 and ends 2023-01-12 and is colored in IndianRed/Black
+[Correction TDS] starts 2023-01-04 and ends 2023-01-12 and is colored in SeaGreen/Black
+
+[Rapport] starts at [Implémentation TS]'s end
+[Rapport] starts at [Correction TDS]'s end
+[Soutenance] starts at [Implémentation TS]'s end
+[Soutenance] starts at [Correction TDS]'s end
+
+[Rapport] starts 2023-01-13 and ends 2023-01-16 and is colored in SteelBlue/Black
+[Soutenance] starts 2023-01-13 and ends 2023-01-18 and is colored in SteelBlue/Black
+
+@endgantt
