@@ -23,11 +23,11 @@ public class TDSroot implements TDS {
         return this.hmType.containsKey(id);
     }
 
-    public Value findVari(String id) {
+    public Value findVar(String id) {
         return this.hmVari.get(id);
     }
 
-    public Boolean existsVari(String id) {
+    public Boolean existsVar(String id) {
         return this.hmVari.containsKey(id);
     }
 

@@ -51,7 +51,7 @@ public class TDScontroller {
     }
 
     public Value getVariableOfId(String id) {
-        Value res = findVari(id);
+        Value res = findVar(id);
         if (res == null) {
             // ERREUR
             throw new IllegalStateException("La variable " + id + " n'existe pas.");
@@ -60,28 +60,28 @@ public class TDScontroller {
         }
     }
 
-    public Value findVari(String id) {
+    public Value findVar(String id) {
         if (this.tds instanceof TDSlocal) {
-            if (this.tds.existsVari(id)) {
-                return this.tds.findVari(id);
+            if (this.tds.existsVar(id)) {
+                return this.tds.findVar(id);
             } else {
-                return ((TDSlocal) this.tds).getFather().findVari(id);
+                return ((TDSlocal) this.tds).getFather().findVar(id);
             }
         } else {
-            return this.tds.findVari(id);
+            return this.tds.findVar(id);
         }
     }
 
-    public Boolean existsVari(String id) {
+    public Boolean existsVar(String id) {
         if (this.tds instanceof TDSlocal) {
-            return this.tds.existsVari(id) | ((TDSlocal) this.tds).getFather().existsVari(id);
+            return this.tds.existsVar(id) || ((TDSlocal) this.tds).getFather().existsVar(id);
         } else {
-            return this.tds.existsVari(id);
+            return this.tds.existsVar(id);
         }
     }
 
-    public Boolean existsLocalVari(String id) {
-        return this.tds.existsVari(id);
+    public Boolean existsLocalVariable(String id) {
+        return this.tds.existsVar(id);
     }
 
     public void add(Variable var) {

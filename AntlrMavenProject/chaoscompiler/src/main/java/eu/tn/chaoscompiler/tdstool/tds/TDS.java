@@ -8,8 +8,8 @@ public interface TDS {
     Type findType(String id);
     Boolean existsType(String id);
 
-    Value findVari(String id);
-    Boolean existsVari(String id);
+    Value findVar(String id);
+    Boolean existsVar(String id);
 
     void add(Variable var);
 
