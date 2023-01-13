@@ -20,22 +20,15 @@ public class TDScontroller {
         Type res = findType(id);
         if (res == null) {
             // ERREUR
-            throw new IllegalStateException("Le type " + id + " n'existe pas.");
+            System.out.println("Le type " + id + " n'existe pas.");
+            return null;
         } else {
             return res;
         }
     }
 
     public Type findType(String id) {
-        if (this.tds instanceof TDSlocal) {
-            if (this.tds.existsType(id)) {
-                return this.tds.findType(id);
-            } else {
-                return ((TDSlocal) this.tds).getFather().findType(id);
-            }
-        } else {
-            return this.tds.findType(id);
-        }
+        return this.tds.findType(id);
     }
 
     public Boolean existsType(String id) {
@@ -50,7 +43,8 @@ public class TDScontroller {
         Value res = findVar(id);
         if (res == null) {
             // ERREUR
-            throw new IllegalStateException("La variable " + id + " n'existe pas.");
+            System.out.println("La variable " + id + " n'existe pas.");
+            return null;
         } else {
             return res;
         }
@@ -61,11 +55,7 @@ public class TDScontroller {
     }
 
     public Boolean existsVar(String id) {
-        if (this.tds instanceof TDSlocal) {
-            return this.tds.existsVar(id) || ((TDSlocal) this.tds).getFather().existsVar(id);
-        } else {
-            return this.tds.existsVar(id);
-        }
+        return this.tds.existsVar(id);
     }
 
     public Boolean existsLocalVariable(String id) {

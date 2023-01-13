@@ -16,7 +16,16 @@ public class TDSroot implements TDS {
     }
 
     public Type findType(String id) {
-        return this.hmType.get(id);
+        if (this instanceof TDSlocal) {
+            Type t = this.hmType.get(id);
+            if (t == null) {
+                return ((TDSlocal) this).getFather().findType(id);
+            } else {
+                return t;
+            }
+        } else {
+            return this.hmType.get(id);
+        }
     }
 
     public Boolean existsType(String id) {
@@ -28,7 +37,16 @@ public class TDSroot implements TDS {
     }
 
     public Value findVar(String id) {
-        return this.hmVari.get(id);
+        if (this instanceof TDSlocal) {
+            Value t = this.hmVari.get(id);
+            if (t == null) {
+                return ((TDSlocal) this).getFather().findVar(id);
+            } else {
+                return t;
+            }
+        } else {
+            return this.hmVari.get(id);
+        }
     }
 
     public Boolean existsVar(String id) {
