@@ -39,11 +39,7 @@ public class TDScontroller {
     }
 
     public Boolean existsType(String id) {
-        if (this.tds instanceof TDSlocal) {
-            return this.tds.existsType(id) | ((TDSlocal) this.tds).getFather().existsType(id);
-        } else {
-            return this.tds.existsType(id);
-        }
+        return this.tds.existsType(id);
     }
 
     public Boolean existsLocalType(String id) {
@@ -61,15 +57,7 @@ public class TDScontroller {
     }
 
     public Value findVar(String id) {
-        if (this.tds instanceof TDSlocal) {
-            if (this.tds.existsVar(id)) {
-                return this.tds.findVar(id);
-            } else {
-                return ((TDSlocal) this.tds).getFather().findVar(id);
-            }
-        } else {
-            return this.tds.findVar(id);
-        }
+        return this.tds.findVar(id);
     }
 
     public Boolean existsVar(String id) {

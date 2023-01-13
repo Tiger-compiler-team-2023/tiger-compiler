@@ -20,7 +20,11 @@ public class TDSroot implements TDS {
     }
 
     public Boolean existsType(String id) {
-        return this.hmType.containsKey(id);
+        if (this instanceof TDSlocal) {
+            return this.hmType.containsKey(id) || ((TDSlocal) this).getFather().existsType(id);
+        } else {
+            return this.hmType.containsKey(id);
+        }
     }
 
     public Value findVar(String id) {
@@ -28,7 +32,11 @@ public class TDSroot implements TDS {
     }
 
     public Boolean existsVar(String id) {
-        return this.hmVari.containsKey(id);
+        if (this instanceof TDSlocal) {
+            return this.hmVari.containsKey(id) || ((TDSlocal) this).getFather().existsVar(id);
+        } else {
+            return this.hmVari.containsKey(id);
+        }
     }
 
     public void add(Variable var) {
