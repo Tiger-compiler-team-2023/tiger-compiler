@@ -197,7 +197,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             correct = checkIfTypeExist(returnStr, node);
 
             if (correct) {
-                retour = tdsController.getTypeOfId(returnStr);
+                retour = tdsController.getTypeOfId(node, returnStr);
             } else {
                 retour = Type.VOID_TYPE;
             }
@@ -281,7 +281,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         if (node.typeId != null) {
             checkIfTypeExist(node.typeId.identifier, node);
-            Type declaredType = tdsController.getTypeOfId(node.typeId.identifier);
+            Type declaredType = tdsController.getTypeOfId(node, node.typeId.identifier);
             if (!typeValue.equals(declaredType)) {
                 GestionnaireErreur.getInstance().addSemanticError(node, String.format(
                         "Une valeur de type %s ne peut pas être affectée à une variable de type %s",
@@ -339,7 +339,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             GestionnaireErreur.getInstance().addSemanticError(node,
                     "Le type du tableau doit être défini");
         } else if (checkIfTypeExist(node.baseTypeId.identifier, node) && correct) {
-            Type elementType = tdsController.getTypeOfId(node.baseTypeId.identifier);
+            Type elementType = tdsController.getTypeOfId(node, node.baseTypeId.identifier);
             tdsController.add(new ArrayType(node.objectId.identifier, elementType));
         }
         return Type.VOID_TYPE;
@@ -358,7 +358,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             // verifier que le type de base existe
             if (checkIfTypeExist(node.baseTypeId.identifier, node)) {
                 tdsController.add(new TypeRename(node.objectId.identifier,
-                        tdsController.getTypeOfId(node.baseTypeId.identifier)));
+                        tdsController.getTypeOfId(node, node.baseTypeId.identifier)));
             }
         }
 
@@ -380,7 +380,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // on vérifie que les types des attributs existent
         for (FieldDeclaration fd : node.fields.list) {
             if (checkIfTypeExist(fd.baseType.identifier, node)) {
-                rType.addAttribut(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier));
+                rType.addAttribut(new Value(tdsController.getTypeOfId(node, fd.baseType.identifier), fd.fieldId.identifier));
             } else {
                 correct = false;
             }
@@ -739,6 +739,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // verifier que l'id est l'id d'une fonction qui existe et recuperer son type de
         // retour
         Type func = node.id.accept(this);
+        if (func == null) {
+            return Type.VOID_TYPE;
+        }
         Type retour;
         if (!tdsController.existsVar(func.getId())) {
             GestionnaireErreur.getInstance().addSemanticError(node, String.format("La fonction %s n'est pas définie.", func.getId()));
@@ -821,7 +824,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         } else {
 
             // ... Puis, que son type soit record.
-            Type varType = tdsController.getTypeOfId(((Id) node.idObject).identifier);
+            Type varType = tdsController.getTypeOfId(node, ((Id) node.idObject).identifier);
             if (!(varType instanceof RecordType recordType)) {
                 GestionnaireErreur.getInstance().addSemanticError(node,
                         String.format("Le type %s ne correspond pas à un record", varType.getId()));
@@ -880,7 +883,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // TODO : si il est dans la tds, type de la variable
 
         // sinon
-        Variable v = tdsController.getVariableOfId(node.identifier);
+        Variable v = tdsController.getVariableOfId(node, node.identifier);
         if (v != null)
             return v.getType();
         return null;

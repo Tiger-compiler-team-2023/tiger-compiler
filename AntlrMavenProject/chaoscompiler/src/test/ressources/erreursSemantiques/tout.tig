@@ -7,7 +7,7 @@ let
     function max(first:int, second:int):int = if first >= second then first else second
     function abs(number:int):int = max(number, -number)
     function min(first:int, second:int):int = -max(-first, -second)
-    function norme1(x:int, y:int):returnType = abs(x) + abs(y)
+    function norme1(x:int, y:int):int = abs(x) + abs(y)
     type recty = {first:int, second:string}
 
     /* TYPE01 OK */
