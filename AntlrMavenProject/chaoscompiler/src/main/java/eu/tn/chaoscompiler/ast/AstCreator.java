@@ -9,6 +9,8 @@ import eu.tn.chaoscompiler.ast.nodes.looporcondition.*;
 import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.*;
 import eu.tn.chaoscompiler.ast.nodes.operators.*;
+import eu.tn.chaoscompiler.errors.ChaosError;
+import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -86,8 +88,16 @@ public class AstCreator extends ChaosBaseVisitor<Ast> {
 
     @Override
     public Ast visitProgram(ChaosParser.ProgramContext ctx) {
-        return new Program(getChildAst(0, ctx));
-        //return getChildAst(0, ctx);
+        try {
+            return new Program(getChildAst(0, ctx));
+        } catch (Exception e) {
+            e.printStackTrace();
+            GestionnaireErreur.getInstance().addUnrecognisedError(
+                    "Erreur durant la création de l'AST. Le programme est probablement mal formé" +
+                    " mais le compilateur ne détecte pas l'erreur correctement.",
+                    ChaosError.typeError.SYNTAX_ERROR);
+            return null;
+        }
     }
 
     @Override

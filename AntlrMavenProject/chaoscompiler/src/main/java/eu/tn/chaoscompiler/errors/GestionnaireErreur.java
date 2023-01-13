@@ -47,6 +47,10 @@ public class GestionnaireErreur extends BaseErrorListener {
         errors.add(new ChaosError(ast.getNumLigne(), ast.getNumColonne(), msg, ChaosError.typeError.SEMANTIC_ERROR));
     }
 
+    public void addUnrecognisedError(String msg, ChaosError.typeError type) {
+        errors.add(new ChaosError(0, 0, msg, type));
+    }
+
     public void afficherErreurs() {
         StringBuilder sb = new StringBuilder();
         for (ChaosError error : errors) {

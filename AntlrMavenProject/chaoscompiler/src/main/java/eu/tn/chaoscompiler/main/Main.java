@@ -44,8 +44,12 @@ public class Main {
             frame.add(panel);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.pack();
-            //frame.setVisible(true);
+            frame.setVisible(true);
 
+            if (GestionnaireErreur.getNbErreur() > 0) {
+                GestionnaireErreur.getInstance().afficherErreurs();
+                return;
+            }
             AstCreator creator = new AstCreator();
             Ast ast = program.accept(creator);
 

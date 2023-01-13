@@ -16,6 +16,7 @@ import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
+import eu.tn.chaoscompiler.errors.ChaosError;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.*;
@@ -125,7 +126,16 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         tdsController.add(Type.INT_TYPE);
         tdsController.add(Type.STRING_TYPE);
         tdsController.add(Type.VOID_TYPE);
-        node.expression.accept(this);
+
+        try {
+            node.expression.accept(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            GestionnaireErreur.getInstance().addUnrecognisedError(
+                    "Erreur durant la construction de la table des symbôles. Le programme est probablement mal formé" +
+                            " mais le compilateur ne détecte pas l'erreur correctement.",
+                    ChaosError.typeError.SYNTAX_ERROR);
+        }
         return null;
     }
 
