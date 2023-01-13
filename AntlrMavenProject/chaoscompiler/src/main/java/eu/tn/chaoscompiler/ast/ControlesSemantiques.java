@@ -740,7 +740,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // retour
         Type func = node.id.accept(this);
         Type retour;
-        checkIfTypeExist(func.getId(), node);
+        if (!tdsController.existsVar(func.getId())) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format("La fonction %s n'est pas définie.", func.getId()));
+        }
         if (!(func instanceof FunctionType)) {
             GestionnaireErreur.getInstance().addSemanticError(node, String.format("La variable %s n'est pas une" +
                     "fonction", ((Id) node.id).identifier));
