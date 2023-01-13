@@ -577,7 +577,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if (entree != Type.INT_TYPE) {
             GestionnaireErreur.getInstance().addSemanticError(node,
                     String.format("Une négation s'applique uniquement sur un type int ; type actuel : %s.",
-                            entree));
+                            entree.getId()));
         }
         return Type.INT_TYPE;
     }
