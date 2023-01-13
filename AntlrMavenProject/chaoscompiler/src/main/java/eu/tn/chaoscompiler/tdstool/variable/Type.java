@@ -33,7 +33,7 @@ public class Type implements Variable {
     }
 
     public Type getType() {
-        return new Type();
+        return this;
     }
 
     public String getId() {

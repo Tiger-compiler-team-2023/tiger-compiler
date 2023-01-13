@@ -22,6 +22,9 @@ import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.*;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 @NoArgsConstructor
 public class ControlesSemantiques implements AstVisitor<Type> {
     // Couleurs pour l'affichage
@@ -281,9 +284,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             typeToCreate = typeValue;
         }
 
-        if(typeToCreate instanceof ArrayType arrType && checkIfTypeExist(arrType.elementsType.getId(), node)) {
+        if (typeToCreate instanceof ArrayType arrType && checkIfTypeExist(arrType.elementsType.getId(), node)) {
             // Les tests sémantiques sont déjà faits par l'accept sur value
             tdsController.add(new ArrayValue(arrType, node.objectId.identifier));
+        } else if (typeToCreate instanceof RecordType recType && checkIfTypeExist(recType.getId(), node)) {
+            tdsController.add(new Value(recType, node.objectId.identifier));
         } else {
             tdsController.add(new Value(typeToCreate, node.objectId.identifier));
         }
@@ -351,10 +356,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(RecordTypeDeclaration node) {
-
         boolean correct = true;
 
-        // verifier que le type n'existe pas deja
+        // on vérifie que le type n'existe pas déjà
         if (tdsController.existsLocalType(node.objectId.identifier)) {
             GestionnaireErreur.getInstance().addSemanticError(node,
                     String.format("Le type %s a déjà été défini", node.objectId.identifier));
@@ -362,8 +366,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         }
 
         RecordType rType = new RecordType(node.objectId.identifier);
-
-        // verifier types des attributs existe
+        // on vérifie que les types des attributs existent
         for (FieldDeclaration fd : node.fields.list) {
             if (checkIfTypeExist(fd.baseType.identifier, node)) {
                 rType.addAttribut(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier));
@@ -371,11 +374,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 correct = false;
             }
         }
-
-        if (correct) {
-            tdsController.add(rType);
-        }
-
+        tdsController.add(rType);
         return Type.VOID_TYPE;
     }
 
@@ -755,7 +754,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             Type argTypeExpected = ((FunctionType) func).inTypes.get(i);
             if (!argType.equals(argTypeExpected)) {
                 GestionnaireErreur.getInstance().addSemanticError(node, String.format("L'argument %d " +
-                        "est de type %s alors qu'il est attendu de type %s", i, argType.getId(),
+                                "est de type %s alors qu'il est attendu de type %s", i, argType.getId(),
                         argTypeExpected.getId()));
             }
         }
@@ -802,55 +801,70 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(RecordCreate node) {
+        // on vérifie que la variable existe...
+        if (!tdsController.existsType(((Id) node.idObject).identifier)) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Le type %s n'est pas défini", ((Id) node.idObject).identifier));
+        } else {
 
-        Type resType = Type.VOID_TYPE;
-
-        // verifier que variable existe
-        if (tdsController.existsVar(((Id) node.idObject).identifier)) {
-
-            Type varType = tdsController.getVariableOfId(((Id) node.idObject).identifier).getType();
-            // verifier que type de la variable correspond à un record
-            if (varType instanceof RecordType rt) {
-
-                // verifier que les attributs existent
-                for (Ast fc : node.args) {
-
-                    Value v = rt.getAttribut(((Id) ((FieldCreate) fc).id).identifier);
-                    if (v != null) {
-                        // verifier que la valeur affectee est du bon type
-                        Type expType = ((FieldCreate) fc).expr.accept(this);
-                        if (!(expType.equals(v.getType()))) {
-                            GestionnaireErreur.getInstance().addSemanticError(node,
-                                    String.format(
-                                            "La valeur affectée à l'attribut %s doit être de type %s, pas de type %s",
-                                            v.getId(), v.getType().getId(), expType.getId()));
-                        }
-                    } else {
-                        GestionnaireErreur.getInstance().addSemanticError(node,
-                                String.format("Le type record %s n'a pas d'attribut %s",
-                                        rt.getId(), ((Id) ((FieldCreate) fc).id).identifier));
-                    }
-                }
-            } else {
+            // ... Puis, que son type soit record.
+            Type varType = tdsController.getTypeOfId(((Id) node.idObject).identifier);
+            if (!(varType instanceof RecordType recordType)) {
                 GestionnaireErreur.getInstance().addSemanticError(node,
                         String.format("Le type %s ne correspond pas à un record", varType.getId()));
-            }
+            } else {
 
-        } else {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("La variable %s n'est pas définie", ((Id) node.idObject).identifier));
+                // Pour chaque champ du record...
+                ArrayList<Value> fieldsPresents = new ArrayList<>();
+                for (Ast currentField : node.args) {
+
+                    // ...on vérifie que l'attribut existe...
+                    Value fieldValue = recordType.getAttribut(((Id) ((FieldCreate) currentField).id).identifier);
+                    if (fieldValue == null) {
+                        GestionnaireErreur.getInstance().addSemanticError(currentField, String.format(
+                                "Le type record %s n'a pas d'attribut %s",
+                                recordType.getId(), ((Id) ((FieldCreate) currentField).id).identifier));
+                    } else {
+
+                        // ... puis que la valeur affectée est du bon type.
+                        Type expType = ((FieldCreate) currentField).expr.accept(this);
+                        fieldsPresents.add(fieldValue);
+                        if (!(expType.equals(fieldValue.getType()))) {
+                            GestionnaireErreur.getInstance().addSemanticError(currentField, String.format(
+                                    "La valeur affectée à l'attribut %s doit être de type %s, pas de type %s",
+                                    fieldValue.getId(), fieldValue.getType().getId(), expType.getId()));
+                        }
+                    }
+                }
+
+                // Maintenant qu'on a la liste de champs, on vérifie qu'ils sont tous différents...
+                fieldsPresents.stream().distinct().forEach(field -> {
+                    if (Collections.frequency(fieldsPresents, field) > 1) {
+                        GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                                "Le champs %s du record est affecté en plusieurs occurrences", field.getId()));
+                    }
+                });
+
+                // ... et sont tous présents.
+                recordType.getAttributs().forEach(field -> {
+                    if (!fieldsPresents.contains(field)) {
+                        GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                                "Le champs %s du record %s n'est pas affecté", field.getId(), recordType.getId()));
+                    }
+                });
+            }
         }
 
-        return resType;
+        return Type.VOID_TYPE;
     }
 
     @Override
     public Type visit(Id node) {
-        // si le noeud contient le mot clé break, il retourne un type void
+        // si le nœud contient le mot clé break, il retourne un type void
         if (node.identifier.equals("break")) {
             return Type.VOID_TYPE;
         }
-        // a faire : si il est dans la tds, type de la variable
+        // TODO : si il est dans la tds, type de la variable
 
         // sinon
         Variable v = tdsController.getVariableOfId(node.identifier);

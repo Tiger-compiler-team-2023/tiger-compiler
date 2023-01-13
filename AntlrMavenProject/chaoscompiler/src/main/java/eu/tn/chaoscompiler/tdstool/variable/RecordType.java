@@ -1,9 +1,11 @@
 package eu.tn.chaoscompiler.tdstool.variable;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 
 public class RecordType extends Type {
-    public ArrayList<Value> attributs;
+    @Getter public ArrayList<Value> attributs;
 
     public RecordType(String id, ArrayList<Value> attributs) {
         super(id);
@@ -20,12 +22,7 @@ public class RecordType extends Type {
     }
 
     public Value getAttribut(String id) {
-        for (Value v:this.attributs) {
-            if (v.getId().equals(id)) {
-                return v ;
-            }
-        }
-        return null ;
+        return attributs.stream().filter(v -> v.getId().equals(id)).findFirst().orElse(null);
     }
 
     @Override
