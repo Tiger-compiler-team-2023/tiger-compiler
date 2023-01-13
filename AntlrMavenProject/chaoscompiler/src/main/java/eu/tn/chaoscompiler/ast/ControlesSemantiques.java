@@ -208,6 +208,27 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         FunctionType fType = new FunctionType(node.objectId.identifier, retour);
 
+        // Ajout des paramètres à la TDS après verif
+        FieldDecList fdl = node.fields;
+        for (FieldDeclaration fdl_e : fdl.list) {
+            Type t = tdsController.findType(fdl_e.baseType.identifier);
+            if (t == null) {
+                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                    "Le type %s du paramètre %s n'est pas défini.",
+                    fdl_e.baseType.identifier, fdl_e.fieldId.identifier));
+                correct = false;
+            } else {
+                fType.addIn(t);
+            }
+            if (tdsController.existsLocalVariable(fdl_e.fieldId.identifier)) {
+                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                    "L'identifiant %s est déjà localement utilisé.",
+                    fdl_e.fieldId.identifier));
+                correct = false;
+            }
+            tdsController.add(new Value(t, fdl_e.fieldId.identifier));
+        }
+
         // verifier type de retour coherent avec contenu de la fonction
         Type content = node.content.accept(this);
         if (!retour.equals(content)) {
@@ -215,16 +236,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     "Le type de retour %s de la fonction %s est incompatible avec le type %s de la valeur retournée",
                     retour.getId(), node.objectId.identifier, content.getId()));
             correct = false;
-        }
-
-        // Verifier que les types des arguments existent
-        for (FieldDeclaration fd : node.fields.list) {
-            if (checkIfTypeExist(fd.baseType.identifier, node)) {
-                tdsController.add(new Value(tdsController.getTypeOfId(fd.baseType.identifier), fd.fieldId.identifier));
-                fType.addIn(tdsController.getTypeOfId(fd.baseType.identifier));
-            } else {
-                correct = false;
-            }
         }
 
         tdsController.up();
