@@ -277,6 +277,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         }
 
         Type typeValue = node.value.accept(this);
+        if (typeValue == null) {
+            GestionnaireErreur.getInstance().addSemanticError(node,
+                    String.format("Le membre droit de la déclaration de %s n'a pas de valeur.", node.objectId.identifier));
+            return Type.VOID_TYPE;
+        }
         Type typeToCreate = null;
 
         if (node.typeId != null) {
