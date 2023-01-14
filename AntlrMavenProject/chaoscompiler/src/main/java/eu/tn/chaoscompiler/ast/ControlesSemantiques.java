@@ -618,8 +618,8 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
 
-        if (!(type1.equals(Type.INT_TYPE) || type1.equals(Type.STRING_TYPE))
-                || !(type2.equals(Type.INT_TYPE) || type2.equals(Type.STRING_TYPE))) {
+        if (! ( (type1.equals(Type.INT_TYPE) && type2.equals(Type.INT_TYPE))
+                || (type1.equals(Type.STRING_TYPE) && type2.equals(Type.STRING_TYPE)) ) ) {
             err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
         }
         // le resultat est un booleen represente par un int
@@ -638,12 +638,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Inferior node) {
-        return equalOrInequal(node);
+        return comparison(node);
     }
 
     @Override
     public Type visit(InferiorOrEquals node) {
-        return equalOrInequal(node);
+        return comparison(node);
     }
 
     @Override
