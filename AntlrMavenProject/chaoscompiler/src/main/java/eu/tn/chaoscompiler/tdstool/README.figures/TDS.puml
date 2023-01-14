@@ -14,6 +14,10 @@ package tds {
     +Bool existsVari(String id)
     +Bool existsLocalVari(String id)
 
+    +Value findFonc(String id)
+    +Bool existsFonc(String id)
+    +Bool existsFoncVari(String id)
+
     +void add(Variable var)
 
     +void down()
@@ -21,11 +25,17 @@ package tds {
   }
 
   interface TDS {
+    +HashMap<String, Type> getHmType()
+    +HashMap<String, Type> getHmVari()
+
     +Type findType(String id)
     +Bool existsType(String id)
 
     +Value findVari(String id)
     +Bool existsVari(String id)
+
+    +Value findFonc(String id)
+    +Bool existsFonc(String id)
 
     +void add(Variable var)
   }

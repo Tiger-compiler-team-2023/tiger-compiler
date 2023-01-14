@@ -2,17 +2,25 @@ package eu.tn.chaoscompiler.tdstool.tds;
 
 import java.util.HashMap;
 
+import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
 
 public class TDSroot implements TDS {
-    protected HashMap<String, Type> hmType;
-    protected HashMap<String, Value> hmVari;
+    public HashMap<String, Type> hmType;
+    public HashMap<String, Value> hmVari;
 
     public TDSroot() {
         this.hmType = new HashMap<String, Type>();
         this.hmVari = new HashMap<String, Value>();
+    }
+
+    public HashMap<String, Type> getHmType() {
+        return this.hmType;
+    }
+    public HashMap<String, Value> getHmVari() {
+        return this.hmVari;
     }
 
     public Type findType(String id) {
@@ -55,6 +63,23 @@ public class TDSroot implements TDS {
         } else {
             return this.hmVari.containsKey(id);
         }
+    }
+
+    public Value findFonc(String id) {
+        if (this instanceof TDSlocal) {
+            Value t = this.hmVari.get(id);
+            if (t != null && t.getType() instanceof FunctionType) {
+                return t;
+            } else {
+                return ((TDSlocal) this).getFather().findFonc(id);
+            }
+        } else {
+            return this.hmVari.get(id);
+        }
+    }
+
+    public Boolean existsFonc(String id) {
+        return (this.findFonc(id) != null);
     }
 
     public void add(Variable var) {

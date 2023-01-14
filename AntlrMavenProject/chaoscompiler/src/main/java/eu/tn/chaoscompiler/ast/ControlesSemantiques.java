@@ -33,6 +33,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     // Couleurs pour l'affichage
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
+    public static String lastId = "";
 
     private TDScontroller tdsController;
     private GestionnaireErreur err = GestionnaireErreur.getInstance();
@@ -130,7 +131,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         tdsController.add(Type.STRING_TYPE);
         tdsController.add(Type.VOID_TYPE);
 
-        FunctionType ft = new FunctionType("", Type.VOID_TYPE);
+        FunctionType ft = new FunctionType("print", Type.VOID_TYPE);
         ft.addIn(Type.STRING_TYPE);
         Value print = new Value(ft, "print");
         tdsController.add(print);
@@ -408,9 +409,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Id id = (Id) forExpr.id;
         // Récupérer le nom de l'indice de la boucle
         String id_str = id.identifier;
-        Sequence sequence = (Sequence) forExpr.doExpr;
-        for (Ast instruction : sequence.instructions) {
-            // Vérifier s'il y a une instruction d'affectation
+
+        /*
+         * Le contenu de la boucle for peut être une expression simple ou
+         * une sequence.
+         */
+
+        if (!(forExpr.doExpr instanceof Sequence)) {
+            Ast instruction = forExpr.doExpr;
             if (instruction instanceof Affect) {
                 if (continuer) {
                     // Vérifier si la partie gauche de l'instruction est un Id
@@ -426,7 +432,28 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     }
                 }
             }
+        } else {
+            Sequence sequence = (Sequence) forExpr.doExpr;
+            for (Ast instruction : sequence.instructions) {
+                // Vérifier s'il y a une instruction d'affectation
+                if (instruction instanceof Affect) {
+                    if (continuer) {
+                        // Vérifier si la partie gauche de l'instruction est un Id
+                        if (((Affect) instruction).leftValue instanceof Id) {
+                            String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
+                            // Vérifier si la valeur d'id est égale à l'indice de la boucle
+                            if (id_left_value.equals(id_str)) {
+                                err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
+                                // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
+                                // assigné plusieurs fois dans la séquence
+                                continuer = false;
+                            }
+                        }
+                    }
+                }
+            }
         }
+        
         tdsController.up();
         return typedoexpr;
     }
@@ -705,19 +732,16 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(FunctionCall node) {
         // verifier que l'id est l'id d'une fonction qui existe et recuperer son type de
-        // retour
         Type func = node.id.accept(this);
         if (func == null) {
+            err.addSemanticError(node, Errors.UNDECLARED_FUNCTION, new String(lastId));
             return Type.VOID_TYPE;
         }
+        
+        
         Type retour;
-        if (!tdsController.existsVar(func.getId())) {
-            err.addSemanticError(node, Errors.UNDECLARED_FUNCTION, func.getId());
-        }
         if (!(func instanceof FunctionType)) {
             err.addSemanticError(node, Errors.NO_FUNCTION_TYPE, ((Id) node.id).identifier);
-            retour = Type.VOID_TYPE;
-        } else if (!tdsController.existsType(func.getId())) {
             retour = Type.VOID_TYPE;
         } else {
             retour = ((FunctionType) func).outType;
@@ -840,10 +864,10 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(Id node) {
         // si le nœud contient le mot clé break, il retourne un type void
+        lastId = node.identifier;
         if (node.identifier.equals("break")) {
             return Type.VOID_TYPE;
         }
-        // TODO : si il est dans la tds, type de la variable
 
         // sinon
         Variable v = tdsController.getVariableOfId(node, node.identifier);

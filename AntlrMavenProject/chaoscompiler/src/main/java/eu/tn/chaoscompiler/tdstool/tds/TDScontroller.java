@@ -3,6 +3,7 @@ package eu.tn.chaoscompiler.tdstool.tds;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
+import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
@@ -50,7 +51,7 @@ public class TDScontroller {
     }
 
     public Boolean existsLocalType(String id) {
-        return this.tds.existsType(id);
+        return (this.tds.getHmType().get(id) != null);
     }
 
     public Value getVariableOfId(String id) {
@@ -84,7 +85,46 @@ public class TDScontroller {
     }
 
     public Boolean existsLocalVariable(String id) {
-        return this.tds.existsVar(id);
+        return (this.tds.getHmVari().get(id) != null);
+    }
+
+    public Value getFonctionOfId(String id) {
+        Value res = findVar(id);
+        if (res == null) {
+            // ERREUR
+            System.out.println("La fonction " + id + " n'existe pas.");
+            return null;
+        } else {
+            return res;
+        }
+    }
+
+    public Value getFonctionOfId(Ast node, String id) {
+        Value res = findVar(id);
+        if (res == null) {
+            // ERREUR
+            GestionnaireErreur.getInstance().addSemanticError(node, Errors.UNDECLARED_FUNCTION, id);
+            return null;
+        } else {
+            return res;
+        }
+    }
+
+    public Value findFonc(String id) {
+        return this.tds.findFonc(id);
+    }
+
+    public Boolean existsFonc(String id) {
+        return this.tds.existsFonc(id);
+    }
+
+    public Boolean existsLocalFonction(String id) {
+        Variable v = this.tds.getHmVari().get(id);
+        if (v == null) {
+            return false;
+        } else {
+            return v.getType() instanceof FunctionType;
+        }
     }
 
     public void add(Variable var) {
