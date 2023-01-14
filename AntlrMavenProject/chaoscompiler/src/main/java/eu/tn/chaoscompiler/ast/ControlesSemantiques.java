@@ -130,6 +130,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         tdsController.add(Type.STRING_TYPE);
         tdsController.add(Type.VOID_TYPE);
 
+        FunctionType ft = new FunctionType("", Type.VOID_TYPE);
+        ft.addIn(Type.STRING_TYPE);
+        Value print = new Value(ft, "print");
+        tdsController.add(print);
+
         try {
             node.expression.accept(this);
         } catch (Exception e) {
