@@ -102,29 +102,13 @@ package variable {
   }
 
   class ArrayValue extends Value {
-    +Int size
-  }
-}
-
-package java.util #ff9999 {
-  class "HashMap<String, Type>" {
-    ...
-    +put(String key, Type value)
-    +get(String key)
-  }
-  class "HashMap<String, Value>" {
-    ...
-    +put(String key, Value value)
-    +get(String key)
   }
 }
 
 TDScontroller *--"1" TDS
 TDSlocal *--"1" TDS
-TDSroot *--"1" "HashMap<String, Type>"
-TDSroot *--"1" "HashMap<String, Value>"
-"HashMap<String, Type>" *--"0..*" Type
-"HashMap<String, Value>" *--"0..*" Value
+TDSroot *--"..*[HashMap]" Type
+TDSroot *--"..* [HashMap]" Value
 Value *--"1" Type
 RecordType *--"0..*" Value
 ArrayType *--"1" Type
@@ -132,5 +116,5 @@ TypeRename *--"1" Type
 FunctionType *--"0..*" Type
 FunctionType *--"1" Type
 
-TDSlocal -[hidden]-> Variable
+TDScontroller -u[hidden]-> Variable
 @enduml
