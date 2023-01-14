@@ -27,7 +27,10 @@ public class RecordType extends Type {
 
     @Override
     public String toString() {
-        return "\n\u001B[35m{[ReccordType]\u001B[0m" + super.toString() + ", attributs: " + this.attributs.toString()
+        StringBuilder b = new StringBuilder();
+        attributs.forEach(b::append);
+        return "\n\u001B[35m{[RecordType]\u001B[0m" + super.toString() + ", attributs: "
+                + b.toString()
                 + "\n\u001B[35m}\u001B[0m";
     }
 }

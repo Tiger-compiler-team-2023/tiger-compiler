@@ -528,29 +528,32 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Affect node) {
-
-        // verifier membre de gauche conforme
+        // Concernant la syntaxe membre de gauche...
         if (node.leftValue instanceof Id leftId) {
+
+            // ... on vérifie que si c'est un id, il est déclaré...
             if (!tdsController.existsVar(leftId.identifier)) {
-                GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("La variable %s n'est pas définie", leftId.identifier));
+                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                        "La variable %s n'est pas définie", leftId.identifier));
             }
+
+            // ... sinon, on vérifie que c'est bien un accès à un tableau ou un champ de record.
         } else if (!((node.leftValue instanceof ArrayAccess) || (node.leftValue instanceof RecordAccess))) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format(
-                            "Le membre de gauche ne correspond pas à une variable, impossible d'y affecter une valeur"));
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                    "Le membre de gauche ne correspond pas à une variable, impossible d'y affecter une valeur"));
         }
 
         Type type1 = node.leftValue.accept(this);
         Type type2 = node.rightValue.accept(this);
-        if (type1 != null && type2 != null) {
-            if (!type1.equals(type2)) {
-                GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("Impossible affecter une valeur de type %s à une variable de type %s",
-                                type2.getId(), type1.getId()));
-            }
+        if (type1 != null && type2 != null
+                && type1 != Type.VOID_TYPE && type2 != Type.VOID_TYPE
+                && !type1.equals(type2)) {
+
+            // La plupart des erreurs sont traitées dans les accepts, mais il reste celle-ci
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                    "Impossible affecter une valeur de type %s à une variable de type %s",
+                    type2.getId(), type1.getId()));
         }
-        // l'affectation envoie un type void
         return Type.VOID_TYPE;
     }
 
@@ -797,27 +800,34 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(RecordAccess node) {
+        String recordName = ((Id) node.exp).identifier;
 
-        Type resType = Type.VOID_TYPE;
-
-        // verifier que le membre de gauche est bien de type record
-        Type rType = node.exp.accept(this);
-        if (rType instanceof RecordType rt) {
-            // verifier que l'attribut existe
-            Value v = rt.getAttribut(((Id) node.index).identifier);
-            if (v == null) {
-                GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("Le type record %s n'a pas d'attribut %s", rt.getId(),
-                                ((Id) node.index).identifier));
-            } else {
-                resType = v.getType();
-            }
+        // On vérifie que le membre gauche est une variable connue...
+        if (!tdsController.existsVar(recordName)) {
+            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                    "L'identifiant %s ne correspond a aucune variable déclaré", recordName));
         } else {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Le type %s n'est pas un record", rType.getId()));
-        }
 
-        return resType;
+            // ...puis, qu'il est bien de type record...
+            Type leftType = tdsController.getVariableOfId(recordName).getType();
+            if (!(leftType instanceof RecordType recordType)) {
+                GestionnaireErreur.getInstance().addSemanticError(node,
+                        String.format("Le type %s n'est pas un record", leftType.getId()));
+            } else {
+
+                // ...et enfin que l'attribut existe.
+                Value fieldValue = recordType.getAttribut(((Id) node.index).identifier);
+                if (fieldValue == null) {
+                    GestionnaireErreur.getInstance().addSemanticError(node, String.format(
+                            "Le type record %s n'a pas d'attribut %s", recordType.getId(),
+                            ((Id) node.index).identifier));
+                } else {
+                    // On termine en retournant le type de l'attribut
+                    return fieldValue.getType();
+                }
+            }
+        }
+        return Type.VOID_TYPE;
     }
 
     @Override
@@ -873,9 +883,10 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                                 "Le champs %s du record %s n'est pas affecté", field.getId(), recordType.getId()));
                     }
                 });
+                return varType;
             }
         }
-
+        // Et s'il y a encore une erreur ici, suivre les consignes du pictogramme suivant:    (╯°□°)╯︵ ┻━┻
         return Type.VOID_TYPE;
     }
 
