@@ -21,7 +21,7 @@ let
     type c = int
 
     /* TYPE01 ER, TYPE03 OK */
-    var a:int := "kayak" /* ER : type attendu int mais type string */
+    var miroir:int := "kayak" /* ER : type attendu int mais type string */
 
     /* SCOPE00 OK */
     function printhello() = print("Hello")
@@ -34,28 +34,28 @@ let
     var e := tbl[s] /* ER : l'indice d'un tableau doit etre un entier */
 
     /* TYPE11 ER */
-    var mon_beau_tableau := int [42] of 18 /* ER : int n'est pas un type de tableau */
+    var mon_beau_tableau0 := int [42] of 18 /* ER : int n'est pas un type de tableau */
 
     /* TYPE11 ER */
-    var mon_beau_tableau := tblty ["NaN"] of 18 /* ER : le nombre d'elements du tableau doit etre un int */
+    var mon_beau_tableau1 := tblty ["NaN"] of 18 /* ER : le nombre d'elements du tableau doit etre un int */
 
     /* TYPE11 ER */
-    var mon_beau_tableau := tblty [42] of "NaN" /* ER : le type de l'element d'initialisation du tableau doit correspondre au type d'un element du tableau */
+    var mon_beau_tableau2 := tblty [42] of "NaN" /* ER : le type de l'element d'initialisation du tableau doit correspondre au type d'un element du tableau */
 
     /* TYPE12 ER */
-    var mon_bel_enregistrement := int {first = 1, second = "two"} /* ER : int n'est pas un type d'enregistrement */
+    var mon_bel_enregistrement0 := int {first = 1, second = "two"} /* ER : int n'est pas un type d'enregistrement */
 
     /* TYPE12 ER */
-    var mon_bel_enregistrement := int {first = 1, second = 2} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, second:int} */
+    var mon_bel_enregistrement1 := recty {first = 1, second = 2} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, second:int} */
 
     /* TYPE12 ER */
-    var mon_bel_enregistrement := int {first = 1, seond = "two", third = "three"} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, second:string, third:string} */
+    var mon_bel_enregistrement2 := recty {first = 1, second = "two", third = "three"} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, second:string, third:string} */
     
     /* TYPE12 ER */
-    var mon_bel_enregistrement := int {first = 1, third = "three"} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, third:string} */
+    var mon_bel_enregistrement3 := recty {first = 1, third = "three"} /* ER : attributs attendus {first:int, second:string}, donnes {first:int, third:string} */
 
     /* TYPE12 OK */
-    var mon_bel_enregistrement := recty {first = 1, second = "two"}
+    var mon_bel_enregistrement4 := recty {first = 1, second = "two"}
 
 in
     /* SCOPE01 OK */
