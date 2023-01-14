@@ -11,7 +11,7 @@ public class Type implements Variable {
             INT_TYPE = new Type("int"),
             STRING_TYPE = new Type("string"),
             VOID_TYPE = new Type("void"),
-            INCR_TYPE = new Type("0");
+            INCR_TYPE = new Type("int");
     
     @Override
     public boolean equals(Object obj) {
@@ -45,7 +45,7 @@ public class Type implements Variable {
     }
 
     public boolean isIncr() {
-        return this.getId().equals("0") ;
+        return this == INCR_TYPE ;
     }
 
     @Override

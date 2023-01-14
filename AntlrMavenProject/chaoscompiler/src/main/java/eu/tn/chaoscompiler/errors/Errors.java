@@ -34,7 +34,7 @@ public enum Errors {
     BAD_AFFECT_TYPE("Une valeur de type %s ne peut pas être affectée à une variable de type %s"),
     INCOMPARABLE_TYPES("Les types %s et %s ne sont pas comparables"),
     BAD_NEGATION_TYPE("Impossible d'appliquer négation sur une valeur de type %s, attendu une valeur entière"),
-    BAD_OPERATION_TYPE("Impossible d'appliquer une %s sur les valeurs de type %s et %s"),
+    BAD_OPERATION_TYPE("Impossible d'appliquer %s sur les valeurs de type %s et %s"),
     BAD_ARRAY_INIT_VALUE("La valeur d'initialisation est attendue de type %s, obtenu %s"),
     ARRAY_TYPE("%s"),
     NO_FUNCTION_TYPE("La variable %s n'est pas une fonction"),
