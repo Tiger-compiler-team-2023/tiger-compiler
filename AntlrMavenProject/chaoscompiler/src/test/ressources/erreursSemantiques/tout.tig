@@ -158,3 +158,47 @@ in
     i := let var a := 5 in a end
 
 end
+
+/*
+--- RAPPELS DES ERREURS ATTENDUES ---
+
+17  -> c n'est pas définie
+24  -> type attendu int mais type string
+31  -> le type de retour est void mais retourne int
+34  -> l'indice d'un tableau doit etre un entier
+37  -> int n'est pas un type de tableau
+40  -> ER : le nombre d'elements du tableau doit etre un int
+43  -> le type de l'element d'initialisation du tableau doit correspondre au type d'un element du tableau
+46  -> int n'est pas un type d'enregistrement
+49  -> attributs attendus {first:int, second:string}, donnes {first:int, second:int}
+52  -> attributs attendus {first:int, second:string}, donnes {first:int, second:string, third:string}
+55  -> attributs attendus {first:int, second:string}, donnes {first:int, third:string}
+71  -> type attendu int mais type void (dans une séquence)
+77  -> la negation s'applique à des entiers
+80  -> nombre d'arguments attendu 2 mais seul 1 donne
+83  -> type d'arguments attendus (int, int) mais (int, string) donne
+86  -> types pour une addition int+int, donne int+string
+89  -> ER : types pour une soustraction int-int, donne int-string
+92  -> types pour une division int/int, donne int/string
+95  -> types pour une addition int*int, donne int*string
+98  -> types pour une conjonction int&int, donne int&string
+101 -> types pour une disjonction int|int, donne int|string
+104 -> division par zero explicit
+107 -> les deux types de la differences doivent etre identiques
+110 -> les deux types de l'egalite doivent etre identiques
+113 -> les deux types de la comparaison doivent etre identiques
+116 -> les deux types de la comparaison doivent etre identiques
+118 -> les deux types de la comparaison doivent etre identiques
+122 -> les deux types de la comparaison doivent etre identiques
+128 -> une condition doit etre de type int (if)
+131 -> le then et le else doivent etre de meme type
+134 -> le then d'un if-then (sans else) doit etre de type void
+137 -> le type de la condition doit etre un int (while)
+140 -> le contenu de la boucle while doit etre de type void
+143 -> le depart de la boucle for doit etre de type int
+146 -> l'arrivee de la boucle for doit etre de type int
+149 -> la variable d'incrementation ne doit pas etre assignee dans la boucle for
+152 -> le contenu de la boucle for doit etre de type void
+155 -> break ne peut etre utilise que dans une boucle
+
+*/

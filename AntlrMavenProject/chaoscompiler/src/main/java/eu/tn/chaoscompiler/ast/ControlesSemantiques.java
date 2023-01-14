@@ -637,6 +637,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Division node) {
+        if (node.rightValue instanceof IntegerNode) {
+            if (((IntegerNode) node.rightValue).value == 0) {
+                err.addSemanticError(node, Errors.ZERO_DIV);
+            }
+        }
+
         return operation(node, "une division");
     }
 

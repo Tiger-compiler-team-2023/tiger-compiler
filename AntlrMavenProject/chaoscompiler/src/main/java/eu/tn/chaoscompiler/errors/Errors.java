@@ -45,6 +45,7 @@ public enum Errors {
     INEXISTING_FIELD("Le champ %s n'existe pas dans l'enregistrement %s"),
     DUPLICATE_FIELD("Impossible d'affecter plusieurs fois le champ %s de l'enregistrement %s"),
     MISSING_FIELD("Le champ %s n'a pas été affecté dans l'enregistrement %s"),
+    ZERO_DIV("Division par une constante nulle"),
     ;
 
     public final int nbArg;
