@@ -1,6 +1,7 @@
 package eu.tn.chaoscompiler.errors;
 
 import eu.tn.chaoscompiler.ast.Ast;
+import lombok.Getter;
 import lombok.Setter;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 
 public class GestionnaireErreur extends BaseErrorListener {
     private static GestionnaireErreur INSTANCE;
-    private ArrayList<ChaosError> errors;
+    private @Getter ArrayList<ChaosError> errors;
     private @Setter boolean throwException = false;
 
     public GestionnaireErreur() {

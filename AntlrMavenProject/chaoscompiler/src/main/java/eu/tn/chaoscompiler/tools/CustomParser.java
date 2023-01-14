@@ -8,15 +8,32 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import java.io.File;
+import java.io.IOException;
 
 public class CustomParser {
-    public static ChaosParser parse(File file) {
+    public static ChaosParser parseFromFile(File file) {
+        //chargement du fichier et construction du parser
+        // Le programme lit d'abord une chaîne de caractères
+        CharStream input = null;
         try {
-            //chargement du fichier et construction du parser
-            // Le programme lit d'abord une chaîne de caractères
-            CharStream input = CharStreams.fromPath(file.toPath());
+            input = CharStreams.fromPath(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return parse(input);
+    }
 
-            // il la passe à l'analyseur lexical. Ceci permet de transformer la chaîne de caractères en une
+    public static ChaosParser parseFromString(String input) {
+        //chargement du fichier et construction du parser
+        // Le programme lit d'abord une chaîne de caractères
+        CharStream stream = null;
+        stream = CharStreams.fromString(input);
+        return parse(stream);
+    }
+
+    public static ChaosParser parse(CharStream input) {
+        try {
+            // Ceci permet de transformer la chaîne de caractères en une
             // suite de mots (ou token) du langage (par exemple 'if')
             ChaosLexer lexer = new ChaosLexer(input);
             lexer.removeErrorListeners();
@@ -32,8 +49,6 @@ public class CustomParser {
             parser.removeErrorListeners();
             parser.addErrorListener(GestionnaireErreur.getInstance());
             return parser;
-
-            // obtenir l'arbre syntaxique
         } catch (Exception e) {
             e.printStackTrace();
         }

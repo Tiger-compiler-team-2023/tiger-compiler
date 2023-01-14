@@ -25,8 +25,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static eu.tn.chaoscompiler.errors.Errors.LOOP_COUNTER_AFFECT;
-import static eu.tn.chaoscompiler.errors.Errors.PARAMETER_TYPE_NO_DECLARED;
+import static eu.tn.chaoscompiler.errors.Errors.*;
 
 @NoArgsConstructor
 public class ControlesSemantiques implements AstVisitor<Type> {
@@ -127,14 +126,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Void visit(Program node) {
         tdsController = new TDScontroller();
-        tdsController.add(Type.INT_TYPE);
-        tdsController.add(Type.STRING_TYPE);
-        tdsController.add(Type.VOID_TYPE);
-
-        FunctionType ft = new FunctionType("print", Type.VOID_TYPE);
-        ft.addIn(Type.STRING_TYPE);
-        Value print = new Value(ft, "print");
-        tdsController.add(print);
 
         try {
             node.expression.accept(this);
@@ -691,10 +682,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 // verifier valeur d'initialisation est conforme au type de l'array
                 Type contentType = node.element.accept(this);
                 if (!(contentType.equals(at.elementsType))) {
-                    err.addSemanticError(node, Errors.ARRAY_TYPE,
-                            String.format("La valeur d'initialisation est attendue de type %s mais est de type %s",
-                                    at.elementsType.getId(), contentType.getId()));
-
+                    err.addSemanticError(node ,BAD_ARRAY_INIT_VALUE, at.elementsType.getId(), contentType.getId());
                 }
 
             } else {

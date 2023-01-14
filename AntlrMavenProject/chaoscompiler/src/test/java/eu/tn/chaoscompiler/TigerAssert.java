@@ -1,5 +1,9 @@
 package eu.tn.chaoscompiler;
 
+import eu.tn.chaoscompiler.ast.Ast;
+import eu.tn.chaoscompiler.ast.AstCreator;
+import eu.tn.chaoscompiler.ast.ControlesSemantiques;
+import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tools.CustomParser;
 import org.junit.Assert;
@@ -16,16 +20,44 @@ public class TigerAssert extends Assert {
      */
     public static void assertNbErreurs(String path, int expected) {
         File file = new File(RESSOURCE_FOLDER + path);
-        CustomParser.parse(file);
-        assertEquals("Mauvais nombre d'erreurs", expected, GestionnaireErreur.getNbErreur());
+        CustomParser.parseFromFile(file);
+        assertEquals("Mauvais nombre d'erreurs syntaxique", expected, GestionnaireErreur.getNbErreur());
     }
 
     /**
      * Assert vérifiant qu'il n'y a aucune erreur lors de la création de l'arbre syntaxique
      * @param path lien relatif du fichier à partir de src/test/ressources/
      */
-    public static void assertCorrect(String path){
+    public static void assertCorrectSyntaxic(String path){
         assertNbErreurs(path, 0);
+    }
+
+    /**
+     * Assert vérifiant qu'une erreur sémantique est détectée. Si une erreur est détectée durant les étapes precedents,
+     * l'assertion échoue
+     * @param input programme à tester sous forme de String
+     * @param expectedError - erreur attendue, null si aucune
+     */
+    public static void assertSemanticErrors(Errors expectedError, String input) {
+        var chaosParser = CustomParser.parseFromString(input);
+        assertEquals("Test sémantique | Aucune erreur syntaxique attendue", 0, GestionnaireErreur.getNbErreur());
+        Ast ast = chaosParser.program().accept(new AstCreator());
+        assertEquals("Test sémantique | Aucune erreur attendue lors de la création de l'AST", 0, GestionnaireErreur.getNbErreur());
+        ast.accept(new ControlesSemantiques());
+        if(expectedError == null){
+            assertEquals("Test sémantique | Aucune erreur sémantique attendue", 0, GestionnaireErreur.getNbErreur());
+        } else {
+            assertTrue("Test sémantique | L'erreur attendue n'est pas présente",
+                    GestionnaireErreur.getInstance().getErrors().stream().anyMatch(e -> e.getErrorId() == expectedError));
+        }
+    }
+
+    /**
+     * Assert vérifiant qu'aucune erreur sémantique est détectée
+     * @param input programme à tester sous forme de String
+     */
+    public static void assertCorrectSemantic(String input){
+        assertSemanticErrors(null, input);
     }
 
 }

@@ -1,6 +1,7 @@
 package eu.tn.chaoscompiler.errors;
 
 import eu.tn.chaoscompiler.ast.Ast;
+import lombok.Getter;
 
 public class ChaosError {
     public enum typeError {
@@ -10,7 +11,7 @@ public class ChaosError {
 
     private final int line;
     private final int column;
-    private Errors errorId;
+    private @Getter Errors errorId;
     private final ChaosError.typeError type;
     private final String message;
 
@@ -25,12 +26,13 @@ public class ChaosError {
         if(errorId.nbArg != arguments.length) {
             throw new IllegalArgumentException("Nombre d'arguments incorrect");
         }
+        this.errorId = errorId;
         this.message = String.format(errorId.message, arguments);
     }
 
     public String getErrorMessage() {
         String type = this.type == ChaosError.typeError.SYNTAX_ERROR ? "Erreur syntaxique" : "Erreur sémantique";
 
-        return String.format("[%s] ligne %d:%d -> %s", type, line, column, message);
+        return String.format("[%s, E%s] ligne %d:%d -> %s", type, errorId.ordinal(), line, column, message);
     }
 }
