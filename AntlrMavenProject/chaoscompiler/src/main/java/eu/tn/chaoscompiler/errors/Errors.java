@@ -38,7 +38,7 @@ public enum Errors {
     ARRAY_TYPE("%s"),
     NO_FUNCTION_TYPE("La variable %s n'est pas une fonction"),
 
-    NO_RECORD_TYPE("La variable %s n'est pas un enregistrement"),
+    NO_RECORD_TYPE("La variable de type %s n'est pas un enregistrement"),
     BAD_ARGUMENT_NUMBER("Le nombre d'arguments fournis (%s) ne correspond pas au nombre d'arguments attendus (%s)"),
     BAD_ARGUMENT_TYPE("Le type %s du paramètre %s ne correspond pas au type %s attendu"),
     INEXISTING_FIELD("Le champ %s n'existe pas dans l'enregistrement %s"),

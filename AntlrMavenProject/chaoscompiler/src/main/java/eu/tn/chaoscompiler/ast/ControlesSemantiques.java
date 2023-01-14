@@ -400,6 +400,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Id id = (Id) forExpr.id;
         // Récupérer le nom de l'indice de la boucle
         String id_str = id.identifier;
+        tdsController.add(new Value(Type.INCR_TYPE, id_str));
 
         /*
          * Le contenu de la boucle for peut être une expression simple ou
@@ -414,12 +415,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     if (((Affect) instruction).leftValue instanceof Id) {
                         String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
                         // Vérifier si la valeur d'id est égale à l'indice de la boucle
-                        if (id_left_value.equals(id_str)) {
-                            err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
-                            // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
-                            // assigné plusieurs fois dans la séquence
-                            continuer = false;
-                        }
+                        Value v = tdsController.getVariableOfId(forExpr.doExpr, id_left_value);
+                        if (v != null && v.getType() == Type.INCR_TYPE) {
+                        err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
+                        // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
+                        // assigné plusieurs fois dans la séquence
+                        continuer = false;
+                    }
                     }
                 }
             }
@@ -433,12 +435,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                         if (((Affect) instruction).leftValue instanceof Id) {
                             String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
                             // Vérifier si la valeur d'id est égale à l'indice de la boucle
-                            if (id_left_value.equals(id_str)) {
-                                err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
-                                // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
-                                // assigné plusieurs fois dans la séquence
-                                continuer = false;
-                            }
+                            Value v = tdsController.getVariableOfId(forExpr.doExpr, id_left_value);
+                            if (v != null && v.getType() == Type.INCR_TYPE) {
+                            err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
+                            // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
+                            // assigné plusieurs fois dans la séquence
+                            continuer = false;
+                        }
                         }
                     }
                 }
