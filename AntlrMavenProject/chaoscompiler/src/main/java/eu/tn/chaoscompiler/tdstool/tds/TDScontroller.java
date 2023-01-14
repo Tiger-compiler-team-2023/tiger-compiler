@@ -107,34 +107,6 @@ public class TDScontroller {
         }
     }
 
-    public Value getFonctionOfId(Ast node, String id) {
-        Value res = findVar(id);
-        if (res == null) {
-            // ERREUR
-            GestionnaireErreur.getInstance().addSemanticError(node, Errors.UNDECLARED_FUNCTION, id);
-            return null;
-        } else {
-            return res;
-        }
-    }
-
-    public Value findFonc(String id) {
-        return this.tds.findFonc(id);
-    }
-
-    public Boolean existsFonc(String id) {
-        return this.tds.existsFonc(id);
-    }
-
-    public Boolean existsLocalFonction(String id) {
-        Variable v = this.tds.getHmVari().get(id);
-        if (v == null) {
-            return false;
-        } else {
-            return v.getType() instanceof FunctionType;
-        }
-    }
-
     public void add(Variable var) {
         this.tds.add(var);
     }

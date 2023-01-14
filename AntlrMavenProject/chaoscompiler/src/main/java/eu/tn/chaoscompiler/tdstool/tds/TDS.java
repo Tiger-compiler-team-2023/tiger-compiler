@@ -17,9 +17,6 @@ public interface TDS {
     Value findVar(String id);
     Boolean existsVar(String id);
 
-    Value findFonc(String id);
-    Boolean existsFonc(String id);
-
     void add(Variable var);
 
     @Override

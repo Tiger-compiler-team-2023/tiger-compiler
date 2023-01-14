@@ -65,23 +65,6 @@ public class TDSroot implements TDS {
         }
     }
 
-    public Value findFonc(String id) {
-        if (this instanceof TDSlocal) {
-            Value t = this.hmVari.get(id);
-            if (t != null && t.getType() instanceof FunctionType) {
-                return t;
-            } else {
-                return ((TDSlocal) this).getFather().findFonc(id);
-            }
-        } else {
-            return this.hmVari.get(id);
-        }
-    }
-
-    public Boolean existsFonc(String id) {
-        return (this.findFonc(id) != null);
-    }
-
     public void add(Variable var) {
         if (var instanceof Value) {
             this.hmVari.put(var.getId(), (Value) var);
