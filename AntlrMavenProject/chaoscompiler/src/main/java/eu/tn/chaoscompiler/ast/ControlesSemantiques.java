@@ -119,6 +119,16 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         return false;
     }
 
+    public boolean checkDefinedId(Ast node) {
+        if (node instanceof Id id) {
+            if (id.accept(this) == null) {
+                err.addSemanticError(node, UNDECLARED_VARIABLE, id.identifier);
+                return false ;
+            }
+        }
+        return true ;
+    }
+
     // --------------------------------------------
     // | VISITEURS |
     // --------------------------------------------
@@ -373,8 +383,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(For forExpr) {
+
         boolean continuer = true;
+
         tdsController.down();
+
+        // Definir l'indice de la boucle comme INCR_TYPE
+        tdsController.add(new Value(Type.INCR_TYPE, ((Id) forExpr.id).identifier));
+
         // Vérifier l'expression de départ est de type entier
         Type type_start_for = forExpr.startExpr.accept(this);
         if (!type_start_for.equals(Type.INT_TYPE)) {
@@ -382,12 +398,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     "le départ de l'indice de  la boucle for est de type " + type_start_for.getId()
                             + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
+
         // Vérifier que l'expression de la fin doit être entière
         Type type_end_for = forExpr.endExpr.accept(this);
         if (!type_end_for.equals(Type.INT_TYPE)) {
             err.addSemanticError(forExpr.endExpr, Errors.LOOP_TYPE, "la fin de la boucle for est de type "
                     + type_end_for.getId() + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
+
         // Vérifier que le contenu de la boucle est de type void
         Type typedoexpr = forExpr.doExpr.accept(this);
         if (!typedoexpr.equals(Type.VOID_TYPE)) {
@@ -395,19 +413,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     "l'expression à l'intérieur de for est de type " + typedoexpr.getId()
                             + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
         }
-        // Vérifier que l'indice de la boucle n'est pas assigné
-
-        Id id = (Id) forExpr.id;
-        // Récupérer le nom de l'indice de la boucle
-        String id_str = id.identifier;
-        tdsController.add(new Value(Type.INCR_TYPE, id_str));
 
         /*
          * Le contenu de la boucle for peut être une expression simple ou
          * une sequence.
          */
 
-        if (!(forExpr.doExpr instanceof Sequence)) {
+        /*if (!(forExpr.doExpr instanceof Sequence)) {
             Ast instruction = forExpr.doExpr;
             if (instruction instanceof Affect) {
                 if (continuer) {
@@ -446,10 +458,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     }
                 }
             }
-        }
+        }*/
         
         tdsController.up();
-        return typedoexpr;
+
+        return Type.VOID_TYPE;
     }
 
     @Override
@@ -535,24 +548,40 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             err.addSemanticError(node, Errors.INVALID_LVALUE);
         }
 
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
-        if (type1 != null && type2 != null
-                && type1 != Type.VOID_TYPE && type2 != Type.VOID_TYPE
-                && !type1.equals(type2)) {
+        // verifier qu'aucun des deux membres soient des variables indefinies
+        if (checkDefinedId(node.leftValue)) {
 
-            // La plupart des erreurs sont traitées dans les accepts, mais il reste celle-ci
-            err.addSemanticError(node, Errors.BAD_AFFECT_TYPE, type1.getId(), type2.getId());
+            Type type1 = node.leftValue.accept(this);
+
+            if (type1.isIncr()) {
+                err.addSemanticError(node, CANT_AFFECT_TO_FOR_INDEX) ;
+            }
+
+            if (checkDefinedId(node.rightValue)) {
+
+                Type type2 = node.rightValue.accept(this);
+
+                if ((type1 == Type.VOID_TYPE) || (type2 == Type.VOID_TYPE)
+                        || (!type1.equals(type2))) {
+
+                    // La plupart des erreurs sont traitées dans les accepts, mais il reste celle-ci
+                    err.addSemanticError(node, Errors.BAD_AFFECT_TYPE, type1.getId(), type2.getId());
+                }
+            }
+
         }
+
         return Type.VOID_TYPE;
     }
 
     public Type equalOrInequal(BinaryOperator node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
+        if (checkDefinedId(node.leftValue) && checkDefinedId(node.rightValue)){
+            Type type1 = node.leftValue.accept(this);
+            Type type2 = node.rightValue.accept(this);
 
-        if (!(type1.equals(type2))) {
-            err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
+            if (!(type1.equals(type2))) {
+                err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
+            }
         }
         // le resultat est un booleen representé par un int
         return Type.INT_TYPE;
@@ -578,11 +607,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     }
 
     public Type operation(BinaryOperator node, String operation) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
 
-        if (!(type1.equals(Type.INT_TYPE)) || !(type2.equals(Type.INT_TYPE))) {
-            err.addSemanticError(node, Errors.BAD_OPERATION_TYPE, operation, type1.getId(), type2.getId());
+        if (checkDefinedId(node.leftValue) && checkDefinedId(node.rightValue)){
+
+            Type type1 = node.leftValue.accept(this);
+            Type type2 = node.rightValue.accept(this);
+
+            if (!(type1.equals(Type.INT_TYPE)) || !(type2.equals(Type.INT_TYPE))) {
+                err.addSemanticError(node, Errors.BAD_OPERATION_TYPE, operation, type1.getId(), type2.getId());
+            }
         }
         return Type.INT_TYPE;
     }
@@ -618,12 +651,15 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     }
 
     public Type comparison(BinaryOperator node) {
-        Type type1 = node.leftValue.accept(this);
-        Type type2 = node.rightValue.accept(this);
 
-        if (! ( (type1.equals(Type.INT_TYPE) && type2.equals(Type.INT_TYPE))
-                || (type1.equals(Type.STRING_TYPE) && type2.equals(Type.STRING_TYPE)) ) ) {
-            err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
+        if (checkDefinedId(node.rightValue) && checkDefinedId(node.leftValue)) {
+            Type type1 = node.leftValue.accept(this);
+            Type type2 = node.rightValue.accept(this);
+
+            if (!((type1.equals(Type.INT_TYPE) && type2.equals(Type.INT_TYPE))
+                    || (type1.equals(Type.STRING_TYPE) && type2.equals(Type.STRING_TYPE)))) {
+                err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
+            }
         }
         // le resultat est un booleen represente par un int
         return Type.INT_TYPE;

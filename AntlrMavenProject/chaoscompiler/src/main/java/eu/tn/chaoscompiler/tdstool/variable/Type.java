@@ -44,6 +44,10 @@ public class Type implements Variable {
         return this.token;
     }
 
+    public boolean isIncr() {
+        return this.getId().equals("0") ;
+    }
+
     @Override
     public String toString() {
         return "\n\u001B[35m{[Type]\u001B[0m id: \u001B[46m" + this.id + "\u001B[0m, token: \u001B[43m" + this.token

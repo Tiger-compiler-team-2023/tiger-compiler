@@ -20,6 +20,7 @@ public enum Errors {
     INCOMPATIBLE_FUNCTION_TYPE("Le type de retour %s de la fonction %s est incompatible avec le type %s de la valeur retournée"),
     NO_VALUE_ERROR("%s n'a pas pu être initialisée (n'a pas de valeur)"),
     BAD_AFFECTATION_TYPE("Une valeur de type %s ne peut pas être affectée à une variable de type %s"),
+    CANT_AFFECT_TO_FOR_INDEX("Impossible d'affecter une valeur à l'indice d'une boucle for"),
     LOOP_TYPE("%s"),
     LOOP_COUNTER_AFFECT("l'indice %s de la boucle For ne doit pas être assigné à l'intérieur de la boucle"),
 
