@@ -18,12 +18,12 @@ public enum Errors {
     PARAMETER_TYPE_NO_DECLARED("Le type %s du paramètre %s n'est pas défini"),
     ID_ALREADY_USED("L'identifiant %s est déjà localement utilisé"),
     INCOMPATIBLE_FUNCTION_TYPE("Le type de retour %s de la fonction %s est incompatible avec le type %s de la valeur retournée"),
-    NO_VALUE_ERROR("%s n'a pas de valeur"),
+    NO_VALUE_ERROR("%s n'a pas pu être initialisée (n'a pas de valeur)"),
     BAD_AFFECTATION_TYPE("Une valeur de type %s ne peut pas être affectée à une variable de type %s"),
     LOOP_TYPE("%s"),
     LOOP_COUNTER_AFFECT("l'indice %s de la boucle For ne doit pas être assigné à l'intérieur de la boucle"),
 
-    INT_EXPECTED("Une valeur entière est attendue, obtenue %s"),
+    INT_EXPECTED("Une valeur entière est attendue (type donné : %s)"),
 
     INCOMPATIBLES_THEN_ELSE("Les types %s et %s renvoyés par les expressions then et else ne sont pas compatibles"),
     THEN_WITH_TYPE("L'expression then est de type %s, or en l'absence de else, le type de l'expression if doit être void"),
