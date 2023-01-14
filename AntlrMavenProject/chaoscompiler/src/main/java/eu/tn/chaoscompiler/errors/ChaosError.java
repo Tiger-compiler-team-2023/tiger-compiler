@@ -14,6 +14,9 @@ public class ChaosError {
     private @Getter Errors errorId;
     private final ChaosError.typeError type;
     private final String message;
+    /*----Couleur pour l'affichage ---*/
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED_BOLD = "\033[1;31m";
 
     public ChaosError(Ast node, ChaosError.typeError type, Errors errorId, String... arguments) {
         this(node.getNumLigne(), node.getNumColonne(), type, errorId, arguments);
@@ -31,7 +34,7 @@ public class ChaosError {
     }
 
     public String getErrorMessage() {
-        String type = this.type == ChaosError.typeError.SYNTAX_ERROR ? "Erreur syntaxique" : "Erreur sémantique";
+        String type = this.type == ChaosError.typeError.SYNTAX_ERROR ? ANSI_RED_BOLD+"Erreur syntaxique"+ANSI_RESET : ANSI_RED_BOLD+"Erreur sémantique"+ANSI_RESET;
 
         return String.format("[%s, E%s] ligne %d:%d -> %s", type, errorId.ordinal(), line, column, message);
     }

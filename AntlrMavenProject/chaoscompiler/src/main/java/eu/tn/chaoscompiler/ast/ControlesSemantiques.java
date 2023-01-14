@@ -31,7 +31,8 @@ import static eu.tn.chaoscompiler.errors.Errors.*;
 public class ControlesSemantiques implements AstVisitor<Type> {
     // Couleurs pour l'affichage
     public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_RED_BOLD = "\033[1;31m";
+    public static final String ANSI_BLUE = "\033[0;34m";
     public static String lastId = "";
 
     private TDScontroller tdsController;
@@ -394,24 +395,24 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // Vérifier l'expression de départ est de type entier
         Type type_start_for = forExpr.startExpr.accept(this);
         if (!type_start_for.equals(Type.INT_TYPE)) {
-            err.addSemanticError(forExpr.startExpr, Errors.LOOP_TYPE,
-                    "le départ de l'indice de  la boucle for est de type " + type_start_for.getId()
-                            + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
+            err.addSemanticError(forExpr.startExpr, LOOP_TYPE,
+                    "le départ de l'indice de  la boucle for est de type " +ANSI_BLUE+ type_start_for.getId()
+                            +ANSI_RESET+ ". Or, il doit avoir un type " + ANSI_BLUE + " entier" + ANSI_RESET);
         }
 
         // Vérifier que l'expression de la fin doit être entière
         Type type_end_for = forExpr.endExpr.accept(this);
         if (!type_end_for.equals(Type.INT_TYPE)) {
-            err.addSemanticError(forExpr.endExpr, Errors.LOOP_TYPE, "la fin de la boucle for est de type "
-                    + type_end_for.getId() + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
+            err.addSemanticError(forExpr.endExpr, LOOP_TYPE, "la fin de la boucle for est de type "+ANSI_BLUE
+                    + type_end_for.getId()+ANSI_RESET + ". Or, il doit avoir un type " + ANSI_BLUE + " entier" + ANSI_RESET);
         }
 
         // Vérifier que le contenu de la boucle est de type void
         Type typedoexpr = forExpr.doExpr.accept(this);
         if (!typedoexpr.equals(Type.VOID_TYPE)) {
-            err.addSemanticError(forExpr.doExpr, Errors.LOOP_TYPE,
-                    "l'expression à l'intérieur de for est de type " + typedoexpr.getId()
-                            + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
+            err.addSemanticError(forExpr.doExpr, LOOP_TYPE,
+                    "l'expression à l'intérieur de for est de type " +ANSI_BLUE+ typedoexpr.getId()+ANSI_RESET
+                            + ". Or, elle doit avoir un type " + ANSI_BLUE + " void" + ANSI_RESET);
         }
 
         /*
@@ -565,7 +566,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                         || (!type1.equals(type2))) {
 
                     // La plupart des erreurs sont traitées dans les accepts, mais il reste celle-ci
-                    err.addSemanticError(node, Errors.BAD_AFFECT_TYPE, type1.getId(), type2.getId());
+                    err.addSemanticError(node, Errors.BAD_AFFECT_TYPE, type2.getId(), type1.getId());
                 }
             }
 
@@ -732,7 +733,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
             } else {
                 err.addSemanticError(node, Errors.ARRAY_TYPE,
-                        String.format("Le type %s ne correspond pas à un array", arrayType.getId()));
+                        String.format("Le type"+ANSI_BLUE+" %s"+ANSI_RESET+" ne correspond pas à un array", arrayType.getId()));
                 arrayType = Type.VOID_TYPE;
             }
         }
@@ -792,7 +793,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             Type argType = ((ParameterList) node.argList).parameters.get(i).accept(this);
             Type argTypeExpected = ((FunctionType) func).inTypes.get(i);
             if (!argType.equals(argTypeExpected)) {
-                err.addSemanticError(node, Errors.BAD_ARGUMENT_TYPE, i + "", argType.getId(), argTypeExpected.getId());
+                err.addSemanticError(node, Errors.BAD_ARGUMENT_TYPE, argType.getId(),i + "", argTypeExpected.getId());
             }
         }
 
@@ -823,13 +824,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             // ...puis, qu'il est bien de type record...
             Type leftType = tdsController.getVariableOfId(recordName).getType();
             if (!(leftType instanceof RecordType recordType)) {
-                err.addSemanticError(node, Errors.NO_RECORD_TYPE, leftType.getId());
+                err.addSemanticError(node, Errors.NO_RECORD_TYPE, leftType.getId(), leftType.getType().getId());
             } else {
 
                 // ...et enfin que l'attribut existe.
                 Value fieldValue = recordType.getAttribut(((Id) node.index).identifier);
                 if (fieldValue == null) {
-                    err.addSemanticError(node, Errors.INEXISTING_FIELD, ((Id) node.index).identifier, recordType.getId());
+                    err.addSemanticError(node, Errors.INEXISTING_FIELD, ((Id) node.index).identifier, recordType.getId(),recordType.getType().getId());
                 } else {
                     // On termine en retournant le type de l'attribut
                     return fieldValue.getType();
@@ -860,7 +861,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     Value fieldValue = recordType.getAttribut(((Id) ((FieldCreate) currentField).id).identifier);
                     if (fieldValue == null) {
                         err.addSemanticError(node, Errors.INEXISTING_FIELD,
-                                ((Id) ((FieldCreate) currentField).id).identifier, recordType.getId());
+                                ((Id) ((FieldCreate) currentField).id).identifier, recordType.getId(),recordType.getType().getId());
                     } else {
 
                         // ... puis que la valeur affectée est du bon type.
@@ -868,8 +869,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                         fieldsPresents.add(fieldValue);
                         if (!(expType.equals(fieldValue.getType()))) {
                             err.addSemanticError(node, Errors.BAD_ARGUMENT_TYPE,
-                                    ((Id) ((FieldCreate) currentField).id).identifier,
-                                    expType.getId(), fieldValue.getType().getId());
+                                    expType.getId(),((Id) ((FieldCreate) currentField).id).identifier ,fieldValue.getType().getId());
                         }
                     }
                 }
@@ -877,14 +877,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 // Maintenant qu'on a la liste de champs, on vérifie qu'ils sont tous différents...
                 fieldsPresents.stream().distinct().forEach(field -> {
                     if (Collections.frequency(fieldsPresents, field) > 1) {
-                        err.addSemanticError(node, Errors.DUPLICATE_FIELD, field.getId(), recordType.getId());
+                        err.addSemanticError(node, Errors.DUPLICATE_FIELD, field.getId(), recordType.getId(),recordType.getType().getId());
                     }
                 });
 
                 // ... et sont tous présents.
                 recordType.getAttributs().forEach(field -> {
                     if (!fieldsPresents.contains(field)) {
-                        err.addSemanticError(node, Errors.MISSING_FIELD, field.getId(), recordType.getId());
+                        err.addSemanticError(node, Errors.MISSING_FIELD, field.getId(), recordType.getId(), recordType.getType().getId());
                     }
                 });
                 return varType;
