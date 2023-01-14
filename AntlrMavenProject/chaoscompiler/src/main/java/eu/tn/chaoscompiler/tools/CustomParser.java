@@ -12,6 +12,9 @@ import java.io.IOException;
 
 public class CustomParser {
     public static ChaosParser parseFromFile(File file) {
+        return parse(file);
+    }
+    public static ChaosParser parse(File file) {
         //chargement du fichier et construction du parser
         // Le programme lit d'abord une chaîne de caractères
         CharStream input = null;
