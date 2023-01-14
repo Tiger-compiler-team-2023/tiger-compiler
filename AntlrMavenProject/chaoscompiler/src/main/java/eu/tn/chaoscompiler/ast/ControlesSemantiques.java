@@ -16,7 +16,7 @@ import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
-import eu.tn.chaoscompiler.errors.ChaosError;
+import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.*;
@@ -25,6 +25,9 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static eu.tn.chaoscompiler.errors.Errors.LOOP_COUNTER_AFFECT;
+import static eu.tn.chaoscompiler.errors.Errors.PARAMETER_TYPE_NO_DECLARED;
+
 @NoArgsConstructor
 public class ControlesSemantiques implements AstVisitor<Type> {
     // Couleurs pour l'affichage
@@ -32,10 +35,11 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public static final String ANSI_RED = "\u001B[31m";
 
     private TDScontroller tdsController;
+    private GestionnaireErreur err = GestionnaireErreur.getInstance();
 
     public boolean checkIfTypeExist(String type, Ast node) {
         if (!tdsController.existsType(type)) {
-            GestionnaireErreur.getInstance().addSemanticError(node, "Le type " + type + " n'est pas déclaré");
+            err.addSemanticError(node, Errors.UNDECLARED_TYPE, type);
             return false;
         }
         return true;
@@ -46,8 +50,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
      */
     public boolean checkIfBreakExistsAsId(Id id) {
         if (id.identifier.equals("break")) {
-            GestionnaireErreur.getInstance().addSemanticError(id,
-                    "Interdit d'utiliser break à l'extérieur des boucles For ou While");
+            err.addSemanticError(id, Errors.UNAUTHORIZED_BREAK);
             return true;
         }
         return false;
@@ -71,8 +74,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         for (Ast expression : decList.list) {
             if (expression instanceof Id) {
                 if (((Id) expression).identifier.equals("break")) {
-                    GestionnaireErreur.getInstance().addSemanticError(decList,
-                            "Interdit d'utiliser break à l'extérieur des boucles For ou While");
+                    err.addSemanticError(decList, Errors.UNAUTHORIZED_BREAK);
                     return true;
                 }
             } else if (expression instanceof BinaryOperator) {
@@ -89,8 +91,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         for (Ast expression : sequence.instructions) {
             if (expression instanceof Id) {
                 if (((Id) expression).identifier.equals("break")) {
-                    GestionnaireErreur.getInstance().addSemanticError(sequence,
-                            "Interdit d'utiliser break à l'extérieur des boucles For ou While");
+                    err.addSemanticError(expression, Errors.UNAUTHORIZED_BREAK);
                     return true;
                 }
             } else if (expression instanceof BinaryOperator) {
@@ -106,8 +107,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // the field is eighter a condExpr, thenExpr or ElseExpr
         if (field instanceof Id) {
             if (((Id) field).identifier.equals("break")) {
-                GestionnaireErreur.getInstance().addSemanticError(field,
-                        "Interdit d'utiliser le mot clé 'break' à l'intérieur de IfThenElse");
+                err.addSemanticError(field, Errors.UNAUTHORIZED_BREAK);
                 return true;
             }
         }
@@ -139,10 +139,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             node.expression.accept(this);
         } catch (Exception e) {
             e.printStackTrace();
-            GestionnaireErreur.getInstance().addUnrecognisedError(
-                    "Erreur durant la construction de la table des symbôles. Le programme est probablement mal formé" +
-                            " mais le compilateur ne détecte pas l'erreur correctement.",
-                    ChaosError.typeError.SYNTAX_ERROR);
+            err.addSemanticError(node, Errors.UNRECOGNISED_ERROR,
+                    "Erreur durant la construction de la table des symboles. Le programme est probablement mal formé" +
+                            " mais le compilateur ne détecte pas l'erreur correctement.");
         }
         return null;
     }
@@ -187,8 +186,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // verifier que la variable n'existe pas deja
         if (tdsController.existsLocalVariable(node.objectId.identifier)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("La variable %s a déjà été définie", node.objectId.identifier));
+            err.addSemanticError(node, Errors.ALREADY_DECLARED, node.objectId.identifier);
             correct = false;
         }
 
@@ -218,17 +216,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         for (FieldDeclaration fdl_e : fdl.list) {
             Type t = tdsController.findType(fdl_e.baseType.identifier);
             if (t == null) {
-                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                    "Le type %s du paramètre %s n'est pas défini.",
-                    fdl_e.baseType.identifier, fdl_e.fieldId.identifier));
+                err.addSemanticError(node, PARAMETER_TYPE_NO_DECLARED, fdl_e.baseType.identifier, fdl_e.fieldId.identifier);
                 correct = false;
             } else {
                 fType.addIn(t);
             }
             if (tdsController.existsLocalVariable(fdl_e.fieldId.identifier)) {
-                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                    "L'identifiant %s est déjà localement utilisé.",
-                    fdl_e.fieldId.identifier));
+                err.addSemanticError(node, Errors.ID_ALREADY_USED, fdl_e.fieldId.identifier);
                 correct = false;
             }
             tdsController.add(new Value(t, fdl_e.fieldId.identifier));
@@ -237,12 +231,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // verifier type de retour coherent avec contenu de la fonction
         Type content = node.content.accept(this);
         if (!retour.equals(content)) {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                    "Le type de retour %s de la fonction %s est incompatible avec le type %s de la valeur retournée",
-                    retour.getId(), node.objectId.identifier, content.getId()));
+            err.addSemanticError(node, Errors.INCOMPATIBLE_FUNCTION_TYPE, retour.getId(), node.objectId.identifier, content.getId());
             correct = false;
         }
-
         tdsController.up();
 
         if (correct) {
@@ -252,8 +243,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // Vérifier si le nom de la fonction n'est pas celui d'un mot clé
         if (node.objectId != null) {
             if (node.objectId.identifier.equals("break")) {
-                GestionnaireErreur.getInstance().addSemanticError(node.objectId,
-                        "Interdit d'utiliser le mot clé 'break' comme nom de déclaration d'une fonction");
+                err.addSemanticError(node.objectId, Errors.UNAUTHORIZED_BREAK);
             }
         }
 
@@ -276,15 +266,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         boolean correct = true;
 
         if (tdsController.existsLocalVariable(node.objectId.identifier)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("La variable %s a déjà été définie", node.objectId.identifier));
+            err.addSemanticError(node, Errors.ALREADY_DECLARED, node.objectId.identifier);
             correct = false;
         }
 
         Type typeValue = node.value.accept(this);
         if (typeValue == null) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Le membre droit de la déclaration de %s n'a pas de valeur.", node.objectId.identifier));
+            err.addSemanticError(node, Errors.NO_VALUE_ERROR, node.objectId.identifier);
             return Type.VOID_TYPE;
         }
         Type typeToCreate = null;
@@ -293,9 +281,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             checkIfTypeExist(node.typeId.identifier, node);
             Type declaredType = tdsController.getTypeOfId(node, node.typeId.identifier);
             if (!typeValue.equals(declaredType)) {
-                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                        "Une valeur de type %s ne peut pas être affectée à une variable de type %s",
-                        typeValue.getId(), node.typeId.identifier));
+                err.addSemanticError(node, Errors.BAD_AFFECTATION_TYPE, typeValue.getId(), node.typeId.identifier);
                 correct = false;
             }
             // Si le type est explicite on s'en sert pour créer la variable
@@ -318,15 +304,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // Vérifier si le nom de la variable n'est pas break
         if (node.objectId != null) {
             if (node.objectId.identifier.equals("break")) {
-                GestionnaireErreur.getInstance().addSemanticError(node.objectId,
-                        "Impossible d'utiliser le mot clé 'break' comme nom de déclaration d'une variable");
+                err.addSemanticError(node.objectId, Errors.UNAUTHORIZED_BREAK);
             }
         }
         if (node.value != null) {
             if (node.value instanceof Id) {
                 if (((Id) node.value).identifier.equals("break")) {
-                    GestionnaireErreur.getInstance().addSemanticError(node.objectId,
-                            "Impossible d'utiliser le mot clé 'break' comme valeur d'une variable déclarée");
+                    err.addSemanticError(node.objectId, Errors.UNAUTHORIZED_BREAK);
                 }
             }
         }
@@ -340,14 +324,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // verifier que le type n'existe pas deja
         if (tdsController.existsLocalType(node.objectId.identifier)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Le type %s a déjà été défini", node.objectId.identifier));
+            err.addSemanticError(node, Errors.ALREADY_DECLARED_TYPE, node.objectId.identifier);
             correct = false;
         }
 
         if (node.baseTypeId == null) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    "Le type du tableau doit être défini");
+            err.addSemanticError(node, Errors.UNDECLARED_TYPE, "du tableau ");
         } else if (checkIfTypeExist(node.baseTypeId.identifier, node) && correct) {
             Type elementType = tdsController.getTypeOfId(node, node.baseTypeId.identifier);
             tdsController.add(new ArrayType(node.objectId.identifier, elementType));
@@ -360,8 +342,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // verifier que le type n'existe pas deja
         if (tdsController.existsLocalType(node.objectId.identifier)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Le type %s a déjà été défini", node.objectId.identifier));
+            err.addSemanticError(node, Errors.ALREADY_DECLARED_TYPE, node.objectId.identifier);
             // verifier que le type de base existe
             checkIfTypeExist(node.baseTypeId.identifier, node);
         } else {
@@ -381,8 +362,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // on vérifie que le type n'existe pas déjà
         if (tdsController.existsLocalType(node.objectId.identifier)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Le type %s a déjà été défini", node.objectId.identifier));
+            err.addSemanticError(node, Errors.ALREADY_DECLARED_TYPE, node.objectId.identifier);
             correct = false;
         }
 
@@ -406,20 +386,20 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // Vérifier l'expression de départ est de type entier
         Type type_start_for = forExpr.startExpr.accept(this);
         if (!type_start_for.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(forExpr.startExpr,
+            err.addSemanticError(forExpr.startExpr, Errors.LOOP_TYPE,
                     "le départ de l'indice de  la boucle for est de type " + type_start_for.getId()
                             + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
         // Vérifier que l'expression de la fin doit être entière
         Type type_end_for = forExpr.endExpr.accept(this);
         if (!type_end_for.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(forExpr.endExpr, "la fin de la boucle for est de type "
+            err.addSemanticError(forExpr.endExpr, Errors.LOOP_TYPE, "la fin de la boucle for est de type "
                     + type_end_for.getId() + ". Or, il doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
         }
         // Vérifier que le contenu de la boucle est de type void
         Type typedoexpr = forExpr.doExpr.accept(this);
         if (!typedoexpr.equals(Type.VOID_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,
+            err.addSemanticError(forExpr.doExpr, Errors.LOOP_TYPE,
                     "l'expression à l'intérieur de for est de type " + typedoexpr.getId()
                             + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
         }
@@ -438,9 +418,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                         String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
                         // Vérifier si la valeur d'id est égale à l'indice de la boucle
                         if (id_left_value.equals(id_str)) {
-                            GestionnaireErreur.getInstance().addSemanticError(forExpr.doExpr,
-                                    "l'indice " + ANSI_RED + " " + id_left_value + ANSI_RESET
-                                            + " de For ne doit pas être assigné à l'intérieur de la boucle");
+                            err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
                             // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
                             // assigné plusieurs fois dans la séquence
                             continuer = false;
@@ -461,9 +439,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if (conditionType != null) {
             // Vérifier si le type de condition est entier
             if (!conditionType.equals(Type.INT_TYPE)) {
-                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
-                        "l'expression de la condition dans If est de type " + conditionType.getId()
-                                + ". Or, elle doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
+                err.addSemanticError(ifThenElseExpr.condExpr, Errors.INT_EXPECTED, conditionType.getId());
             }
         }
 
@@ -490,9 +466,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             if (thenType != null) {
                 // Vérifier si thenExpr et ElseExpr ont le même type
                 if (!(thenType.equals(elseType))) {
-                    GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
-                            "les expressions then et else renvoient respectivement des types " + thenType.getId() + " "
-                                    + elseType.getId() + ". Or, elles doivent avoir le même type");
+                    err.addSemanticError(ifThenElseExpr.condExpr, Errors.INCOMPATIBLES_THEN_ELSE, thenType.getId(), elseType.getId());
                 }
             }
             tdsController.up();
@@ -500,9 +474,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         } else {
             // Vérifier si le type de l'expression
             if (!thenType.equals(Type.VOID_TYPE)) {
-                GestionnaireErreur.getInstance().addSemanticError(ifThenElseExpr.condExpr,
-                        "l'expression then renvoie un type " + thenType.getId() + " Or, elle doit avoir un type "
-                                + ANSI_RED + " void" + ANSI_RESET);
+                err.addSemanticError(ifThenElseExpr.condExpr, Errors.THEN_WITH_TYPE, thenType.getId());
             }
             tdsController.up();
             return Type.VOID_TYPE;
@@ -515,16 +487,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type whilecond = whileExpr.condExpr.accept(this);
         // Vérifier que la condition est de type entier
         if (!whilecond.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,
-                    "l'expression de la condition dans While est de type " + whilecond.getId()
-                            + ". Or, elle doit avoir un type " + ANSI_RED + " entier" + ANSI_RESET);
+            err.addSemanticError(whileExpr.condExpr, Errors.INT_EXPECTED, whilecond.getId());
         }
         // vérifier que l'expression à l'intérieur de block while est de type void
         Type typedoexpr = whileExpr.doExpr.accept(this);
         if (!typedoexpr.equals(Type.VOID_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(whileExpr.condExpr,
-                    "l'expression à l'intérieur de while est de type " + typedoexpr.getId()
-                            + ". Or, elle doit avoir un type " + ANSI_RED + " void" + ANSI_RESET);
+            err.addSemanticError(whileExpr.condExpr, Errors.NO_VOID_WHILE, typedoexpr.getId());
         }
         tdsController.up();
         // While renvoie un type void
@@ -538,14 +506,12 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
             // ... on vérifie que si c'est un id, il est déclaré...
             if (!tdsController.existsVar(leftId.identifier)) {
-                GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                        "La variable %s n'est pas définie", leftId.identifier));
+                err.addSemanticError(leftId, Errors.UNDECLARED_VARIABLE, leftId.identifier);
             }
 
             // ... sinon, on vérifie que c'est bien un accès à un tableau ou un champ de record.
         } else if (!((node.leftValue instanceof ArrayAccess) || (node.leftValue instanceof RecordAccess))) {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                    "Le membre de gauche ne correspond pas à une variable, impossible d'y affecter une valeur"));
+            err.addSemanticError(node, Errors.INVALID_LVALUE);
         }
 
         Type type1 = node.leftValue.accept(this);
@@ -555,9 +521,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 && !type1.equals(type2)) {
 
             // La plupart des erreurs sont traitées dans les accepts, mais il reste celle-ci
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                    "Impossible affecter une valeur de type %s à une variable de type %s",
-                    type2.getId(), type1.getId()));
+            err.addSemanticError(node, Errors.BAD_AFFECT_TYPE, type1.getId(), type2.getId());
         }
         return Type.VOID_TYPE;
     }
@@ -567,8 +531,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type type2 = node.rightValue.accept(this);
 
         if (!(type1.equals(type2))) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible de comparer les types %s et %s", type1.getId(), type2.getId()));
+            err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
         }
         // le resultat est un booleen representé par un int
         return Type.INT_TYPE;
@@ -588,9 +551,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(Negation node) {
         Type entree = node.negationTail.accept(this);
         if (entree != Type.INT_TYPE) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Une négation s'applique uniquement sur un type int ; type actuel : %s.",
-                            entree.getId()));
+            err.addSemanticError(node, Errors.BAD_NEGATION_TYPE, (entree == null) ? "null" : entree.getId());
         }
         return Type.INT_TYPE;
     }
@@ -600,9 +561,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type type2 = node.rightValue.accept(this);
 
         if (!(type1.equals(Type.INT_TYPE)) || !(type2.equals(Type.INT_TYPE))) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer %s sur les types %s et %s", operation, type1.getId(),
-                            type2.getId()));
+            err.addSemanticError(node, Errors.BAD_OPERATION_TYPE, operation, type1.getId(), type2.getId());
         }
         return Type.INT_TYPE;
     }
@@ -643,9 +602,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         if (!(type1.equals(Type.INT_TYPE) || type1.equals(Type.STRING_TYPE))
                 || !(type2.equals(Type.INT_TYPE) || type2.equals(Type.STRING_TYPE))) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Impossible d'effectuer une comparaison sur les types %s et %s", type1.getId(),
-                            type2.getId()));
+            err.addSemanticError(node, Errors.INCOMPARABLE_TYPES, type1.getId(), type2.getId());
         }
         // le resultat est un booleen represente par un int
         return Type.INT_TYPE;
@@ -677,9 +634,8 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type tableau = node.exp.accept(this);
         Type tabElem;
         if (!(tableau instanceof ArrayType)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("L'expression ne désigne pas un tableau" +
-                            "mais est de type %s", tableau.getId()));
+            err.addSemanticError(node, Errors.ARRAY_TYPE,
+                    "Impossible d'appliquer l'opérateur [] sur une valeur de type " + tableau.getId());
             tabElem = Type.VOID_TYPE;
         } else {
             tabElem = ((ArrayType) tableau).getType();
@@ -688,8 +644,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // verfier que l'index est un entier
         Type index = node.index.accept(this);
         if (!index.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("L'index d'accès au tableau n'est pas de type int mais de type %s", index.getId()));
+            err.addSemanticError(node, Errors.INT_EXPECTED, index.getId());
         }
 
         // Retourner le type des elem du tableau
@@ -709,13 +664,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 // verifier valeur d'initialisation est conforme au type de l'array
                 Type contentType = node.element.accept(this);
                 if (!(contentType.equals(at.elementsType))) {
-                    GestionnaireErreur.getInstance().addSemanticError(node,
+                    err.addSemanticError(node, Errors.ARRAY_TYPE,
                             String.format("La valeur d'initialisation est attendue de type %s mais est de type %s",
                                     at.elementsType.getId(), contentType.getId()));
+
                 }
 
             } else {
-                GestionnaireErreur.getInstance().addSemanticError(node,
+                err.addSemanticError(node, Errors.ARRAY_TYPE,
                         String.format("Le type %s ne correspond pas à un array", arrayType.getId()));
                 arrayType = Type.VOID_TYPE;
             }
@@ -724,8 +680,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         // verifier taille est entiere
         Type nbElemType = node.nombreDElements.accept(this);
         if (!nbElemType.equals(Type.INT_TYPE)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("La taille de l'array n'est pas un int mais un %s", nbElemType.getId()));
+            err.addSemanticError(node, Errors.INT_EXPECTED, nbElemType.getId());
         }
 
         // renvoyer le type de l'array
@@ -757,11 +712,10 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         }
         Type retour;
         if (!tdsController.existsVar(func.getId())) {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format("La fonction %s n'est pas définie.", func.getId()));
+            err.addSemanticError(node, Errors.UNDECLARED_FUNCTION, func.getId());
         }
         if (!(func instanceof FunctionType)) {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format("La variable %s n'est pas une" +
-                    "fonction", ((Id) node.id).identifier));
+            err.addSemanticError(node, Errors.NO_FUNCTION_TYPE, ((Id) node.id).identifier);
             retour = Type.VOID_TYPE;
         } else if (!tdsController.existsType(func.getId())) {
             retour = Type.VOID_TYPE;
@@ -773,8 +727,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         int nbArgsCall = ((ParameterList) node.argList).parameters.size();
         int nbArgsExpected = ((FunctionType) func).inTypes.size();
         if (nbArgsCall != nbArgsExpected) {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format("Il y a %d arguments " +
-                    "alors que %d arguments sont attendus", nbArgsCall, nbArgsExpected));
+            err.addSemanticError(node, Errors.BAD_ARGUMENT_NUMBER, nbArgsCall + "", nbArgsExpected + "");
         }
 
         // verifier le type des arguments
@@ -782,9 +735,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             Type argType = ((ParameterList) node.argList).parameters.get(i).accept(this);
             Type argTypeExpected = ((FunctionType) func).inTypes.get(i);
             if (!argType.equals(argTypeExpected)) {
-                GestionnaireErreur.getInstance().addSemanticError(node, String.format("L'argument %d " +
-                                "est de type %s alors qu'il est attendu de type %s", i, argType.getId(),
-                        argTypeExpected.getId()));
+                err.addSemanticError(node, Errors.BAD_ARGUMENT_TYPE, i + "", argType.getId(), argTypeExpected.getId());
             }
         }
 
@@ -809,23 +760,19 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // On vérifie que le membre gauche est une variable connue...
         if (!tdsController.existsVar(recordName)) {
-            GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                    "L'identifiant %s ne correspond a aucune variable déclaré", recordName));
+            err.addSemanticError(node, Errors.UNDECLARED_VARIABLE, recordName);
         } else {
 
             // ...puis, qu'il est bien de type record...
             Type leftType = tdsController.getVariableOfId(recordName).getType();
             if (!(leftType instanceof RecordType recordType)) {
-                GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("Le type %s n'est pas un record", leftType.getId()));
+                err.addSemanticError(node, Errors.NO_RECORD_TYPE, leftType.getId());
             } else {
 
                 // ...et enfin que l'attribut existe.
                 Value fieldValue = recordType.getAttribut(((Id) node.index).identifier);
                 if (fieldValue == null) {
-                    GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                            "Le type record %s n'a pas d'attribut %s", recordType.getId(),
-                            ((Id) node.index).identifier));
+                    err.addSemanticError(node, Errors.INEXISTING_FIELD, ((Id) node.index).identifier, recordType.getId());
                 } else {
                     // On termine en retournant le type de l'attribut
                     return fieldValue.getType();
@@ -839,15 +786,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(RecordCreate node) {
         // on vérifie que la variable existe...
         if (!tdsController.existsType(((Id) node.idObject).identifier)) {
-            GestionnaireErreur.getInstance().addSemanticError(node,
-                    String.format("Le type %s n'est pas défini", ((Id) node.idObject).identifier));
+            err.addSemanticError(node, Errors.UNDECLARED_TYPE, ((Id) node.idObject).identifier);
         } else {
 
             // ... Puis, que son type soit record.
             Type varType = tdsController.getTypeOfId(node, ((Id) node.idObject).identifier);
             if (!(varType instanceof RecordType recordType)) {
-                GestionnaireErreur.getInstance().addSemanticError(node,
-                        String.format("Le type %s ne correspond pas à un record", varType.getId()));
+                err.addSemanticError(node, Errors.NO_RECORD_TYPE, varType.getId());
             } else {
 
                 // Pour chaque champ du record...
@@ -857,18 +802,17 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     // ...on vérifie que l'attribut existe...
                     Value fieldValue = recordType.getAttribut(((Id) ((FieldCreate) currentField).id).identifier);
                     if (fieldValue == null) {
-                        GestionnaireErreur.getInstance().addSemanticError(currentField, String.format(
-                                "Le type record %s n'a pas d'attribut %s",
-                                recordType.getId(), ((Id) ((FieldCreate) currentField).id).identifier));
+                        err.addSemanticError(node, Errors.INEXISTING_FIELD,
+                                ((Id) ((FieldCreate) currentField).id).identifier, recordType.getId());
                     } else {
 
                         // ... puis que la valeur affectée est du bon type.
                         Type expType = ((FieldCreate) currentField).expr.accept(this);
                         fieldsPresents.add(fieldValue);
                         if (!(expType.equals(fieldValue.getType()))) {
-                            GestionnaireErreur.getInstance().addSemanticError(currentField, String.format(
-                                    "La valeur affectée à l'attribut %s doit être de type %s, pas de type %s",
-                                    fieldValue.getId(), fieldValue.getType().getId(), expType.getId()));
+                            err.addSemanticError(node, Errors.BAD_ARGUMENT_TYPE,
+                                    ((Id) ((FieldCreate) currentField).id).identifier,
+                                    expType.getId(), fieldValue.getType().getId());
                         }
                     }
                 }
@@ -876,16 +820,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 // Maintenant qu'on a la liste de champs, on vérifie qu'ils sont tous différents...
                 fieldsPresents.stream().distinct().forEach(field -> {
                     if (Collections.frequency(fieldsPresents, field) > 1) {
-                        GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                                "Le champs %s du record est affecté en plusieurs occurrences", field.getId()));
+                        err.addSemanticError(node, Errors.DUPLICATE_FIELD, field.getId(), recordType.getId());
                     }
                 });
 
                 // ... et sont tous présents.
                 recordType.getAttributs().forEach(field -> {
                     if (!fieldsPresents.contains(field)) {
-                        GestionnaireErreur.getInstance().addSemanticError(node, String.format(
-                                "Le champs %s du record %s n'est pas affecté", field.getId(), recordType.getId()));
+                        err.addSemanticError(node, Errors.MISSING_FIELD, field.getId(), recordType.getId());
                     }
                 });
                 return varType;

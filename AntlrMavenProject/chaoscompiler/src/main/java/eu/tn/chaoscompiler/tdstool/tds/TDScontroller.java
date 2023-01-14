@@ -1,6 +1,7 @@
 package eu.tn.chaoscompiler.tdstool.tds;
 
 import eu.tn.chaoscompiler.ast.Ast;
+import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
@@ -33,7 +34,7 @@ public class TDScontroller {
         Type res = findType(id);
         if (res == null) {
             // ERREUR
-            GestionnaireErreur.getInstance().addSemanticError(node, "[TDS] Le type " + id + " n'existe pas.");
+            GestionnaireErreur.getInstance().addSemanticError(node, Errors.UNDECLARED_TYPE, id);
             return null;
         } else {
             return res;
@@ -67,7 +68,7 @@ public class TDScontroller {
         Value res = findVar(id);
         if (res == null) {
             // ERREUR
-            GestionnaireErreur.getInstance().addSemanticError(node, "[TDS] La variable " + id + " n'existe pas.");
+            GestionnaireErreur.getInstance().addSemanticError(node, Errors.UNDECLARED_VARIABLE, id);
             return null;
         } else {
             return res;

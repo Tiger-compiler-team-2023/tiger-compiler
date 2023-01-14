@@ -40,15 +40,16 @@ public class GestionnaireErreur extends BaseErrorListener {
         if (throwException) {
             throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
         }
-        errors.add(new ChaosError(line, charPositionInLine, msg, ChaosError.typeError.SYNTAX_ERROR));
+        errors.add(new ChaosError(line, charPositionInLine, ChaosError.typeError.SYNTAX_ERROR,
+                Errors.SYNTAX_ERROR, msg));
     }
 
-    public void addSemanticError(Ast ast, String msg) {
-        errors.add(new ChaosError(ast.getNumLigne(), ast.getNumColonne(), msg, ChaosError.typeError.SEMANTIC_ERROR));
+    public void addSemanticError(Ast ast, Errors errorsId, String... msg) {
+        errors.add(new ChaosError(ast, ChaosError.typeError.SEMANTIC_ERROR, errorsId, msg));
     }
 
     public void addUnrecognisedError(String msg, ChaosError.typeError type) {
-        errors.add(new ChaosError(0, 0, msg, type));
+        errors.add(new ChaosError(0, 0, type, Errors.UNRECOGNISED_ERROR, msg));
     }
 
     public void afficherErreurs() {
