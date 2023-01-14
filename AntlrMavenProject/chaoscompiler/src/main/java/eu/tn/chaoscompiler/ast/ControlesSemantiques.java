@@ -775,7 +775,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type retour;
         if (!(func instanceof FunctionType)) {
             err.addSemanticError(node, Errors.NO_FUNCTION_TYPE, ((Id) node.id).identifier);
-            retour = Type.VOID_TYPE;
+            return Type.VOID_TYPE;
         } else {
             retour = ((FunctionType) func).outType;
         }

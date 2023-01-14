@@ -155,7 +155,10 @@ in
     break; /* ER : break ne peut etre utilise que dans une boucle */
 
     /* TYPE20 OK */
-    i := let var a := 5 in a end
+    i := let var a := 5 in a end;
+
+    /* BONUS01 ER */
+    i := a("to be or not to be a function") /* ER : a n'est pas une fonction */
 
 end
 
@@ -200,5 +203,6 @@ end
 149 -> la variable d'incrementation ne doit pas etre assignee dans la boucle for
 152 -> le contenu de la boucle for doit etre de type void
 155 -> break ne peut etre utilise que dans une boucle
+161 -> a n'est pas une fonction
 
 */
