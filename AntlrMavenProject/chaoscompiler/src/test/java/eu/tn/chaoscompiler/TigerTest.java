@@ -14,6 +14,5 @@ public abstract class TigerTest {
     @Before
     public void setUp() {
         GestionnaireErreur.reset();
-        TDScontroller.reset();
     }
 }

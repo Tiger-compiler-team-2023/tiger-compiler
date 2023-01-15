@@ -27,7 +27,7 @@ public enum Errors {
     ID_ALREADY_USED("L'identifiant \033[0;35m %s \u001B[0m est déjà localement utilisé"),
     INCOMPATIBLE_FUNCTION_TYPE("Le type de retour \033[0;34m %s \u001B[0m de la fonction \033[0;35m %s \u001B[0m est incompatible avec le type \033[0;34m %s \u001B[0m de la valeur retournée"),
     NO_VALUE_ERROR("\033[0;35m %s \u001B[0m n'a pas pu être initialisée (n'a pas de valeur)"),
-    BAD_AFFECTATION_TYPE("Une valeur de type \033[0;34m %s \u001B[0m ne peut pas être affectée à une variable de type \033[0;34m %s \u001B[0m"),
+    BAD_AFFECT_TYPE("Une valeur de type \033[0;34m %s \u001B[0m ne peut pas être affectée à une variable de type \033[0;34m %s \u001B[0m"),
     CANT_AFFECT_TO_FOR_INDEX("Impossible d'affecter une valeur à l'indice d'une boucle for"),
     LOOP_TYPE("%s"),//la coloration de l'affichage a été ajouté dans ControlesSemantiques.java dans la méthode visit(For forExpr)
     LOOP_COUNTER_AFFECT("l'indice %s de la boucle For ne doit pas être assigné à l'intérieur de la boucle"),
@@ -39,7 +39,6 @@ public enum Errors {
     NO_VOID_WHILE("La boucle While ne peut pas retourner de valeur, obtenu \033[0;34m %s \u001B[0m"),
     INVALID_LVALUE("Le membre de gauche ne correspond pas à une variable, impossible d'y affecter une valeur"),
 
-    BAD_AFFECT_TYPE("Une valeur de type \033[0;34m %s \u001B[0m ne peut pas être affectée à une variable de type \033[0;34m %s \u001B[0m"),
     INCOMPARABLE_TYPES("Les types \033[0;34m %s \u001B[0m et \033[0;34m %s \u001B[0m ne sont pas comparables"),
     BAD_NEGATION_TYPE("Impossible d'appliquer une négation sur une valeur de type \033[0;34m %s\u001B[0m, attendu une valeur  de type \033[0;34m int \u001B[0m"),
     BAD_OPERATION_TYPE("Impossible d'appliquer %s sur les valeurs de type \033[0;34m %s \u001B[0m et \033[0;34m %s \u001B[0m"),
