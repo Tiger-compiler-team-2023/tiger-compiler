@@ -15,8 +15,21 @@ import eu.tn.chaoscompiler.tdstool.variable.Variable;
  */
 public class TDScontroller {
     protected TDS tds;
+    // Singleton
+    private static TDScontroller INSTANCE;
 
-    public TDScontroller() {
+    public static TDScontroller getInstance(){
+        if(INSTANCE == null){
+            INSTANCE = new TDScontroller();
+        }
+        return INSTANCE;
+    }
+
+    public static void reset (){
+        INSTANCE = new TDScontroller();
+    }
+
+    private TDScontroller() {
         this.tds = new TDSroot();
         add(Type.INT_TYPE);
         add(Type.STRING_TYPE);

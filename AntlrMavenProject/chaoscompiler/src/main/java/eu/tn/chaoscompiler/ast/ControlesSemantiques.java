@@ -136,7 +136,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Void visit(Program node) {
-        tdsController = new TDScontroller();
+        tdsController = TDScontroller.getInstance();
 
         try {
             node.expression.accept(this);

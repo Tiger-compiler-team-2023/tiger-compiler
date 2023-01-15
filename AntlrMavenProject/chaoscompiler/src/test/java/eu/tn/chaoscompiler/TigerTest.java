@@ -6,8 +6,6 @@ import org.junit.Before;
 
 public abstract class TigerTest {
 
-    private TDScontroller tdScontroller;
-
     /**
      * Méthode de préparation des tests unitaires.
      * Les classes filles héritent du comportement de
@@ -16,6 +14,6 @@ public abstract class TigerTest {
     @Before
     public void setUp() {
         GestionnaireErreur.reset();
-        tdScontroller = new TDScontroller();
+        TDScontroller.reset();
     }
 }
