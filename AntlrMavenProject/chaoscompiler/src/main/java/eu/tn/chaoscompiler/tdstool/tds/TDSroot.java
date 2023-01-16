@@ -77,4 +77,8 @@ public class TDSroot implements TDS {
     public String toString() {
         return "\n{[TDSroot]" + "Types:" + this.hmType.toString() + "Variables:" + this.hmVari.toString() + "\n}";
     }
+
+    public String toJSONString() {
+        return null ;
+    }
 }

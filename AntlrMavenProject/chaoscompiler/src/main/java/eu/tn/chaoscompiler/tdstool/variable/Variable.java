@@ -9,4 +9,6 @@ public interface Variable {
 
     @Override
     String toString();
+
+    String toJSONString() ;
 }

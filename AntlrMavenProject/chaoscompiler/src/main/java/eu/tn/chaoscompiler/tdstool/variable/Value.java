@@ -30,4 +30,14 @@ public class Value implements Variable {
         return "\n\u001B[32m{[Value]\u001B[0mtype: " + this.type.toString() + ", id: \u001B[46m" + this.id
                 + "\u001B[0m, token: \u001B[43m" + this.token + "\u001B[0m\n\u001B[32m}\u001B[0m";
     }
+
+    public String toJSONString() {
+        String s  = "" ;
+        s += "\"class\" : \"Value\",\n" ;
+        s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
+        s += "\"id\" : \"" + id + "\",\n" ;
+        s += "\"type\" : \"" + type.getId() + "\"" ;
+
+        return s ;
+    }
 }

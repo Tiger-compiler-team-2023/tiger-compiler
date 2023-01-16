@@ -27,4 +27,26 @@ public class FunctionType extends Type {
         return "\n\u001B[35m{[FunctionType]\u001B[0m" + super.toString() + ", inTypes: " + this.inTypes.toString()
                 + ", outType: " + this.outType.toString() + "\n\u001B[35m}\u001B[0m";
     }
+
+    @Override
+    public String toJSONString() {
+        StringBuilder s = new StringBuilder("");
+
+        s.append("\"class\" : \"FunctionType\",\n") ;
+        s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
+        s.append("\"id\" : \"" + id + "\",\n") ;
+
+        if (inTypes.size() > 0) {
+
+            s.append("\"inType1\" : \"" + inTypes.get(0).getId() + "\",\n");
+
+            for (int i = 1 ; i < inTypes.size() ; i++) {
+                s.append("\"inType" + (i + 1) + "\" : \"" + inTypes.get(i).getId() + "\",\n");
+            }
+
+        }
+        s.append("\"outType\" : \"" + outType.getId() + "\"");
+
+        return s.toString() ;
+    }
 }

@@ -13,4 +13,15 @@ public class TypeRename extends Type {
         return "\n\u001B[35m{[TypeRename]\u001B[0m" + super.toString() + ", origType: "
                 + this.oriType.toString() + "\n\u001B[35m}\u001B[0m";
     }
+
+    @Override
+    public String toJSONString() {
+        String s = "" ;
+        s += "\"class\" : \"RenameType\",\n" ;
+        s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
+        s += "\"id\" : \"" + id + "\",\n" ;
+        s += "\"originalType\" : \"" + oriType.getId() + "\"" ;
+
+        return s ;
+    }
 }
