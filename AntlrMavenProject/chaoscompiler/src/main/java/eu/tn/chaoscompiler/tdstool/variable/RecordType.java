@@ -17,8 +17,9 @@ public class RecordType extends Type {
         this.attributs = new ArrayList<Value>();
     }
 
-    public void addAttribut(Value val) {
+    public RecordType addAttribut(Value val) {
         this.attributs.add(val);
+        return this;
     }
 
     public Value getAttribut(String id) {

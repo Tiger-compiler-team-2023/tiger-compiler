@@ -43,10 +43,10 @@ public enum Errors {
     BAD_NEGATION_TYPE("Impossible d'appliquer une négation sur une valeur de type \033[0;34m %s\u001B[0m, attendu une valeur  de type \033[0;34m int \u001B[0m"),
     BAD_OPERATION_TYPE("Impossible d'appliquer %s sur les valeurs de type \033[0;34m %s \u001B[0m et \033[0;34m %s \u001B[0m"),
     BAD_ARRAY_INIT_VALUE("La valeur d'initialisation est attendue de type \033[0;34m %s\u001B[0m, obtenu \033[0;34m %s \u001B[0m"),
-    ARRAY_TYPE("%s"), //la coloration de l'affichage a été ajouté dans ControlesSemantiques.java dans la méthode visit(ArrayAccess node)
+    NO_ARRAY_TYPE("%s"), //la coloration de l'affichage a été ajouté dans ControlesSemantiques.java dans la méthode visit(ArrayAccess node)
     NO_FUNCTION_TYPE("La variable \033[0;35m %s \u001B[0m n'est pas une fonction"),
 
-    NO_RECORD_TYPE("La variable de type \033[0;34m %s \u001B[0m n'est pas un enregistrement"),
+    NO_RECORD_TYPE("La variable %s de type \033[0;34m %s \u001B[0m n'est pas un enregistrement"),
     BAD_ARGUMENT_NUMBER("Le nombre d'arguments fournis (\033[0;35m%s\u001B[0m) ne correspond pas au nombre d'arguments attendus (\033[0;35m%s\u001B[0m)"),
     BAD_ARGUMENT_TYPE("Le type \033[0;34m %s \u001B[0m du paramètre \033[0;35m %s \u001B[0m ne correspond pas au type \033[0;34m %s \u001B[0m attendu"),
     INEXISTING_FIELD("Le champ \033[0;35m %s \u001B[0m n'existe pas dans l'enregistrement \033[0;35m %s \u001B[0m de type \033[0;34m %s \u001B[0m"),

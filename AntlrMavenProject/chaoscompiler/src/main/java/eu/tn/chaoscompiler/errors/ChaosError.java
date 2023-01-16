@@ -27,7 +27,7 @@ public class ChaosError {
         this.column = numColonne;
         this.type = type;
         if(errorId.nbArg != arguments.length) {
-            throw new IllegalArgumentException("Nombre d'arguments incorrect");
+            throw new IllegalArgumentException("Nombre d'arguments incorrect pour l'appel à l'erreur " + errorId.name());
         }
         this.errorId = errorId;
         this.message = String.format(errorId.message, arguments);

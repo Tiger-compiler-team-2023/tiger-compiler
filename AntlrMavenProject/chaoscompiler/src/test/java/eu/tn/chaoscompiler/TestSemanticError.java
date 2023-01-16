@@ -1,18 +1,13 @@
 package eu.tn.chaoscompiler;
 
 import eu.tn.chaoscompiler.errors.Errors;
+import eu.tn.chaoscompiler.tdstool.tds.TDS;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
-import eu.tn.chaoscompiler.tdstool.variable.Type;
-import eu.tn.chaoscompiler.tdstool.variable.Value;
+import eu.tn.chaoscompiler.tdstool.variable.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.suppliers.TestedOn;
 
-/**
- * Pour les fichiers qui sont correctement analysés par le parser mais,
- * qui lancent des erreurs sémantiques
- * TODO : ajouter la detection des erreurs sémantiques quand on sera à cette étape
- */
 public final class TestSemanticError extends TigerTest {
 
     public final String empty_let = " var place_holder := 0 ";
@@ -30,6 +25,11 @@ public final class TestSemanticError extends TigerTest {
         TDScontroller.getInstance().add(custom_type_1);
         TDScontroller.getInstance().add(new Value(custom_type_1, "custom_var_1"));
         TDScontroller.getInstance().add(new Value(custom_type_1, "custom_var_2"));
+
+        TDScontroller.getInstance().add(new RecordType("rec")
+                .addAttribut(new Value(Type.INT_TYPE, "x")).addAttribut(new Value(Type.STRING_TYPE, "y")));
+
+        TDScontroller.getInstance().add(new ArrayType("arr", Type.INT_TYPE));
     }
 
     @Test
@@ -105,4 +105,37 @@ public final class TestSemanticError extends TigerTest {
         TigerAssert.assertCorrectSemantic(" let type tab = array of int in end ");
         TigerAssert.assertSemanticErrors(Errors.ALREADY_DECLARED_TYPE, " let type tab = array of int type tab = array of string in end ");
     }
+
+    @Test
+    public void recordsCreation(){
+        TigerAssert.assertCorrectSemantic(" let type X={x:int} var r := X{x=1} in end ");
+        TigerAssert.assertCorrectSemantic(" let var r := rec {x=1, y='a'} in end ");
+
+        TigerAssert.assertSemanticErrors(Errors.INEXISTING_FIELD, " let var r := rec {x=1, y='a', z=3} in end ");
+        TigerAssert.assertSemanticErrors(Errors.MISSING_FIELD, " let var r := rec {x=1} in end ");
+        TigerAssert.assertSemanticErrors(Errors.DUPLICATE_FIELD, " let var r := rec {x=1, y='a', x=2} in end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_TYPE, " let var r := rec {x=1, y=3} in end ");
+        TigerAssert.assertSemanticErrors(Errors.NO_RECORD_TYPE, " let var r := custom_type_1 {x=1, y='a'} in end ");
+    }
+
+    @Test
+    public void recordsAccess(){
+        TigerAssert.assertCorrectSemantic(" let var r := rec {x=1, y='a'} in r.x := 2 end ");
+        TigerAssert.assertCorrectSemantic(" let var r := rec {x=1, y='a'} in r.y := 'b' end ");
+
+        TigerAssert.assertSemanticErrors(Errors.INEXISTING_FIELD, " let var r := rec {x=1, y='a'} in r.z := 2 end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_AFFECT_TYPE, " let var r := rec {x=1, y='a'} in r.x := 'a' end ");
+        TigerAssert.assertSemanticErrors(Errors.NO_RECORD_TYPE, " let var r := custom_type_1 {x=1, y='a'} in r.x := 2 end ");
+    }
+
+    @Test
+    public void arrayCreate(){
+        TigerAssert.assertCorrectSemantic(" let type X = array of int var x := X [1] of 5 in end ");
+        TigerAssert.assertCorrectSemantic(" let var x := arr [1] of 5 in end ");
+
+        TigerAssert.assertSemanticErrors(Errors.INT_EXPECTED, " let var x := arr ['a'] of 5 in end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARRAY_INIT_VALUE, " let var x := arr [3] of 'a' in end ");
+        TigerAssert.assertSemanticErrors(Errors.NO_ARRAY_TYPE, " let var x := custom_type_1 [3] of 'a' in end ");
+    }
+
 }

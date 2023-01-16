@@ -694,7 +694,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         Type tableau = node.exp.accept(this);
         Type tabElem;
         if (!(tableau instanceof ArrayType)) {
-            err.addSemanticError(node, Errors.ARRAY_TYPE,
+            err.addSemanticError(node, Errors.NO_ARRAY_TYPE,
                     "Impossible d'appliquer l'opérateur [] sur une valeur de type " + tableau.getId());
             tabElem = Type.VOID_TYPE;
         } else {
@@ -728,7 +728,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 }
 
             } else {
-                err.addSemanticError(node, Errors.ARRAY_TYPE,
+                err.addSemanticError(node, Errors.NO_ARRAY_TYPE,
                         String.format("Le type"+ANSI_BLUE+" %s"+ANSI_RESET+" ne correspond pas à un array", arrayType.getId()));
                 arrayType = Type.VOID_TYPE;
             }
@@ -846,7 +846,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             // ... Puis, que son type soit record.
             Type varType = tdsController.getTypeOfId(node, ((Id) node.idObject).identifier);
             if (!(varType instanceof RecordType recordType)) {
-                err.addSemanticError(node, Errors.NO_RECORD_TYPE, varType.getId());
+                err.addSemanticError(node, Errors.NO_RECORD_TYPE, varType.getId(), varType.getType().getId());
             } else {
 
                 // Pour chaque champ du record...
