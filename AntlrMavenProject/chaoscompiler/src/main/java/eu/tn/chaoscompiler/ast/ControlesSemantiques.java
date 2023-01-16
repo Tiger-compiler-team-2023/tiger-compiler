@@ -268,7 +268,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         if (tdsController.existsLocalVariable(node.objectId.identifier)) {
             err.addSemanticError(node, Errors.ALREADY_DECLARED, node.objectId.identifier);
-            correct = false;
+            return Type.VOID_TYPE;
         }
 
         Type typeValue = node.value.accept(this);
