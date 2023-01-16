@@ -17,10 +17,12 @@ public class ArrayType extends Type {
     @Override
     public String toJSONString() {
         String s = "" ;
+        s += "{ " ;
         s += "\"class\" : \"ArrayType\",\n" ;
         s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
         s += "\"id\" : \"" + this.getId() + "\",\n" ;
         s += "\"elementsType\" : \"" + elementsType.getId() + "\"" ;
+        s += " }" ;
         return s ;
     }
 }

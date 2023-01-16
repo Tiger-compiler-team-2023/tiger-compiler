@@ -17,10 +17,12 @@ public class TypeRename extends Type {
     @Override
     public String toJSONString() {
         String s = "" ;
+        s += "{ " ;
         s += "\"class\" : \"RenameType\",\n" ;
         s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
         s += "\"id\" : \"" + id + "\",\n" ;
         s += "\"originalType\" : \"" + oriType.getId() + "\"" ;
+        s += " }" ;
 
         return s ;
     }

@@ -33,10 +33,12 @@ public class Value implements Variable {
 
     public String toJSONString() {
         String s  = "" ;
+        s += "{ " ;
         s += "\"class\" : \"Value\",\n" ;
         s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
         s += "\"id\" : \"" + id + "\",\n" ;
         s += "\"type\" : \"" + type.getId() + "\"" ;
+        s += " }" ;
 
         return s ;
     }

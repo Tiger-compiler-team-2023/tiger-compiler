@@ -32,6 +32,8 @@ public class FunctionType extends Type {
     public String toJSONString() {
         StringBuilder s = new StringBuilder("");
 
+        s.append("{ ") ;
+
         s.append("\"class\" : \"FunctionType\",\n") ;
         s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
         s.append("\"id\" : \"" + id + "\",\n") ;
@@ -46,6 +48,8 @@ public class FunctionType extends Type {
 
         }
         s.append("\"outType\" : \"" + outType.getId() + "\"");
+
+        s.append(" }") ;
 
         return s.toString() ;
     }

@@ -57,9 +57,11 @@ public class Type implements Variable {
     @Override
     public String toJSONString() {
         String s  = "" ;
+        s += "{ " ;
         s += "\"class\" : \"Type\",\n" ;
         s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
         s += "\"id\" : \"" + id + "\"" ;
+        s += " }" ;
 
         return s ;
     }

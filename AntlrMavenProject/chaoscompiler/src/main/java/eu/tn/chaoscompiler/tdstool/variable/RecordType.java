@@ -38,13 +38,15 @@ public class RecordType extends Type {
     public String toJSONString() {
         StringBuilder s = new StringBuilder("") ;
 
+        s.append("{ ") ;
+
         s.append("\"class\" : \"RecordType\",\n") ;
         s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
         s.append("\"id\" : \"" + id + "\"") ;
         s.append("\"attributs\" : [ ") ;
 
         for (int i = 0 ; i < attributs.size() ; i++) {
-            s.append("{ " + attributs.get(i).toJSONString() + " }") ;
+            s.append(attributs.get(i).toJSONString()) ;
 
             if (i < attributs.size() - 1) {
                 s.append(",\n") ;
@@ -53,6 +55,8 @@ public class RecordType extends Type {
         }
 
         s.append(" ]") ;
+
+        s.append(" }") ;
 
         return s.toString() ;
 
