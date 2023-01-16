@@ -60,7 +60,7 @@ let
 in
     /* SCOPE01 OK */
     let
-        var a := 71 /* OK */
+        var a := "coucou" /* OK */
     in
     end;
 
@@ -155,7 +155,7 @@ in
     break; /* ER : break ne peut etre utilise que dans une boucle */
 
     /* TYPE20 OK */
-    i := let var a := 5 in a end;
+    i := let var h := 5 in h end;
 
     /* BONUS01 ER */
     i := a("to be or not to be a function") /* ER : a n'est pas une fonction */

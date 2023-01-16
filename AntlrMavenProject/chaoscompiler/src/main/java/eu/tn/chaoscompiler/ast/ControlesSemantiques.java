@@ -170,7 +170,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Sequence node) {
-        tdsController.down();
         // Applique la fonction visit sur chaque élément de la séquence et retourne le
         // type de la dernière expression
         // Si la séquence est vide, retourne le type void
@@ -178,7 +177,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 .map(instr -> instr.accept(this))
                 .reduce((a, b) -> b)
                 .orElse(Type.VOID_TYPE);
-        tdsController.up();
         return typeSeq;
     }
 
@@ -301,6 +299,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             tdsController.add(new Value(recType, node.objectId.identifier));
         } else {
             tdsController.add(new Value(typeToCreate, node.objectId.identifier));
+            if (node.objectId.identifier.equals("a")) {
+                System.out.println("\n" + tdsController.toString());
+            }
         }
 
 
@@ -469,7 +470,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(IfThenElse ifThenElseExpr) {
         boolean continuer = true;
-        tdsController.down();
         Type conditionType = ifThenElseExpr.condExpr.accept(this);
         if (conditionType != null) {
             // Vérifier si le type de condition est entier
@@ -504,21 +504,18 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     err.addSemanticError(ifThenElseExpr.condExpr, Errors.INCOMPATIBLES_THEN_ELSE, thenType.getId(), elseType.getId());
                 }
             }
-            tdsController.up();
             return thenType;
         } else {
             // Vérifier si le type de l'expression
             if (!thenType.equals(Type.VOID_TYPE)) {
                 err.addSemanticError(ifThenElseExpr.condExpr, Errors.THEN_WITH_TYPE, thenType.getId());
             }
-            tdsController.up();
             return Type.VOID_TYPE;
         }
     }
 
     @Override
     public Type visit(While whileExpr) {
-        tdsController.down();
         Type whilecond = whileExpr.condExpr.accept(this);
         // Vérifier que la condition est de type entier
         if (!whilecond.equals(Type.INT_TYPE)) {
@@ -529,7 +526,6 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         if (!typedoexpr.equals(Type.VOID_TYPE)) {
             err.addSemanticError(whileExpr.condExpr, Errors.NO_VOID_WHILE, typedoexpr.getId());
         }
-        tdsController.up();
         // While renvoie un type void
         return typedoexpr;
     }
