@@ -507,6 +507,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 // Vérifier si thenExpr et ElseExpr ont le même type
                 if (!(thenType.equals(elseType))) {
                     err.addSemanticError(ifThenElseExpr.condExpr, Errors.INCOMPATIBLES_THEN_ELSE, thenType.getId(), elseType.getId());
+                    return Type.VOID_TYPE;
                 }
             }
             return thenType;

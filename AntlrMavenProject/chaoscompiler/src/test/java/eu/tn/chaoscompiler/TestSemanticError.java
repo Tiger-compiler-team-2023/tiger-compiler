@@ -10,8 +10,6 @@ import org.junit.experimental.theories.suppliers.TestedOn;
 
 public final class TestSemanticError extends TigerTest {
 
-    public final String empty_let = " var place_holder := 0 ";
-
     @Before
     public void setUp() {
         super.setUp();
@@ -107,7 +105,7 @@ public final class TestSemanticError extends TigerTest {
     }
 
     @Test
-    public void recordsCreation(){
+    public void recordsCreation() {
         TigerAssert.assertCorrectSemantic(" let type X={x:int} var r := X{x=1} in end ");
         TigerAssert.assertCorrectSemantic(" let var r := rec {x=1, y='a'} in end ");
 
@@ -119,7 +117,7 @@ public final class TestSemanticError extends TigerTest {
     }
 
     @Test
-    public void recordsAccess(){
+    public void recordsAccess() {
         TigerAssert.assertCorrectSemantic(" let var r := rec {x=1, y='a'} in r.x := 2 end ");
         TigerAssert.assertCorrectSemantic(" let var r := rec {x=1, y='a'} in r.y := 'b' end ");
 
@@ -129,7 +127,15 @@ public final class TestSemanticError extends TigerTest {
     }
 
     @Test
-    public void arrayCreate(){
+    public void nestedRecord(){
+        // TODO : faire fonctionner ces tests :=)
+        // TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in end ");
+        // TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in var X:=rec2{a:nill} end ");
+        // TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in var X:=rec2{a:rec2{a:nill}} end ");
+    }
+
+    @Test
+    public void arrayCreate() {
         TigerAssert.assertCorrectSemantic(" let type X = array of int var x := X [1] of 5 in end ");
         TigerAssert.assertCorrectSemantic(" let var x := arr [1] of 5 in end ");
 
@@ -137,5 +143,69 @@ public final class TestSemanticError extends TigerTest {
         TigerAssert.assertSemanticErrors(Errors.BAD_ARRAY_INIT_VALUE, " let var x := arr [3] of 'a' in end ");
         TigerAssert.assertSemanticErrors(Errors.NO_ARRAY_TYPE, " let var x := custom_type_1 [3] of 'a' in end ");
     }
+
+    @Test
+    public void arrayAccess() {
+        String start = "let var x := arr [1] of 0 in ";
+        TigerAssert.assertCorrectSemantic(start + "x[0] := 2 end ");
+        TigerAssert.assertCorrectSemantic(start + "x[0] := x[0] + 1 end ");
+
+        TigerAssert.assertSemanticErrors(Errors.INT_EXPECTED, start + " x['a'] := 2 end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_AFFECT_TYPE, start + " x[0] := 'a' end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_AFFECT_TYPE, start + " x := 'a' end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_AFFECT_TYPE, start + " x[0][0] := 'a' end ");
+        TigerAssert.assertSemanticErrors(Errors.NO_ARRAY_TYPE, start + " int_1[0] := 2 end ");
+    }
+
+    @Test
+    public void nestedArray(){
+        String nestedArr = " let type tab = array of int type tab2 = array of tab";
+        TigerAssert.assertCorrectSemantic(nestedArr + " var v := tab2[5] of tab[5] of 0 in end");
+        TigerAssert.assertCorrectSemantic(nestedArr + " var v := tab2[5] of tab[5] of 0 in v[3][2] = 5 end");
+        TigerAssert.assertCorrectSemantic( nestedArr + " var v := tab2[5] of tab[5] of 0 in v[3] = v[2] end");
+
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARRAY_INIT_VALUE, nestedArr + " var v := tab2[5] of tab[5] of 'a' in end");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARRAY_INIT_VALUE, nestedArr + " var v := tab2[5] of tab2[5] of 0 in end");
+        TigerAssert.assertSemanticErrors(Errors.NO_ARRAY_TYPE, nestedArr + " var v := tab2[5] of tab[5] of 0 in v[3][2][1] = 5 end");
+    }
+
+    @Test
+    public void functionCreate(){
+        String function = " function max(first:int, second:int):int = if first >= second then first else second ";
+        TigerAssert.assertCorrectSemantic(" let" + function + "in end ");
+        TigerAssert.assertCorrectSemantic(" let function foo() = print('Hello') in end ");
+
+        TigerAssert.assertSemanticErrors(Errors.ALREADY_DECLARED, " let" + function +  function + "in end ");
+        TigerAssert.assertSemanticErrors(Errors.INCOMPATIBLE_FUNCTION_TYPE, " let function foo(x:int):int = 'X' in end ");
+        TigerAssert.assertSemanticErrors(Errors.INCOMPATIBLE_FUNCTION_TYPE, " let function max(first:int, second:int):int = if first >= second then 'a' else second in end");
+        TigerAssert.assertSemanticErrors(Errors.INCOMPATIBLE_FUNCTION_TYPE, " let function max(first:int, second:int):int = if first >= second then first else 'b' in end");
+        TigerAssert.assertSemanticErrors(Errors.INCOMPATIBLE_FUNCTION_TYPE, " let function foo() = 42 in end ");
+    }
+
+    @Test
+    public void functionAccess(){
+        String function = " function max(first:int, second:int):int = if first >= second then first else second ";
+        TigerAssert.assertCorrectSemantic(" let" + function + "in max(1, 2) end ");
+        TigerAssert.assertCorrectSemantic(" let function foo() = print('Hello') in foo() end ");
+
+        TigerAssert.assertSemanticErrors(Errors.UNDECLARED_FUNCTION, " let" + function + "in foo() end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_TYPE, " let" + function + "in max('a', 2) end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_NUMBER, " let" + function + "in max(1) end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_NUMBER, " let" + function + "in max(1, 2, 3) end ");
+        TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_NUMBER, " let function foo() = print('Hello') in foo(1) end ");
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

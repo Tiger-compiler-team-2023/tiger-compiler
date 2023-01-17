@@ -1,3 +1,4 @@
+/* ./src/test/ressources/erreursSemantiques/tout.tig */
 let
     
     type tblty = array of int
