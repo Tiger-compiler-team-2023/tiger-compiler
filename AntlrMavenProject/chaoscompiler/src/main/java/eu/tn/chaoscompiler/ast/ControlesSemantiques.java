@@ -230,6 +230,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             tdsController.add(new Value(t, fdl_e.fieldId.identifier));
         }
 
+        // Pour les fonctions récursives
+        tdsController.add(new Value(fType, node.objectId.identifier));
+        
         // verifier type de retour coherent avec contenu de la fonction
         Type content = node.content.accept(this);
         if (!retour.equals(content)) {
