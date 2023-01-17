@@ -700,7 +700,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     "Impossible d'appliquer l'opérateur [] sur une valeur de type " + tableau.getId());
             tabElem = Type.VOID_TYPE;
         } else {
-            tabElem = ((ArrayType) tableau).getType();
+            tabElem = ((ArrayType) tableau).elementsType;
         }
 
         // verfier que l'index est un entier
