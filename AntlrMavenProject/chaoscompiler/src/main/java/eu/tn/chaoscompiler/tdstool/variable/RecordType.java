@@ -42,7 +42,7 @@ public class RecordType extends Type {
 
         s.append("\"class\" : \"RecordType\",\n") ;
         s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
-        s.append("\"id\" : \"" + id + "\"") ;
+        s.append("\"id\" : \"" + id + "\",\n") ;
         s.append("\"attributs\" : [ ") ;
 
         for (int i = 0 ; i < attributs.size() ; i++) {
