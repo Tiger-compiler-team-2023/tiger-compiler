@@ -21,4 +21,6 @@ public interface TDS {
 
     @Override
     String toString();
+
+    String toJSONString(String child) ;
 }

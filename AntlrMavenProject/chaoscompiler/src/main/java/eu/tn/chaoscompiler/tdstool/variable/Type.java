@@ -53,4 +53,17 @@ public class Type implements Variable {
         return "\n\u001B[35m{[Type]\u001B[0m id: \u001B[46m" + this.id + "\u001B[0m, token: \u001B[43m" + this.token
                 + "\u001B[0m\n\u001B[35m}\u001B[0m";
     }
+
+    @Override
+    public String toJSONString() {
+
+        String s  = "" ;
+        s += "{ " ;
+        s += "\"class\" : \"Type\",\n" ;
+        s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
+        s += "\"id\" : \"" + id + "\"" ;
+        s += " }" ;
+
+        return s ;
+    }
 }

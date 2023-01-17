@@ -34,4 +34,32 @@ public class RecordType extends Type {
                 + b.toString()
                 + "\n\u001B[35m}\u001B[0m";
     }
+
+    @Override
+    public String toJSONString() {
+        StringBuilder s = new StringBuilder("") ;
+
+        s.append("{ ") ;
+
+        s.append("\"class\" : \"RecordType\",\n") ;
+        s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
+        s.append("\"id\" : \"" + id + "\",\n") ;
+        s.append("\"attributs\" : [ ") ;
+
+        for (int i = 0 ; i < attributs.size() ; i++) {
+            s.append(attributs.get(i).toJSONString()) ;
+
+            if (i < attributs.size() - 1) {
+                s.append(",\n") ;
+            }
+
+        }
+
+        s.append(" ]") ;
+
+        s.append(" }") ;
+
+        return s.toString() ;
+
+    }
 }

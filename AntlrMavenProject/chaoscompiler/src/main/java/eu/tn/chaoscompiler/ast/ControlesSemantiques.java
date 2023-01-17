@@ -18,6 +18,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
+import eu.tn.chaoscompiler.tdstool.JsonManager;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.*;
 import lombok.NoArgsConstructor;
@@ -301,6 +302,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             tdsController.add(new Value(typeToCreate, node.objectId.identifier));
             if (node.objectId.identifier.equals("a")) {
                 System.out.println("\n" + tdsController.toString());
+                JsonManager.saveJson(tdsController.toJSONString());
             }
         }
 

@@ -141,4 +141,8 @@ public class TDScontroller {
     public String toString() {
         return "{[TDScontroller]" + this.tds.toString() + "\n}";
     }
+
+    public String toJSONString() {
+        return this.tds.toJSONString("") ;
+    }
 }

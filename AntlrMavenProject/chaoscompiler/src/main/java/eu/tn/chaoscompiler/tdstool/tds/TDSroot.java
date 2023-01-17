@@ -2,10 +2,7 @@ package eu.tn.chaoscompiler.tdstool.tds;
 
 import java.util.HashMap;
 
-import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
-import eu.tn.chaoscompiler.tdstool.variable.Type;
-import eu.tn.chaoscompiler.tdstool.variable.Value;
-import eu.tn.chaoscompiler.tdstool.variable.Variable;
+import eu.tn.chaoscompiler.tdstool.variable.*;
 
 public class TDSroot implements TDS {
     public HashMap<String, Type> hmType;
@@ -76,5 +73,71 @@ public class TDSroot implements TDS {
     @Override
     public String toString() {
         return "\n{[TDSroot]" + "Types:" + this.hmType.toString() + "Variables:" + this.hmVari.toString() + "\n}";
+    }
+
+    @Override
+    public String toJSONString(String child) {
+
+        StringBuilder s = new StringBuilder("") ;
+
+        s.append("{ ") ;
+        s.append("\"types\" : [ ") ;
+
+        int count = 0 ;
+
+        for (String key:hmType.keySet()) {
+            s.append(childJSONString(hmType.get(key))) ;
+
+            if (count < hmType.size() - 1) {
+                s.append(",\n") ;
+            }
+
+            count++ ;
+        }
+
+        s.append(" ],\n") ;
+        s.append("\"variables\" : [ ") ;
+
+        count = 0 ;
+
+        for (String key:hmVari.keySet()) {
+            s.append(hmVari.get(key).toJSONString()) ;
+
+            if (count < hmVari.size() - 1) {
+                s.append(",\n") ;
+            }
+
+            count++ ;
+        }
+
+        s.append(" ]") ;
+
+        if ((child != null) && (!child.equals(""))) {
+            s.append(",\n") ;
+            s.append("\"tdsChild\" : ") ;
+            s.append(child) ;
+        }
+
+        s.append(" }") ;
+
+        return s.toString() ;
+    }
+
+
+    public String childJSONString(Type t) {
+        if (t instanceof ArrayType at) {
+            return at.toJSONString() ;
+        }
+        else if (t instanceof FunctionType ft) {
+            return ft.toJSONString() ;
+        }
+        else if (t instanceof RecordType rt) {
+            return rt.toJSONString() ;
+        }
+        else if (t instanceof TypeRename tr) {
+            return tr.toJSONString() ;
+        }
+
+        return t.toJSONString() ;
     }
 }
