@@ -35,7 +35,7 @@ public class TDScontroller {
         add(Type.STRING_TYPE);
         add(Type.VOID_TYPE);
 
-        FunctionType ft = new FunctionType("", Type.VOID_TYPE);
+        FunctionType ft = new FunctionType("print", Type.VOID_TYPE);
         ft.addIn(Type.STRING_TYPE);
         Value print = new Value(ft, "print");
         add(print);

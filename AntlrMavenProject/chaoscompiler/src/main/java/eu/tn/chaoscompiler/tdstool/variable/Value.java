@@ -38,7 +38,14 @@ public class Value implements Variable {
         s += "\"class\" : \"Value\",\n" ;
         s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
         s += "\"id\" : \"" + id + "\",\n" ;
-        s += "\"type\" : \"" + type.getId() + "\"" ;
+
+        if (type instanceof FunctionType tf) {
+            s += "\"type\" : " + type.toJSONString() ;
+        }
+        else {
+            s += "\"type\" : \"" + type.getId() + "\"" ;
+        }
+
         s += " }" ;
 
         return s ;

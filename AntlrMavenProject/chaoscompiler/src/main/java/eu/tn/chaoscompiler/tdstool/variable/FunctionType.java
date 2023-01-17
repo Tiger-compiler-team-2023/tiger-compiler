@@ -36,7 +36,6 @@ public class FunctionType extends Type {
 
         s.append("\"class\" : \"FunctionType\",\n") ;
         s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
-        s.append("\"id\" : \"" + id + "\",\n") ;
 
         if (inTypes.size() > 0) {
 
