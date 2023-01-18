@@ -16,6 +16,7 @@ public class TDSroot implements TDS {
     public HashMap<String, Type> getHmType() {
         return this.hmType;
     }
+
     public HashMap<String, Value> getHmVari() {
         return this.hmVari;
     }
@@ -66,6 +67,18 @@ public class TDSroot implements TDS {
         if (var instanceof Value) {
             this.hmVari.put(var.getId(), (Value) var);
         } else {
+            // Si le type a déjà été utilisé sous forme de NotYetDeclarated,
+            // on remplace toutes les occurrences existantes dans les records
+            // de la tds actuelle par le vrai type
+            hmType.keySet().stream()
+                    .map(key -> hmType.get(key))
+                    .filter(ty -> ty instanceof RecordType)
+                    .map(ty -> (RecordType) ty)
+                    .forEach(rt -> {
+                        rt.getAttributs().stream()
+                                .filter(at -> at.getType().getId().equals(var.getId()))
+                                .forEach(at -> at.setType((Type) var));
+                    });
             this.hmType.put(var.getId(), (Type) var);
         }
     }
@@ -78,66 +91,63 @@ public class TDSroot implements TDS {
     @Override
     public String toJSONString(String child) {
 
-        StringBuilder s = new StringBuilder("") ;
+        StringBuilder s = new StringBuilder("");
 
-        s.append("{ ") ;
-        s.append("\"types\" : [ ") ;
+        s.append("{ ");
+        s.append("\"types\" : [ ");
 
-        int count = 0 ;
+        int count = 0;
 
-        for (String key:hmType.keySet()) {
-            s.append(childJSONString(hmType.get(key))) ;
+        for (String key : hmType.keySet()) {
+            s.append(childJSONString(hmType.get(key)));
 
             if (count < hmType.size() - 1) {
-                s.append(",\n") ;
+                s.append(",\n");
             }
 
-            count++ ;
+            count++;
         }
 
-        s.append(" ],\n") ;
-        s.append("\"variables\" : [ ") ;
+        s.append(" ],\n");
+        s.append("\"variables\" : [ ");
 
-        count = 0 ;
+        count = 0;
 
-        for (String key:hmVari.keySet()) {
-            s.append(hmVari.get(key).toJSONString()) ;
+        for (String key : hmVari.keySet()) {
+            s.append(hmVari.get(key).toJSONString());
 
             if (count < hmVari.size() - 1) {
-                s.append(",\n") ;
+                s.append(",\n");
             }
 
-            count++ ;
+            count++;
         }
 
-        s.append(" ]") ;
+        s.append(" ]");
 
         if ((child != null) && (!child.equals(""))) {
-            s.append(",\n") ;
-            s.append("\"tdsChild\" : ") ;
-            s.append(child) ;
+            s.append(",\n");
+            s.append("\"tdsChild\" : ");
+            s.append(child);
         }
 
-        s.append(" }") ;
+        s.append(" }");
 
-        return s.toString() ;
+        return s.toString();
     }
 
 
     public String childJSONString(Type t) {
         if (t instanceof ArrayType at) {
-            return at.toJSONString() ;
-        }
-        else if (t instanceof FunctionType ft) {
-            return ft.toJSONString() ;
-        }
-        else if (t instanceof RecordType rt) {
-            return rt.toJSONString() ;
-        }
-        else if (t instanceof TypeRename tr) {
-            return tr.toJSONString() ;
+            return at.toJSONString();
+        } else if (t instanceof FunctionType ft) {
+            return ft.toJSONString();
+        } else if (t instanceof RecordType rt) {
+            return rt.toJSONString();
+        } else if (t instanceof TypeRename tr) {
+            return tr.toJSONString();
         }
 
-        return t.toJSONString() ;
+        return t.toJSONString();
     }
 }

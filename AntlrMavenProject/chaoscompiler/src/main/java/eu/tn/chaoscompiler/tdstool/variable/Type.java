@@ -1,9 +1,12 @@
 package eu.tn.chaoscompiler.tdstool.variable;
 
 import eu.tn.chaoscompiler.tdstool.TokenGiver;
+import lombok.Getter;
 
 public class Type implements Variable {
+    @Getter
     protected String id;
+    @Getter
     protected int token;
 
     // Types de base
@@ -12,7 +15,7 @@ public class Type implements Variable {
             STRING_TYPE = new Type("string"),
             VOID_TYPE = new Type("void"),
             INCR_TYPE = new Type("int");
-    
+
     @Override
     public boolean equals(Object obj) {
         if ((this == INT_TYPE && obj == INCR_TYPE) || (obj == INT_TYPE && this == INCR_TYPE)) {
@@ -36,16 +39,8 @@ public class Type implements Variable {
         return this;
     }
 
-    public String getId() {
-        return this.id;
-    }
-
-    public int getToken() {
-        return this.token;
-    }
-
     public boolean isIncr() {
-        return this == INCR_TYPE ;
+        return this == INCR_TYPE;
     }
 
     @Override
@@ -57,13 +52,13 @@ public class Type implements Variable {
     @Override
     public String toJSONString() {
 
-        String s  = "" ;
-        s += "{ " ;
-        s += "\"class\" : \"Type\",\n" ;
-        s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
-        s += "\"id\" : \"" + id + "\"" ;
-        s += " }" ;
+        String s = "";
+        s += "{ ";
+        s += "\"class\" : \"Type\",\n";
+        s += "\"token\" : \"" + Integer.toString(token) + "\",\n";
+        s += "\"id\" : \"" + id + "\"";
+        s += " }";
 
-        return s ;
+        return s;
     }
 }

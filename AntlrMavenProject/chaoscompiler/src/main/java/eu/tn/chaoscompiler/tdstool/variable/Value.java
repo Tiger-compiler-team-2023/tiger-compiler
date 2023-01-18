@@ -1,7 +1,10 @@
 package eu.tn.chaoscompiler.tdstool.variable;
 
 import eu.tn.chaoscompiler.tdstool.TokenGiver;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter @Setter
 public class Value implements Variable {
     protected Type type;
     protected String id;

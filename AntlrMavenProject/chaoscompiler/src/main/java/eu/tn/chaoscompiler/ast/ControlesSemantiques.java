@@ -382,10 +382,13 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             if (fd.baseType.identifier.equals(rType.getId())) {
                 // Champs de type récursif
                 rType.addAttribut(new Value(rType, fd.fieldId.identifier));
-            } else if (checkIfTypeExist(fd.baseType.identifier, node)) {
+            } else if (tdsController.existsType(fd.baseType.identifier)) {
+                // Type existant
                 rType.addAttribut(new Value(tdsController.getTypeOfId(node, fd.baseType.identifier), fd.fieldId.identifier));
             } else {
-                correct = false;
+                // Type inexistant : on crée un placeholder
+                rType.addAttribut(new Value(new NotYetDeclarated(fd.baseType.identifier), fd.fieldId.identifier));
+                //correct = false;
             }
         }
         tdsController.add(rType);
@@ -809,7 +812,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(DeclarationList node) {
-        node.list.forEach(declaration -> declaration.accept(this));
+        node.list.stream()
+                .filter(decl -> decl instanceof RecordTypeDeclaration)
+                .forEach(declaration -> declaration.accept(this));
+        node.list.stream()
+                .filter(decl -> !(decl instanceof RecordTypeDeclaration))
+                .forEach(declaration -> declaration.accept(this));
+
+
         return Type.VOID_TYPE;
     }
 
@@ -820,29 +830,33 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(RecordAccess node) {
-        String recordName = ((Id) node.exp).identifier;
+        String fieldId = ((Id)node.index).identifier;
 
-        // On vérifie que le membre gauche est une variable connue...
-        if (!tdsController.existsVar(recordName)) {
-            err.addSemanticError(node, Errors.UNDECLARED_VARIABLE, recordName);
-        } else {
-
-            // ...puis, qu'il est bien de type record...
-            Type leftType = tdsController.getVariableOfId(recordName).getType();
-            if (!(leftType instanceof RecordType recordType)) {
-                err.addSemanticError(node, Errors.NO_RECORD_TYPE, leftType.getId(), leftType.getType().getId());
-            } else {
-
-                // ...et enfin que l'attribut existe.
-                Value fieldValue = recordType.getAttribut(((Id) node.index).identifier);
-                if (fieldValue == null) {
-                    err.addSemanticError(node, Errors.INEXISTING_FIELD, ((Id) node.index).identifier, recordType.getId(), recordType.getType().getId());
-                } else {
-                    // On termine en retournant le type de l'attribut
-                    return fieldValue.getType();
+        // 2 cas possibles : soit c'est un nom de champ, soit c'est un sous-record
+        if(node.exp instanceof Id id){
+            Value recordVar = tdsController.getVariableOfId(id.identifier);
+            if(recordVar.getType() instanceof RecordType recordTypeVar){
+                Value field = recordTypeVar.getAttribut(fieldId);
+                if(field == null){
+                    err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordTypeVar.getId());
+                    return Type.VOID_TYPE;
                 }
+                return field.getType();
             }
+            // ERROR
+            err.addSemanticError(node.exp, NO_RECORD_TYPE, recordVar.getId(), recordVar.getType().getId());
+            return Type.VOID_TYPE;
         }
+
+        if(node.exp instanceof RecordAccess && node.exp.accept(this) instanceof RecordType recordType){
+            Value field = recordType.getAttribut(fieldId);
+            if(field == null){
+                err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordType.getId());
+                return Type.VOID_TYPE;
+            }
+            return field.getType();
+        }
+        err.addSemanticError(node.exp, NO_RECORD_TYPE, null, null);
         return Type.VOID_TYPE;
     }
 

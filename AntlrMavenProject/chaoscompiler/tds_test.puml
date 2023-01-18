@@ -1,0 +1,18 @@
+@startjson tds
+{ "types" : [ { "class" : "Type",
+"token" : "3",
+"id" : "void" },
+{ "class" : "Type",
+"token" : "2",
+"id" : "string" },
+{ "class" : "Type",
+"token" : "1",
+"id" : "int" } ],
+"variables" : [ { "class" : "Value",
+"token" : "6",
+"id" : "print",
+"type" : { "class" : "FunctionType",
+"token" : "5",
+"inType1" : "string",
+"outType" : "void" } } ] }
+@endjson

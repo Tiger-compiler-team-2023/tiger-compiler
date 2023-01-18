@@ -7,6 +7,7 @@ import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
+import lombok.Getter;
 
 /**
  * Interface principale avec l'arbre des TDS.
@@ -14,7 +15,7 @@ import eu.tn.chaoscompiler.tdstool.variable.Variable;
  * trouver et ajouter une variable dans l'arbre.
  */
 public class TDScontroller {
-    protected TDS tds;
+    @Getter protected TDS tds;
     // Singleton
     private static TDScontroller INSTANCE;
 
