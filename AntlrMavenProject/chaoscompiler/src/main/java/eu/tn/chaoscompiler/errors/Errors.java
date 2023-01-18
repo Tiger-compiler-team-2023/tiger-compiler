@@ -48,10 +48,10 @@ public enum Errors {
 
     NO_RECORD_TYPE("La variable %s de type \033[0;34m %s \u001B[0m n'est pas un enregistrement"),
     BAD_ARGUMENT_NUMBER("Le nombre d'arguments fournis (\033[0;35m%s\u001B[0m) ne correspond pas au nombre d'arguments attendus (\033[0;35m%s\u001B[0m)"),
-    BAD_ARGUMENT_TYPE("Le type \033[0;34m %s \u001B[0m du paramètre \033[0;35m %s \u001B[0m ne correspond pas au type \033[0;34m %s \u001B[0m attendu"),
+    BAD_ARGUMENT_TYPE("Le type \033[0;34m %s \u001B[0m du champ \033[0;35m %s \u001B[0m ne correspond pas au type \033[0;34m %s \u001B[0m attendu"),
     INEXISTING_FIELD("Le champ \033[0;35m %s \u001B[0m n'existe pas dans l'enregistrement \033[0;35m %s \u001B[0m de type \033[0;34m %s \u001B[0m"),
     DUPLICATE_FIELD("Impossible d'affecter plusieurs fois le champ \033[0;35m %s \u001B[0mde l'enregistrement \033[0;35m %s \u001B[0m de type \033[0;34m %s \u001B[0m"),
-    MISSING_FIELD("Le champ \033[0;35m %s \u001B[0m n'a pas été affecté dans l'enregistrement \033[0;35m %s \u001B[0m de type \033[0;34m %s \u001B[0m"),
+    MISSING_FIELD("Le champ \033[0;35m %s \u001B[0m n'a pas été affecté dans l'enregistrement de type \033[0;34m %s \u001B[0m"),
     ZERO_DIV("Division par une constante nulle"),
     ;
 

@@ -128,10 +128,19 @@ public final class TestSemanticError extends TigerTest {
 
     @Test
     public void nestedRecord(){
-        // TODO : faire fonctionner ces tests :=)
-        // TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in end ");
-        // TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in var X:=rec2{a:nill} end ");
-        // TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in var X:=rec2{a:rec2{a:nill}} end ");
+        // Record in record
+        TigerAssert.assertCorrectSemantic("let type rec = {x:int} type rec2 = {a:rec} var X := rec2{a= rec{x=1} } in end");
+
+        // Récursivité simple
+        TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} in end ");
+        TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} var X:=rec2{a=nil} in end ");
+        TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} var X:=rec2{a= rec2{a=nil}} in end ");
+        TigerAssert.assertCorrectSemantic(" let type rec2 = {a:rec2} var X:=rec2{a= rec2{a=rec2{a=nil}}} in end ");
+
+        // Récursivité mutuelle
+        //TigerAssert.assertCorrectSemantic("let type R1 = {x:R2} type R2 = {y:R1} var X := R1{x= nil} in end");
+        //TigerAssert.assertCorrectSemantic("let type R1 = {x:R2} type R2 = {y:R1} var X := R1{x= R2{y= nil} } in end");
+        //TigerAssert.assertCorrectSemantic("let type R1 = {x:R2} type R2 = {y:R1} var X := R1{x= R2{y= R1{x= nil}} } in end");
     }
 
     @Test

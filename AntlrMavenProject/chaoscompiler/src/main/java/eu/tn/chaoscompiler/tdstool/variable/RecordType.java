@@ -5,6 +5,8 @@ import lombok.Getter;
 import java.util.ArrayList;
 
 public class RecordType extends Type {
+    public static final String NIL_VALUE = "nil";
+
     @Getter public ArrayList<Value> attributs;
 
     public RecordType(String id, ArrayList<Value> attributs) {
@@ -42,8 +44,8 @@ public class RecordType extends Type {
         s.append("{ ") ;
 
         s.append("\"class\" : \"RecordType\",\n") ;
-        s.append("\"token\" : \"" + Integer.toString(token) + "\",\n") ;
-        s.append("\"id\" : \"" + id + "\",\n") ;
+        s.append("\"token\" : \"").append(Integer.toString(token)).append("\",\n");
+        s.append("\"id\" : \"").append(id).append("\",\n");
         s.append("\"attributs\" : [ ") ;
 
         for (int i = 0 ; i < attributs.size() ; i++) {
@@ -54,9 +56,7 @@ public class RecordType extends Type {
             }
 
         }
-
         s.append(" ]") ;
-
         s.append(" }") ;
 
         return s.toString() ;
