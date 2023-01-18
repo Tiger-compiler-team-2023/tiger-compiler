@@ -1,6 +1,5 @@
 /* ./src/test/ressources/erreursSemantiques/tout.tig */
 let
-    
     type tblty = array of int
     var tbl := tblty [5] of 5
     var i:int := 0
