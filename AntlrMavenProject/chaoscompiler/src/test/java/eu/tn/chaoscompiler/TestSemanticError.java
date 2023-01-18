@@ -212,17 +212,4 @@ public final class TestSemanticError extends TigerTest {
         TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_NUMBER, " let function foo() = print('Hello') in foo(1) end ");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

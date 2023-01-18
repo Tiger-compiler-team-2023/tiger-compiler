@@ -3,6 +3,7 @@ package eu.tn.chaoscompiler.tdstool.tds;
 import java.util.HashMap;
 
 import eu.tn.chaoscompiler.tdstool.variable.*;
+import lombok.Getter;
 
 public class TDSroot implements TDS {
     public HashMap<String, Type> hmType;
@@ -74,13 +75,20 @@ public class TDSroot implements TDS {
                     .map(key -> hmType.get(key))
                     .filter(ty -> ty instanceof RecordType)
                     .map(ty -> (RecordType) ty)
-                    .forEach(rt -> {
-                        rt.getAttributs().stream()
-                                .filter(at -> at.getType().getId().equals(var.getId()))
-                                .forEach(at -> at.setType((Type) var));
-                    });
+                    .forEach(rt -> rt.getAttributs().stream()
+                            .filter(at -> at.getType().getId().equals(var.getId()))
+                            .forEach(at -> at.setType((Type) var)));
             this.hmType.put(var.getId(), (Type) var);
         }
+    }
+
+    public boolean hasNoDeclaredType(){
+        return hmType.keySet().stream()
+                .map(key -> hmType.get(key))
+                .filter(ty -> ty instanceof RecordType)
+                .map(ty -> (RecordType) ty)
+                .anyMatch(rt -> rt.getAttributs().stream()
+                        .anyMatch(at -> at.getType() instanceof NotYetDeclarated));
     }
 
     @Override

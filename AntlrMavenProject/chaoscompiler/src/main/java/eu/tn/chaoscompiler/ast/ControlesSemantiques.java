@@ -819,6 +819,19 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 .filter(decl -> !(decl instanceof RecordTypeDeclaration))
                 .forEach(declaration -> declaration.accept(this));
 
+        // On vérifie qu'il ne reste plus de variable non déclarée
+        tdsController.getTds().getHmType().keySet().stream()
+                .map(key -> tdsController.getTds().getHmType().get(key))
+                .filter(ty -> ty instanceof RecordType)
+                .map(ty -> (RecordType) ty)
+                .forEach(rt -> {
+                    rt.getAttributs()
+                            .forEach(at -> {
+                                if (at.getType() instanceof NotYetDeclarated) {
+                                    err.addSemanticError(node, UNDECLARED_TYPE, at.getType().getId());
+                                }
+                            });
+                });
 
         return Type.VOID_TYPE;
     }
@@ -830,14 +843,14 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(RecordAccess node) {
-        String fieldId = ((Id)node.index).identifier;
+        String fieldId = ((Id) node.index).identifier;
 
         // 2 cas possibles : soit c'est un nom de champ, soit c'est un sous-record
-        if(node.exp instanceof Id id){
+        if (node.exp instanceof Id id) {
             Value recordVar = tdsController.getVariableOfId(id.identifier);
-            if(recordVar.getType() instanceof RecordType recordTypeVar){
+            if (recordVar.getType() instanceof RecordType recordTypeVar) {
                 Value field = recordTypeVar.getAttribut(fieldId);
-                if(field == null){
+                if (field == null) {
                     err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordTypeVar.getId());
                     return Type.VOID_TYPE;
                 }
@@ -848,9 +861,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             return Type.VOID_TYPE;
         }
 
-        if(node.exp instanceof RecordAccess && node.exp.accept(this) instanceof RecordType recordType){
+        if (node.exp instanceof RecordAccess && node.exp.accept(this) instanceof RecordType recordType) {
             Value field = recordType.getAttribut(fieldId);
-            if(field == null){
+            if (field == null) {
                 err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordType.getId());
                 return Type.VOID_TYPE;
             }
