@@ -158,7 +158,13 @@ in
     i := let var h := 5 in h end;
 
     /* BONUS01 ER */
-    i := a("to be or not to be a function") /* ER : a n'est pas une fonction */
+    i := a("to be or not to be a function"); /* ER : a n'est pas une fonction */
+
+    /* BONUS02 ER */
+    let
+        type unTypeRecursif = {one:int, two:X} /* ER : type X n'est pas défini */
+    in
+    end
 
 end
 
@@ -170,7 +176,7 @@ end
 31  -> le type de retour est void mais retourne int
 34  -> l'indice d'un tableau doit etre un entier
 37  -> int n'est pas un type de tableau
-40  -> ER : le nombre d'elements du tableau doit etre un int
+40  -> le nombre d'elements du tableau doit etre un int
 43  -> le type de l'element d'initialisation du tableau doit correspondre au type d'un element du tableau
 46  -> int n'est pas un type d'enregistrement
 49  -> attributs attendus {first:int, second:string}, donnes {first:int, second:int}
@@ -204,5 +210,6 @@ end
 152 -> le contenu de la boucle for doit etre de type void
 155 -> break ne peut etre utilise que dans une boucle
 161 -> a n'est pas une fonction
+165 -> type X n'est pas défini
 
 */
