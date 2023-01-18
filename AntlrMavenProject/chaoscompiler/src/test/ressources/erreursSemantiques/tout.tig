@@ -191,7 +191,7 @@ end
 110 -> les deux types de l'egalite doivent etre identiques
 113 -> les deux types de la comparaison doivent etre identiques
 116 -> les deux types de la comparaison doivent etre identiques
-118 -> les deux types de la comparaison doivent etre identiques
+119 -> les deux types de la comparaison doivent etre identiques
 122 -> les deux types de la comparaison doivent etre identiques
 128 -> une condition doit etre de type int (if)
 131 -> le then et le else doivent etre de meme type
