@@ -1,0 +1,8 @@
+let
+
+    type arbreBin = {e:int, fils:liste}
+    type liste = {tete:arbreBin, queue:liste}
+
+in
+    
+end
