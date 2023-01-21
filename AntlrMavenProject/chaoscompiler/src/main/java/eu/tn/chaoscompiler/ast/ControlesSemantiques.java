@@ -152,7 +152,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(Let letExpr) {
-        tdsController.down();
+        tdsController.down(letExpr);
         letExpr.decList.accept(this);
         // Vérifier le cas d'utilisation de break dans DecList
         if (letExpr.decList != null) {
@@ -192,7 +192,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
             correct = false;
         }
 
-        tdsController.down();
+        tdsController.down(node);
 
         // verifier validité type retour
         Type retour;
@@ -400,7 +400,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         boolean continuer = true;
 
-        tdsController.down();
+        tdsController.down(forExpr);
 
         // Definir l'indice de la boucle comme INCR_TYPE
         tdsController.add(new Value(Type.INCR_TYPE, ((Id) forExpr.id).identifier));

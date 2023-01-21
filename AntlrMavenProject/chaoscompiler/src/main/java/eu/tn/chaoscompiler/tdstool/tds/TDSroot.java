@@ -1,5 +1,6 @@
 package eu.tn.chaoscompiler.tdstool.tds;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import eu.tn.chaoscompiler.tdstool.variable.*;
@@ -8,10 +9,13 @@ import lombok.Getter;
 public class TDSroot implements TDS {
     public HashMap<String, Type> hmType;
     public HashMap<String, Value> hmVari;
+    protected ArrayList<TDS> fullTDS;
+    protected int startLine;
 
     public TDSroot() {
         this.hmType = new HashMap<String, Type>();
         this.hmVari = new HashMap<String, Value>();
+        this.fullTDS = new ArrayList<TDS>();
     }
 
     public HashMap<String, Type> getHmType() {
@@ -20,6 +24,14 @@ public class TDSroot implements TDS {
 
     public HashMap<String, Value> getHmVari() {
         return this.hmVari;
+    }
+
+    public void addSub(TDS t) {
+        this.fullTDS.add(t);
+    }
+
+    public void setStartLine(int i) {
+        this.startLine = i;
     }
 
     public Type findType(String id) {

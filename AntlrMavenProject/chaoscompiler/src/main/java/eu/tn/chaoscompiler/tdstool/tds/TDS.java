@@ -19,6 +19,9 @@ public interface TDS {
 
     void add(Variable var);
 
+    void addSub(TDS t);
+    void setStartLine(int i);
+
     @Override
     String toString();
 

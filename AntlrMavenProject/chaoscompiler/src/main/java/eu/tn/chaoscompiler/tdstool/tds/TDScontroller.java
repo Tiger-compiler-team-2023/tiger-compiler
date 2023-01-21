@@ -40,6 +40,8 @@ public class TDScontroller {
         ft.addIn(Type.STRING_TYPE);
         Value print = new Value(ft, "print");
         add(print);
+
+        this.tds.setStartLine(0);
     }
 
     public Type getTypeOfId(String id) {
@@ -126,7 +128,14 @@ public class TDScontroller {
     }
 
     public void down() {
-        this.tds = new TDSlocal(this.tds);
+        TDS t = new TDSlocal(this.tds);
+        this.tds.addSub(t);
+        this.tds = t;
+    }
+
+    public void down(Ast node) {
+        this.down();
+        this.tds.setStartLine(node.getNumLigne());
     }
 
     public void up() {
