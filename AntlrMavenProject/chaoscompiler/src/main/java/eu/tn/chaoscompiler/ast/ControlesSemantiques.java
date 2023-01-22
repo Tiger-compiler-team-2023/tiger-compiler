@@ -560,15 +560,28 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // verifier qu'aucun des deux membres soient des variables indefinies
         if (checkDefinedId(node.leftValue)) {
-
             Type type1 = node.leftValue.accept(this);
 
             if (type1.isIncr()) {
                 err.addSemanticError(node, CANT_AFFECT_TO_FOR_INDEX);
             }
 
-            if (checkDefinedId(node.rightValue)) {
+            // Si le membre de gauche est un record, alors on peut accepter nil à droite
+            if (type1 instanceof RecordType
+                    && node.rightValue instanceof Id recordId
+                    && recordId.identifier.equals(RecordType.NIL_VALUE)) {
+                return Type.VOID_TYPE;
+            }
 
+            // Si le membre de droite est un array, on peut accepter un array assign à droite
+            if (type1 instanceof ArrayType arrayType
+                    && node.rightValue instanceof ArrayAssign arrayAssign
+                    && arrayType == arrayAssign.accept(this)) {
+                return Type.VOID_TYPE;
+            }
+
+            // Sinon on vérifie l'id
+            if (checkDefinedId(node.rightValue)) {
                 Type type2 = node.rightValue.accept(this);
 
                 if ((type1 == Type.VOID_TYPE) || (type2 == Type.VOID_TYPE)
@@ -812,6 +825,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
     @Override
     public Type visit(DeclarationList node) {
+        // On commence par visiter les records pour les problèmes de type recursivité mutuelle
         node.list.stream()
                 .filter(decl -> decl instanceof RecordTypeDeclaration)
                 .forEach(declaration -> declaration.accept(this));
@@ -845,31 +859,58 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public Type visit(RecordAccess node) {
         String fieldId = ((Id) node.index).identifier;
 
-        // 2 cas possibles : soit c'est un nom de champ, soit c'est un sous-record
+        // 3 cas possibles :
         if (node.exp instanceof Id id) {
+
+            // → Si on a gauche du point le nom d'un record : (record).fieldId
             Value recordVar = tdsController.getVariableOfId(id.identifier);
             if (recordVar.getType() instanceof RecordType recordTypeVar) {
+
+                // On récupère le type du record, et on vérifie que le champ existe
                 Value field = recordTypeVar.getAttribut(fieldId);
                 if (field == null) {
                     err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordTypeVar.getId());
                     return Type.VOID_TYPE;
                 }
-                return field.getType();
+                return field.getType(); // On renvoie le type du champ
             }
-            // ERROR
+            // ERREUR : tentative d'accès à un champ d'un type non record
             err.addSemanticError(node.exp, NO_RECORD_TYPE, recordVar.getId(), recordVar.getType().getId());
             return Type.VOID_TYPE;
         }
 
         if (node.exp instanceof RecordAccess && node.exp.accept(this) instanceof RecordType recordType) {
+
+            // → Si on a gauche du point un accès vers un record parent : (R.X).fieldId
             Value field = recordType.getAttribut(fieldId);
             if (field == null) {
+
+                // On vérifie que le record parent ait un champ de ce nom
                 err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordType.getId());
                 return Type.VOID_TYPE;
             }
-            return field.getType();
+            return field.getType(); // On renvoie le type du champ
         }
-        err.addSemanticError(node.exp, NO_RECORD_TYPE, null, null);
+
+        if (node.exp instanceof ArrayAccess) {
+
+            // → Si on a gauche du point un accès vers un tableau : R[X].fieldId
+            if (node.exp.accept(this) instanceof RecordType recordType) {
+
+                // On récupère le type du record et on vérifie que le champ existe
+                Value field = recordType.getAttribut(fieldId);
+                if (field == null) {
+                    err.addSemanticError(node.exp, Errors.INEXISTING_FIELD, fieldId, null, recordType.getId());
+                    return Type.VOID_TYPE;
+                }
+                return field.getType(); // On renvoie le type du champ
+            }
+            err.addSemanticError(node.exp, NO_RECORD_TYPE, "au format X[.]", "du tableau X");
+            return Type.VOID_TYPE;
+        }
+
+
+        err.addSemanticError(node.exp, NO_RECORD_TYPE, "à gauche de l'accès au record", "inconnu");
         return Type.VOID_TYPE;
     }
 
