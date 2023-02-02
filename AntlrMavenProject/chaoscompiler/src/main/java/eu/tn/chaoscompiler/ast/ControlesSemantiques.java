@@ -37,7 +37,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     public static String lastId = "";
 
     private TDScontroller tdsController;
-    private GestionnaireErreur err = GestionnaireErreur.getInstance();
+    private final GestionnaireErreur err = GestionnaireErreur.getInstance();
 
     public boolean checkIfTypeExist(String type, Ast node) {
         if (!tdsController.existsType(type)) {
