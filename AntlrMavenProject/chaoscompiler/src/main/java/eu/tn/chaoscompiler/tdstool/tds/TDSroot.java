@@ -12,10 +12,13 @@ public class TDSroot implements TDS {
     protected ArrayList<TDS> fullTDS;
     protected int startLine;
 
+    protected int nextVarDpl ;
+
     public TDSroot() {
         this.hmType = new HashMap<String, Type>();
         this.hmVari = new HashMap<String, Value>();
         this.fullTDS = new ArrayList<TDS>();
+        this.nextVarDpl = 3 ;
     }
 
     public HashMap<String, Type> getHmType() {
@@ -77,8 +80,10 @@ public class TDSroot implements TDS {
     }
 
     public void add(Variable var) {
-        if (var instanceof Value) {
-            this.hmVari.put(var.getId(), (Value) var);
+        if (var instanceof Value val) {
+            val.setDpl(this.nextVarDpl);
+            this.hmVari.put(val.getId(), val);
+            this.nextVarDpl++ ;
         } else {
             // Si le type a déjà été utilisé sous forme de NotYetDeclarated,
             // on remplace toutes les occurrences existantes dans les records
