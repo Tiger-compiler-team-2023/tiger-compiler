@@ -127,6 +127,10 @@ public class TDScontroller {
         this.tds.add(var);
     }
 
+    public void addParam(Value v) {
+        this.tds.addParam(v) ;
+    }
+
     public void down() {
         TDS t = new TDSlocal(this.tds);
         this.tds.addSub(t);

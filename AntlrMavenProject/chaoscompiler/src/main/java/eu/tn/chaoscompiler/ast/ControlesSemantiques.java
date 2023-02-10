@@ -215,7 +215,8 @@ public class ControlesSemantiques implements AstVisitor<Type> {
 
         // Ajout des paramètres à la TDS après verif
         FieldDecList fdl = node.fields;
-        for (FieldDeclaration fdl_e : fdl.list) {
+        for (int i = fdl.list.size() - 1 ; i >= 0 ; i--) {
+            FieldDeclaration fdl_e = fdl.list.get(i) ;
             Type t = tdsController.findType(fdl_e.baseType.identifier);
             if (t == null) {
                 err.addSemanticError(node, PARAMETER_TYPE_NO_DECLARED, fdl_e.baseType.identifier, fdl_e.fieldId.identifier);
@@ -227,7 +228,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                 err.addSemanticError(node, Errors.ID_ALREADY_USED, fdl_e.fieldId.identifier);
                 correct = false;
             }
-            tdsController.add(new Value(t, fdl_e.fieldId.identifier));
+            tdsController.addParam(new Value(t, fdl_e.fieldId.identifier));
         }
 
         // Pour les fonctions récursives

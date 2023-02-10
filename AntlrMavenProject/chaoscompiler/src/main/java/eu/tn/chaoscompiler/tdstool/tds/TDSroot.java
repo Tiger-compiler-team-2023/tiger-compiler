@@ -13,12 +13,14 @@ public class TDSroot implements TDS {
     protected int startLine;
 
     protected int nextVarDpl ;
+    protected int nextParamDpl ;
 
     public TDSroot() {
         this.hmType = new HashMap<String, Type>();
         this.hmVari = new HashMap<String, Value>();
         this.fullTDS = new ArrayList<TDS>();
-        this.nextVarDpl = 3 ;
+        this.nextVarDpl = 1 ;
+        this.nextParamDpl = -3 ;
     }
 
     public HashMap<String, Type> getHmType() {
@@ -97,6 +99,12 @@ public class TDSroot implements TDS {
                             .forEach(at -> at.setType((Type) var)));
             this.hmType.put(var.getId(), (Type) var);
         }
+    }
+
+    public void addParam(Value v) {
+        v.setDpl(this.nextParamDpl);
+        this.hmVari.put(v.getId(), v);
+        this.nextParamDpl-- ;
     }
 
     public boolean hasNoDeclaredType(){

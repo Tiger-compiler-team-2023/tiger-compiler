@@ -19,6 +19,8 @@ public interface TDS {
 
     void add(Variable var);
 
+    void addParam(Value v) ;
+
     void addSub(TDS t);
     void setStartLine(int i);
 
