@@ -290,7 +290,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Equals node) {
         Arm64Functions af;
-        if (node.getType() == Type.STRING_TYPE) {
+        if (node.leftValue.getType() == Type.STRING_TYPE) {
             af = Arm64Functions.STR_EQ;
         } else {
             // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
@@ -303,7 +303,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(NotEquals node) {
         Arm64Functions af;
-        if (node.getType() == Type.STRING_TYPE) {
+        if (node.leftValue.getType() == Type.STRING_TYPE) {
             af = Arm64Functions.STR_NE;
         } else {
             // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
@@ -316,7 +316,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Superior node) {
         Arm64Functions af;
-        if (node.getType() == Type.STRING_TYPE) {
+        if (node.leftValue.getType() == Type.STRING_TYPE) {
             af = Arm64Functions.STR_GT;
         } else {
             // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
@@ -329,7 +329,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Inferior node) {
         Arm64Functions af;
-        if (node.getType() == Type.STRING_TYPE) {
+        if (node.leftValue.getType() == Type.STRING_TYPE) {
             af = Arm64Functions.STR_LT;
         } else {
             // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
@@ -342,7 +342,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(SuperiorOrEquals node) {
         Arm64Functions af;
-        if (node.getType() == Type.STRING_TYPE) {
+        if (node.leftValue.getType() == Type.STRING_TYPE) {
             af = Arm64Functions.STR_GE;
         } else {
             // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
@@ -355,7 +355,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(InferiorOrEquals node) {
         Arm64Functions af;
-        if (node.getType() == Type.STRING_TYPE) {
+        if (node.leftValue.getType() == Type.STRING_TYPE) {
             af = Arm64Functions.STR_LE;
         } else {
             // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
