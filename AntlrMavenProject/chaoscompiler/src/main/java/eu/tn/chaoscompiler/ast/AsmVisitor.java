@@ -1,5 +1,6 @@
 package eu.tn.chaoscompiler.ast;
 
+import eu.tn.chaoscompiler.asmtools.Arm64Functions;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
@@ -20,6 +21,7 @@ import eu.tn.chaoscompiler.errors.ChaosError;
 import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
+import eu.tn.chaoscompiler.tdstool.variable.Type;
 
 public class AsmVisitor implements AstVisitor<String> {
 
@@ -39,191 +41,337 @@ public class AsmVisitor implements AstVisitor<String> {
                     "Erreur durant l'écriture du code assembleur",
                     ChaosError.typeError.SEMANTIC_ERROR);
         }
+        System.out.println(asm);
         return null;
     }
 
     @Override
     public String visit(Let letExpr) {
-        return null;
+        String res = "// Let\n";
+        res += letExpr.decList.accept(this);
+        res += letExpr.exprSeq.accept(this);
+        res += "// END Let\n";
+        return res;
     }
 
     @Override
     public String visit(Id node) {
-        return null;
+        String res = "// Id\n";
+        res += "idetifier = ";
+        res += node.identifier;
+        res += "\n";
+        res += "// END Id\n";
+        return res;
     }
 
     @Override
     public String visit(Sequence node) {
-        return null;
+        String res = "// Sequence\n";
+        for (Ast subNodes : node.instructions) {
+            subNodes.accept(this);
+        }
+        res += "// END Sequence\n";
+        return res;
     }
 
     @Override
     public String visit(FunctionDeclaration node) {
-        return null;
+        String res = "// FunctionDeclaration\n";
+
+        res += "// END FunctionDeclaration\n";
+        return res;
     }
 
     @Override
     public String visit(VariableDeclaration node) {
-        return null;
+        String res = "// VariableDeclaration\n";
+
+        res += "// END VariableDeclaration\n";
+        return res;
     }
 
     @Override
     public String visit(ArrayTypeDeclaration node) {
-        return null;
+        String res = "// ArrayTypeDeclaration\n";
+
+        res += "// END ArrayTypeDeclaration\n";
+        return res;
     }
 
     @Override
     public String visit(NoRecordTypeDeclaration node) {
-        return null;
+        String res = "// NoRecordTypeDeclaration\n";
+
+        res += "// END NoRecordTypeDeclaration\n";
+        return res;
     }
 
     @Override
     public String visit(RecordTypeDeclaration node) {
-        return null;
-    }
+        String res = "// RecordTypeDeclaration\n";
 
-    @Override
-    public String visit(Addition node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Negation node) {
-        return null;
+        res += "// END RecordTypeDeclaration\n";
+        return res;
     }
 
     @Override
     public String visit(IntegerNode node) {
-        return null;
+        String res = "// IntegerNode\n";
+
+        res += "// END IntegerNode\n";
+        return res;
     }
 
     @Override
     public String visit(StringNode node) {
-        return null;
+        String res = "// StringNode\n";
+        res += "string = \"";
+        res += node.stringContent;
+        res += "\"\n";
+        res += "// END StringNode\n";
+        return res;
     }
 
     @Override
     public String visit(FunctionCall node) {
-        return null;
+        String res = "// FunctionCall\n";
+
+        res += "// END FunctionCall\n";
+        return res;
     }
 
     @Override
     public String visit(ParameterList node) {
-        return null;
+        String res = "// ParameterList\n";
+
+        res += "// END ParameterList\n";
+        return res;
     }
 
     @Override
     public String visit(ArrayAssign node) {
-        return null;
+        String res = "// ArrayAssign\n";
+
+        res += "// END ArrayAssign\n";
+        return res;
     }
 
     @Override
     public String visit(ArrayAccess node) {
-        return null;
+        String res = "// ArrayAccess\n";
+
+        res += "// END ArrayAccess\n";
+        return res;
     }
 
     @Override
     public String visit(RecordCreate node) {
-        return null;
+        String res = "// RecordCreate\n";
+
+        res += "// END RecordCreate\n";
+        return res;
     }
 
     @Override
     public String visit(RecordAccess node) {
-        return null;
+        String res = "// RecordAccess\n";
+
+        res += "// END RecordAccess\n";
+        return res;
     }
 
     @Override
     public String visit(FieldCreate node) {
-        return null;
+        String res = "// FieldCreate\n";
+
+        res += "// END FieldCreate\n";
+        return res;
     }
 
     @Override
     public String visit(FieldDeclaration node) {
-        return null;
+        String res = "// FieldDeclaration\n";
+
+        res += "// END FieldDeclaration\n";
+        return res;
     }
 
     @Override
     public String visit(FieldDecList node) {
-        return null;
+        String res = "// FieldDecList\n";
+
+        res += "// END FieldDecList\n";
+        return res;
     }
 
     @Override
     public String visit(For forExpr) {
-        return null;
+        String res = "// For\n";
+
+        res += "// END For\n";
+        return res;
     }
 
     @Override
     public String visit(While whileExpr) {
-        return null;
+        String res = "// While\n";
+
+        res += "// END While\n";
+        return res;
     }
 
     @Override
     public String visit(IfThenElse ifThenElseExpr) {
-        return null;
-    }
+        String res = "// IfThenElse\n";
 
-    @Override
-    public String visit(Multiplication node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Division node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Soustraction node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Equals node) {
-        return null;
-    }
-
-    @Override
-    public String visit(NotEquals node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Superior node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Inferior node) {
-        return null;
-    }
-
-    @Override
-    public String visit(SuperiorOrEquals node) {
-        return null;
-    }
-
-    @Override
-    public String visit(InferiorOrEquals node) {
-        return null;
-    }
-
-    @Override
-    public String visit(Or node) {
-        return null;
-    }
-
-    @Override
-    public String visit(And node) {
-        return null;
+        res += "// END IfThenElse\n";
+        return res;
     }
 
     @Override
     public String visit(Affect node) {
-        return null;
+        String res = "// Affect\n";
+
+        res += "// END Affect\n";
+        return res;
     }
 
     @Override
     public String visit(DeclarationList node) {
-        return null;
+        String res = "// DeclarationList\n";
+
+        res += "// END DeclarationList\n";
+        return res;
+    }
+
+    /*
+     * ******** ******** ********
+     * OPERATEURS UNAIRES ET BINAIRES
+     * ******** ******** ********
+     */
+    @Override
+    public String visit(Negation node) {
+        String res = "";
+        res += node.negationTail.accept(this);
+        res += "bl ";
+        res += Arm64Functions.INT_NEG.call();
+        return res;
+    }
+
+    private String auxVisitBinaryOperator(BinaryOperator node, Arm64Functions arm64Function) {
+        String res = "";
+        res += node.leftValue.accept(this);
+        res += node.leftValue.accept(this);
+        res += "bl ";
+        res += arm64Function.call();
+        return res;
+    }
+
+    @Override
+    public String visit(Addition node) {
+        return auxVisitBinaryOperator(node, Arm64Functions.INT_ADD);
+    }
+
+    @Override
+    public String visit(Soustraction node) {
+        return auxVisitBinaryOperator(node, Arm64Functions.INT_SUB);
+    }
+
+    @Override
+    public String visit(Multiplication node) {
+        return auxVisitBinaryOperator(node, Arm64Functions.INT_MUL);
+    }
+
+    @Override
+    public String visit(Division node) {
+        return auxVisitBinaryOperator(node, Arm64Functions.INT_DIV);
+    }
+
+    @Override
+    public String visit(Equals node) {
+        Arm64Functions af;
+        if (node.getType() == Type.STRING_TYPE) {
+            af = Arm64Functions.STR_EQ;
+        } else {
+            // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
+            // ou une adresse.
+            af = Arm64Functions.INT_EQ;
+        }
+        return auxVisitBinaryOperator(node, af);
+    }
+
+    @Override
+    public String visit(NotEquals node) {
+        Arm64Functions af;
+        if (node.getType() == Type.STRING_TYPE) {
+            af = Arm64Functions.STR_NE;
+        } else {
+            // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
+            // ou une adresse.
+            af = Arm64Functions.INT_NE;
+        }
+        return auxVisitBinaryOperator(node, af);
+    }
+
+    @Override
+    public String visit(Superior node) {
+        Arm64Functions af;
+        if (node.getType() == Type.STRING_TYPE) {
+            af = Arm64Functions.STR_GT;
+        } else {
+            // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
+            // ou une adresse.
+            af = Arm64Functions.INT_GT;
+        }
+        return auxVisitBinaryOperator(node, af);
+    }
+
+    @Override
+    public String visit(Inferior node) {
+        Arm64Functions af;
+        if (node.getType() == Type.STRING_TYPE) {
+            af = Arm64Functions.STR_LT;
+        } else {
+            // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
+            // ou une adresse.
+            af = Arm64Functions.INT_LT;
+        }
+        return auxVisitBinaryOperator(node, af);
+    }
+
+    @Override
+    public String visit(SuperiorOrEquals node) {
+        Arm64Functions af;
+        if (node.getType() == Type.STRING_TYPE) {
+            af = Arm64Functions.STR_GE;
+        } else {
+            // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
+            // ou une adresse.
+            af = Arm64Functions.INT_GE;
+        }
+        return auxVisitBinaryOperator(node, af);
+    }
+
+    @Override
+    public String visit(InferiorOrEquals node) {
+        Arm64Functions af;
+        if (node.getType() == Type.STRING_TYPE) {
+            af = Arm64Functions.STR_LE;
+        } else {
+            // Si ce n'est pas une chaîne de caractères, alors on traite ça comme un entier
+            // ou une adresse.
+            af = Arm64Functions.INT_LE;
+        }
+        return auxVisitBinaryOperator(node, af);
+    }
+
+    @Override
+    public String visit(Or node) {
+        return auxVisitBinaryOperator(node, Arm64Functions.LOG_OR);
+    }
+
+    @Override
+    public String visit(And node) {
+        return auxVisitBinaryOperator(node, Arm64Functions.LOG_AND);
     }
 }
