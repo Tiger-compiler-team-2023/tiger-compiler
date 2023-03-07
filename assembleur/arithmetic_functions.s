@@ -1,5 +1,5 @@
 /*
-    Ce fichier contient les implémentations de différentes fonctions arithmétiques utilisables en assembleur ARM64.
+Ce fichier contient les implémentations de différentes fonctions arithmétiques utilisables en assembleur ARM64.
 */
 
 /********** ********** **********
@@ -80,6 +80,12 @@ ari_int_div:
     pop     x0                              // arg1/2
 
     // Implements ari_int_div
+    /*  Gestion des erreurs
+        On vérifie qu'on ne divise pas par 0            */
+    cmp     x1,     #0
+    bne     ari_int_div_notzero
+    err     #33
+    ari_int_div_notzero:
     sdiv    x7,     x0,     x1
     
     // RES [1]
@@ -268,7 +274,7 @@ ari_str_EQ:
     pop     x0                              // arg1/2
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements ari_str_EQ
     mov     x19,    x0                      // Adresse de arg1
@@ -316,7 +322,7 @@ ari_str_EQ:
     mov     x7,     #0
     ari_str_EQ_end:
     // STACK -- pop
-    pop1928
+    pop1927
     
     // RES [1]
     push    x7
@@ -332,7 +338,7 @@ ari_str_NE:
     pop     x0                              // arg1/2
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements ari_str_NE
     mov     x19,    x0                      // Adresse de arg1
@@ -380,7 +386,7 @@ ari_str_NE:
     mov     x7,     #0
     ari_str_NE_end:
     // STACK -- pop
-    pop1928
+    pop1927
     
     // RES [1]
     push    x7
@@ -396,7 +402,7 @@ ari_str_GT:
     pop     x0                              // arg1/2
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements ari_str_GT
     mov     x19,    x0                      // Adresse de arg1
@@ -432,7 +438,7 @@ ari_str_GT:
     ari_str_GT_end:
 
     // STACK -- pop
-    pop1928
+    pop1927
     
     // RES [1]
     push    x7
@@ -464,7 +470,7 @@ ari_str_GE:
     pop     x0                              // arg1/2
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements ari_str_GE
     mov     x19,    x0                      // Adresse de arg1
@@ -513,7 +519,7 @@ ari_str_GE:
     mov     x7,     #0
     ari_str_GE_end:
     // STACK -- pop
-    pop1928
+    pop1927
     
     // RES [1]
     push    x7

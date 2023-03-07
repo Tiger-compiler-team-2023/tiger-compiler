@@ -1,6 +1,5 @@
 # arm64
-### Ce dépôt dossier contient des macros et des fonctions de base en arm64 pour Linux.
-Fonctionne sur une machine Linux avec un CPU armv8.
+### Ce dépôt Git contient des macros et des fonctions de base en arm64 pour Linux.
 
 ---
 ## Contexte
@@ -32,24 +31,30 @@ Contient des macros.
 - `pop Xn` désempile en écrivant la valeur dans le registre `Xn`.
 - `push915` empile tous les registres de `x9` à `x15`.
 - `pop915` désempile dans les registre de `x15` à `x9`.
-- `push1928` empile tous les registres de `x19` à `x28`.
-- `pop1928` désempile dans les registre de `x28` à `x19`.
+- `push1927` empile tous les registres de `x19` à `x27`.
+- `pop1927` désempile dans les registre de `x27` à `x19`.
 - `mod Xa, Xb, Xc` écrit dans `Xa` le reste de la division euclidienne de `Xb` par `Xc`.
 - `print` écrit sur la sortie standard le contenue de la chaîne de caractères à l'adresse `x1` de longueur `x2`
 - `input` lit sur la sortie standard et écrit dans le buffer d'adresse `x1` et de taille `x2` ; `x0` prend la valeur du nombre de caractères lus.
+- `err im` gère les erreurs et exit avec `im` un code entre 0 et 255.
 ### `base_functions.s`
 Contient des fonctions et des données (les buffers).
 - `print_int16` (1 arg -> 0 res) écrit l'entier `arg1/1` sur la sortie standard en base 16 (e.g. 54000 -> `0x 0000 0000 0000 d2f0`).
 - `print_int10` (1 arg -> 0 res) écrit l'entier `arg1/1` sur la sortie standard en base 10 (e.g. 54000 -> `54 000`).
 - `input_int10` (0 arg -> 1 res) lit jusqu'à 31 chiffres (ou '-' et 30 chiffres) sur l'entrée standard et écrit la valeur de l'entier en base 10 lu au sommet de la pile.
 - `malloc` (1 arg -> 1 res) réserve `arg1/1` octets dans le tas et écrit l'adresse de l'espace alloué au sommet de la pile (exit avec un statut 32 en cas d'erreur).
+- `error` (1 arg -> 0 res) gère les erreurs et exit avec le code `arg1/1` compris entre 0 et 255.
+### `data_functions.s`
+Contient des fonctions.
+- `array_assign` (2 arg -> 1 res) écrit l'adresse du tableau de taille arg1/2 dont tous les éléments sont arg2/2 au sommet de la pile (tests semantiques : taille >= 0 et bon fonctionnement de l'allocation mémoire).
+- `array_access` (2 arg -> 1 res) écrit l'adresse de la case du tableau d'adresse arg1/2 et d'indice arg2/2 au sommet de la pile (tests semantiques : indice >= 0 et indice < size). On utilise `str` et `ldr` pour modifier les valeurs des cellules du tableau, cette fonctions sert principalement aux tests sémantiques et à calculer le déplacement.
 ### `arithmetic_functions.s`
 Contient des fonctions.
 - `ari_int_neg` (1 arg -> 1 res) écrit l'opposé de `arg1/1` au sommet de la pile où `arg1/1` est un entier.
 - `ari_int_add` (2 arg -> 1 res) écrit `arg1/2` + `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des entiers.
 - `ari_int_sub` (2 arg -> 1 res) écrit `arg1/2` - `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des entiers.
 - `ari_int_mul` (2 arg -> 1 res) écrit `arg1/2` * `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des entiers.
-- `ari_int_div` (2 arg -> 1 res) écrit `arg1/2` / `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des entiers.
+- `ari_int_div` (2 arg -> 1 res) écrit `arg1/2` / `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des entiers. Gère le cas de la division par 0 avec un message d'erreur et un exit.
 - `ari_log_and` (2 arg -> 1 res) écrit `arg1/2` & `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des booléens (entiers tels que 0 vaut faux et tout autre nombre vaut vrai).
 - `ari_log_or` (2 arg -> 1 res) écrit `arg1/2` | `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des booléens (entiers tels que 0 vaut faux et tout autre nombre vaut vrai).
 - `ari_int_EQ` (2 arg -> 1 res) écrit `arg1/2` = `arg2/2` au sommet de la pile où `arg1/2` et `arg2/2` sont des entiers.
@@ -73,16 +78,21 @@ Contient des fonctions.
 |x0 - x7  | Paramètres et retours de fonctions  |
 |x8 (XR) | Appels systèmes |
 |x9 - x15 | Registres de travail qui doivent être empilés par l'appelant  |
-|x19 - x28 | Registres de travail qui doivent être empilés par l'appelé  |
+|x19 - x27 | Registres de travail qui doivent être empilés par l'appelé  |
+|x28 | Chaînage statique |
 |x29 (FP) | Frame pointer |
 |x30 (LR) | Link register |
 ### Appels des fonctions
-Chaque fonctions a _a_ arguments et _r_ retours. Il suffit de `push` les _a_ arguments, d'appeler la fonctions avec `bl label_fonction` puis de récupérer les _r_ résultats avec `pop`.
+WIP
 ### Statuts de retour
 |Statut  |Signification  |
 |---  |---  |
 |0  | Aucune erreur  |
 |32  | Erreur d'allocation de mémoire (`malloc`)  |
+|33  | Division par 0  |
+|34  | Overflow lors d'un calcul arithmétique (n'est pas implémenté)  |
+|35  | Index out of range  |
+|36  | Taille ou indice négatif  |
 |Autre  | Erreur inconnue  |
 
 
@@ -108,6 +118,7 @@ _start:
 
 // fin FUNCTIONS
 .include    "arithmetic_functions.s"
+.include    "data_functions.s"
 .include    "base_functions.s"
 // DATA
 

@@ -1,3 +1,5 @@
+main : clean exemple
+
 exemple : exemple.o
 	ld -o exemple exemple.o
 

@@ -1,5 +1,5 @@
 /*
-    Ce fichier contient les implémentations de différentes fonctions utilisables en assembleur ARM64.
+Ce fichier contient les implémentations de différentes fonctions utilisables en assembleur ARM64.
 */
 
 /********** ********** **********
@@ -15,7 +15,7 @@ print_int16:
     pop     x0                              // arg1/1
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements print_int16
     mov     x19,    x0
@@ -41,11 +41,11 @@ print_int16:
     lsl     x19,    x19,    #4              // Efface les 4 bits de gauche
     b       print_int16_loop
     print_int16_endloop:
-    mov     x2,     #23
+    mov     x2,     #24
     print
 
     // STACK -- pop
-    pop1928
+    pop1927
     
     // RES [0]
     ret
@@ -59,7 +59,7 @@ print_int10:
     pop     x0                              // arg1/1
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements print_int16
     mov     x19,    x0
@@ -116,11 +116,11 @@ print_int10:
     print_int10_gtz:
     
     add     x1,     x24,    #1
-    mov     x2,     x25
+    add     x2,     x25,    #1
     print
 
     // STACK -- pop
-    pop1928
+    pop1927
     
     // RES [0]
     ret
@@ -133,7 +133,7 @@ input_int10:
     // ARGS [0]
 
     // STACK -- push
-    push1928
+    push1927
 
     // Implements print_int16
     ldr     x1,     =input_int10_buffer
@@ -184,7 +184,7 @@ input_int10:
     mov     x0,     x21
 
     // STACK -- pop
-    pop1928
+    pop1927
 
     // RES [1]
     push    x0
@@ -217,12 +217,70 @@ malloc:
     sub     x3,     x0,     x2
     cmp     x3,     x1
     beq     malloc_end
-    exit    #0x20
+    err     #32
     malloc_end:
 
     // RES [1]
     push    x2                              // Renvoie l'adresse du début de l'espace
     ret
+
+error:
+    // Quitte le programme avec un statut d'erreur après avoir affiché un message d'erreur adapté
+    // {x7}
+    // [1] -> [0]
+    
+    // ARGS [1]
+    pop     x7                              // arg1/1
+
+    // Implements error
+    cmp     x7,     #32                     // malloc
+    bne     err_not_32
+    ldr     x1,     =err_32
+    mov     x2,     len_err_32
+    b       err_end
+    err_not_32:
+    cmp     x7,     #33                     // 0 div
+    bne     err_not_33
+    ldr     x1,     =err_33
+    mov     x2,     len_err_33
+    b       err_end
+    err_not_33:
+    cmp     x7,     #34                     // arithmetic overflow
+    bne     err_not_34
+    ldr     x1,     =err_34
+    mov     x2,     len_err_34
+    b       err_end
+    err_not_34:
+    cmp     x7,     #35                     // index out of range
+    bne     err_not_35
+    ldr     x1,     =err_35
+    mov     x2,     len_err_35
+    b       err_end
+    err_not_35:
+    cmp     x7,     #36                     // negative size or index
+    bne     err_not_36
+    ldr     x1,     =err_36
+    mov     x2,     len_err_36
+    b       err_end
+    err_not_36:
+    cmp     x7,     #0                      // no error
+    bne     err_not_0
+    ldr     x1,     =err_0
+    mov     x2,     len_err_0
+    b       err_end
+    err_not_0:
+    /*  Erreur inconnue
+        A ce point, l'erreur n'est pas connue           */
+    ldr     x1,     =err_UK
+    mov     x2,     len_err_UK
+    err_end:
+    sub     x2,     x2,     #1              // La taille comprend EOF
+    mov     x0,     #2
+    mov     x8,     #64
+    svc     #0
+    exit    x7
+
+    // Le processus a été quitté à ce point
 
 /********** ********** **********
  **********    DATA    **********
@@ -237,3 +295,24 @@ print_int10_buffer:
     .asciz  "xx xxx xxx xxx xxx xxx xxx\n"
 input_int10_buffer:
     .fill   32,     1,      0
+err_0:
+    .asciz  "\033[1;31mError:\033[0m Called `error` function with status 0.\n"
+len_err_0 = . - err_0
+err_32:
+    .asciz  "\033[1;31mError:\033[0m Cannot malloc.\n"
+len_err_32 = . - err_32
+err_33:
+    .asciz  "\033[1;31mError:\033[0m Zero division.\n"
+len_err_33 = . - err_33
+err_34:
+    .asciz  "\033[1;31mError:\033[0m Arithmetic overflow.\n"
+len_err_34 = . - err_34
+err_35:
+    .asciz  "\033[1;31mError:\033[0m Index out of range.\n"
+len_err_35 = . - err_35
+err_36:
+    .asciz  "\033[1;31mError:\033[0m Negative size or index.\n"
+len_err_36 = . - err_36
+err_UK:
+    .asciz  "\033[1;31mError:\033[0m Unknown error (use `echo $?` to see status).\n"
+len_err_UK = . - err_UK

@@ -1,5 +1,5 @@
 /*
-    Ce fichier contient les implémentations de différentes macros utilisables en assembleur ARM64.
+Ce fichier contient les implémentations de différentes macros utilisables en assembleur ARM64.
 */
 
 /********** ********** **********
@@ -50,7 +50,7 @@
     pop     x9
 .endm
 
-.macro push1928
+.macro push1927
     // push tous les registres qui doivent être enregistrés par l'appelé
     // {}
     push    x19
@@ -62,13 +62,11 @@
     push    x25
     push    x26
     push    x27
-    push    x28
 .endm
 
-.macro pop1928
+.macro pop1927
     // pop tous les registres qui doivent être enregistrés par l'appelé
-    // {x19, x20, x21, x22, x23, x24, x25, x26, x27, x28}
-    pop     x28
+    // {x19, x20, x21, x22, x23, x24, x25, x26, x27}
     pop     x27
     pop     x26
     pop     x25
@@ -93,6 +91,7 @@
     // x1 -> addresse de la str
     // x2 -> taille de la str
     // {x0, x8}
+    sub     x2,     x2,     #1              // La taille comprend EOF
     mov     x0,     #1
     mov     x8,     #64
     svc     #0
@@ -104,7 +103,15 @@
     // x2 -> taille max de la str
     // {x0, x8}
     // x0 <- taille lue
-    mov     x0,     #0
-    mov     x8,     #63
+    mov     x0,     #2
+    mov     x8,     #64
     svc     #0
+.endm
+
+.macro err code
+    // Quitte le programme avec une erreur
+    // {x0, x1, x2, x7}
+    mov     x0,     \code
+    push    x0
+    b       error
 .endm

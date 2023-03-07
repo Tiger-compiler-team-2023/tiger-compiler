@@ -9,10 +9,8 @@ _start:
 // EXECUTION
 
 ldr     x1,     =hw
-mov     x2,     #14
+mov     x2,     hw_
 print
-
-exit    #0
 
 // fin EXECUTION
 	exit #0
@@ -26,5 +24,6 @@ exit    #0
 
 hw:
     .asciz "Hello, world!\n"
+hw_ = . - hw
 
 // fin DATA
