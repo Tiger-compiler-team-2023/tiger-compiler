@@ -1,0 +1,27 @@
+digraph "ast"{
+
+	nodesep=1;
+	ranksep=1;
+node [style=filled]
+	N1 [label="Let", shape="Mdiamond", fillcolor="darkgoldenrod1"];
+	N2 [label="DeclarationList", shape="parallelogram", fillcolor="aquamarine"];
+	N3 [label="VariableDeclaration", shape="parallelogram", fillcolor="aquamarine"];
+	N4 [label="a", shape="ellipse", fillcolor="pink"];
+	N5 [label="int", shape="ellipse", fillcolor="pink"];
+	N6 [label="Addition", shape="diamond", fillcolor="brown1"];
+	N7 [label="5", shape="invtrapezium", fillcolor="pink"];
+	N8 [label="3", shape="invtrapezium", fillcolor="pink"];
+	N9 [label="Sequence", shape="invhouse", fillcolor="darkorchid1"];
+	N0 [label="Program", shape="Msquare", fillcolor="lightcoral"];
+
+	N3 -> N4; 
+	N3 -> N5; 
+	N6 -> N7; 
+	N6 -> N8; 
+	N3 -> N6; 
+	N2 -> N3; 
+	N1 -> N2; 
+	N1 -> N9; 
+	N0 -> N1; 
+
+}

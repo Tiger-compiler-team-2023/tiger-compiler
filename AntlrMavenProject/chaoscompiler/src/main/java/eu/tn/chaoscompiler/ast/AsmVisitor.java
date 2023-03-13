@@ -32,16 +32,17 @@ public class AsmVisitor implements AstVisitor<String> {
     public Void visit(Program node) {
         tdsController = TDScontroller.getInstance();
 
-        String asm = node.accept(this) + "\nEND";
+        //String asm = node.accept(this) + "\nEND";
         try {
-            node.expression.accept(this);
+            String asm=node.expression.accept(this);
+            System.out.println(asm);
         } catch (Exception e) {
             e.printStackTrace();
             err.addUnrecognisedError(
                     "Erreur durant l'écriture du code assembleur",
                     ChaosError.typeError.SEMANTIC_ERROR);
         }
-        System.out.println(asm);
+
         return null;
     }
 
@@ -117,7 +118,10 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-
+        res+="LDR X19,";
+        //empiler la valeur de l'entier
+        res+=Integer.toString(node.value)+"\n";
+        res+="push1927"+"\n";
         res += "// END IntegerNode\n";
         return res;
     }
@@ -223,6 +227,30 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IfThenElse ifThenElseExpr) {
         String res = "// IfThenElse\n";
+        String output_condition = ifThenElseExpr.condExpr.accept(this);
+        //récupération de la valeur de la condition
+        res+="pop1927"+"\n";
+        res+="CMP x19,#0"+"\n";
+        if(ifThenElseExpr.elseExpr!=null){
+            //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute else)
+            res+="BEQ _else_expr"+"\n";
+            res+="BNE _then_expr"+"\n";
+
+            //Début du block de else
+            res+="_else_expr"+"\n";
+            res+=ifThenElseExpr.elseExpr.accept(this);
+            res+="BL _end"+"\n";
+        }
+        else{//pas de else dans ifThen
+            res+="BNE _then_expr"+"\n";
+            res+="BEQ _end"+"\n";
+        }
+        //Début de block de then
+        res+="_then_expr"+"\n";
+        res+=ifThenElseExpr.thenExpr.accept(this);
+        res+="BL _end"+"\n";
+        //Fin du block conditionnel
+        res+="_end END"+"\n";
 
         res += "// END IfThenElse\n";
         return res;
