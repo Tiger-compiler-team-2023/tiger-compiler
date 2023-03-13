@@ -37,7 +37,8 @@ public enum Arm64Functions {
 
     public String call() {
         String res = "";
-        res += "bl ";
+        res += "BL ";
+        res += "BL ";
         res += this.functionName;
         res += " // [";
         res += nbArgs;

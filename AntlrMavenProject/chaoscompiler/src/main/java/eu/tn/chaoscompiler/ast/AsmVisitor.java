@@ -34,7 +34,15 @@ public class AsmVisitor implements AstVisitor<String> {
 
         //String asm = node.accept(this) + "\nEND";
         try {
-            String asm=node.expression.accept(this);
+            String asm="//BEGIN"+"\n";
+            //importer les fonctions arm et les macros ;
+            asm+=".include \"base_macros.s\" "+"\n";
+            asm+=".include \"arithmetic_functions.s\""+"\n";
+            asm+=".global _start"+"\n";
+            asm+="_start:"+"\n";
+            //Le programme
+            asm+=node.expression.accept(this);
+            asm+="//END";
             System.out.println(asm);
         } catch (Exception e) {
             e.printStackTrace();
@@ -118,7 +126,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-        res+="LDR x1,#";
+        res+="LDR x1,=";
         //empiler la valeur de l'entier
         res+=Integer.toString(node.value)+"\n";
         res+="push x1"+"\n";
