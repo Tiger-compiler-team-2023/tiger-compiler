@@ -69,7 +69,7 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Sequence node) {
         String res = "// Sequence\n";
         for (Ast subNodes : node.instructions) {
-            subNodes.accept(this);
+            res+=subNodes.accept(this);
         }
         res += "// END Sequence\n";
         return res;
@@ -118,10 +118,10 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-        res+="LDR X19,";
+        res+="LDR x1,#";
         //empiler la valeur de l'entier
         res+=Integer.toString(node.value)+"\n";
-        res+="push1927"+"\n";
+        res+="push x1"+"\n";
         res += "// END IntegerNode\n";
         return res;
     }
@@ -228,11 +228,12 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(IfThenElse ifThenElseExpr) {
         String res = "// IfThenElse\n";
         String output_condition = ifThenElseExpr.condExpr.accept(this);
+        res+=output_condition+"\n";
         //récupération de la valeur de la condition
         res+="pop1927"+"\n";
         res+="CMP x19,#0"+"\n";
         if(ifThenElseExpr.elseExpr!=null){
-            //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute else)
+            //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute elses)
             res+="BEQ _else_expr"+"\n";
             res+="BNE _then_expr"+"\n";
 
@@ -289,8 +290,7 @@ public class AsmVisitor implements AstVisitor<String> {
     private String auxVisitBinaryOperator(BinaryOperator node, Arm64Functions arm64Function) {
         String res = "";
         res += node.leftValue.accept(this);
-        res += node.leftValue.accept(this);
-        res += "bl ";
+        res += node.rightValue.accept(this);
         res += arm64Function.call();
         return res;
     }
