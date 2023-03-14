@@ -519,3 +519,11 @@ java-project/src/main/java/parser/
 AntlrMavenProject/chaoscompiler/.idea/
 
 AntlrMavenProject/chaoscompiler/target/
+
+AntlrMavenProject/.idea/
+
+AntlrMavenProject/.vscode/
+
+AntlrMavenProject/chaoscompiler/.vscode/
+
+AntlrMavenProject/chaoscompiler/src/.idea/

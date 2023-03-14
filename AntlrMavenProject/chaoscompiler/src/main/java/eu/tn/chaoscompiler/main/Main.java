@@ -2,6 +2,7 @@ package eu.tn.chaoscompiler.main;
 
 import eu.tn.chaoscompiler.ChaosLexer;
 import eu.tn.chaoscompiler.ChaosParser;
+import eu.tn.chaoscompiler.ast.AsmVisitor;
 import eu.tn.chaoscompiler.ast.Ast;
 import eu.tn.chaoscompiler.ast.AstCreator;
 import eu.tn.chaoscompiler.ast.ControlesSemantiques;
@@ -56,14 +57,15 @@ public class Main {
             // Génération du code graphviz pour l'AST
             GraphVizVisitor graphViz = new GraphVizVisitor();
             ast.accept(graphViz);
-            graphViz.dumpGraph("./src/test/ressources/out/tree.dot");
+            graphViz.dumpGraph("./src/test/ressources/tree.dot");
             // Affichage du graphe dans le navigateur
-            GraphDisplayer.displayDotFile("./src/test/ressources/out/tree.dot");
+            GraphDisplayer.displayDotFile("./src/test/ressources/tree.dot");
 
             // Tests sémantiques
             ast.accept(new ControlesSemantiques());
             GestionnaireErreur.getInstance().afficherErreurs();
-
+            AsmVisitor asmvisitor= new AsmVisitor();
+            ast.accept(asmvisitor);
         } catch (IOException | RecognitionException e) {
             e.printStackTrace();
         }

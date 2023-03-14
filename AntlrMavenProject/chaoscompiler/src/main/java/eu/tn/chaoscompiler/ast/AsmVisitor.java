@@ -34,16 +34,25 @@ public class AsmVisitor implements AstVisitor<String> {
     public Void visit(Program node) {
         tdsController = TDScontroller.getInstance();
 
-        String asm = node.accept(this) + "\nEND";
+        //String asm = node.accept(this) + "\nEND";
         try {
-            node.expression.accept(this);
+            String asm="//BEGIN"+"\n";
+            //importer les fonctions arm et les macros ;
+            asm+=".include \"base_macros.s\" "+"\n";
+            asm+=".include \"arithmetic_functions.s\""+"\n";
+            asm+=".global _start"+"\n";
+            asm+="_start:"+"\n";
+            //Le programme
+            asm+=node.expression.accept(this);
+            asm+="//END";
+            System.out.println(asm);
         } catch (Exception e) {
             e.printStackTrace();
             err.addUnrecognisedError(
                     "Erreur durant l'écriture du code assembleur",
                     ChaosError.typeError.SEMANTIC_ERROR);
         }
-        System.out.println(asm);
+
         return null;
     }
 
@@ -92,7 +101,7 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Sequence node) {
         String res = "// Sequence\n";
         for (Ast subNodes : node.instructions) {
-            subNodes.accept(this);
+            res+=subNodes.accept(this);
         }
         res += "// END Sequence\n";
         return res;
@@ -141,7 +150,10 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-
+        res+="ldr x1,=";
+        //empiler la valeur de l'entier
+        res+=Integer.toString(node.value)+"\n";
+        res+="push x1"+"\n";
         res += "// END IntegerNode\n";
         return res;
     }
@@ -175,7 +187,9 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAssign node) {
         String res = "// ArrayAssign\n";
-
+        node.nombreDElements.accept(this);
+        node.element.accept(this);
+        res += Arm64Functions.ARRAY_ASSIGN.call();
         res += "// END ArrayAssign\n";
         return res;
     }
@@ -183,7 +197,9 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAccess node) {
         String res = "// ArrayAccess\n";
-
+        node.exp.accept(this);
+        node.index.accept(this);
+        res += Arm64Functions.ARRAY_ACCESS.call();
         res += "// END ArrayAccess\n";
         return res;
     }
@@ -239,7 +255,15 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(While whileExpr) {
         String res = "// While\n";
-
+        res+="bl _loop"+"\n";
+        res+="_loop:"+"\n";
+        res+=whileExpr.condExpr.accept(this)+"\n";
+        res+="pop x1"+"\n";
+        res+="cmp x1,#0"+"\n";
+        res+="beq _end"+"\n";
+        res+=whileExpr.doExpr.accept(this)+"\n";
+        res+="bl _loop"+"\n";
+        res+="_end: .end"+"\n";
         res += "// END While\n";
         return res;
     }
@@ -247,6 +271,31 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IfThenElse ifThenElseExpr) {
         String res = "// IfThenElse\n";
+        String output_condition = ifThenElseExpr.condExpr.accept(this);
+        res+=output_condition+"\n";
+        //récupération de la valeur de la condition
+        res+="pop1927"+"\n";
+        res+="cmp x19,#0"+"\n";
+        if(ifThenElseExpr.elseExpr!=null){
+            //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute elses)
+            res+="beq _else_expr"+"\n";
+            res+="bne _then_expr"+"\n";
+
+            //Début du block de else
+            res+="_else_expr:"+"\n";
+            res+=ifThenElseExpr.elseExpr.accept(this);
+            res+="bl _end"+"\n";
+        }
+        else{//pas de else dans ifThen
+            res+="bne _then_expr"+"\n";
+            res+="beq _end"+"\n";
+        }
+        //Début de block de then
+        res+="_then_expr:"+"\n";
+        res+=ifThenElseExpr.thenExpr.accept(this);
+        res+="bl _end"+"\n";
+        //Fin du block conditionnel
+        res+="_end: .end"+"\n";
 
         res += "// END IfThenElse\n";
         return res;
@@ -289,8 +338,7 @@ public class AsmVisitor implements AstVisitor<String> {
     private String auxVisitBinaryOperator(BinaryOperator node, Arm64Functions arm64Function) {
         String res = "";
         res += node.leftValue.accept(this);
-        res += node.leftValue.accept(this);
-        res += "bl ";
+        res += node.rightValue.accept(this);
         res += arm64Function.call();
         return res;
     }

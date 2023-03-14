@@ -1,0 +1,35 @@
+digraph "ast"{
+
+	nodesep=1;
+	ranksep=1;
+node [style=filled]
+	N1 [label="IfThenElse", shape="trapezium", fillcolor="yellow"];
+	N2 [label="Sequence", shape="invhouse", fillcolor="darkorchid1"];
+	N3 [label="Inferior", shape="diamond", fillcolor="brown1"];
+	N4 [label="3", shape="invtrapezium", fillcolor="pink"];
+	N5 [label="5", shape="invtrapezium", fillcolor="pink"];
+	N6 [label="FunctionCall", shape="folder", fillcolor="grey"];
+	N7 [label="print", shape="ellipse", fillcolor="pink"];
+	N8 [label="ParameterList", shape="folder", fillcolor="grey"];
+	N9 [label="\"a\"", shape="invtrapezium", fillcolor="pink"];
+	N10 [label="FunctionCall", shape="folder", fillcolor="grey"];
+	N11 [label="print", shape="ellipse", fillcolor="pink"];
+	N12 [label="ParameterList", shape="folder", fillcolor="grey"];
+	N13 [label="\"b\"", shape="invtrapezium", fillcolor="pink"];
+	N0 [label="Program", shape="Msquare", fillcolor="lightcoral"];
+
+	N3 -> N4; 
+	N3 -> N5; 
+	N2 -> N3; 
+	N1 -> N2; 
+	N6 -> N7; 
+	N8 -> N9; 
+	N6 -> N8; 
+	N1 -> N6; 
+	N10 -> N11; 
+	N12 -> N13; 
+	N10 -> N12; 
+	N1 -> N10; 
+	N0 -> N1; 
+
+}
