@@ -27,12 +27,16 @@ public class AsmVisitor implements AstVisitor<String> {
 
     private TDScontroller tdsController;
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
+    private String dataSection;
+    private int stringCounter;
 
     @Override
     public Void visit(Program node) {
+        stringCounter = 0;
+        dataSection = "";
+
         tdsController = TDScontroller.getInstance();
 
-        //String asm = node.accept(this) + "\nEND";
         try {
             String asm="//BEGIN"+"\n";
             //importer les fonctions arm et les macros ;
@@ -126,23 +130,32 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-        res+="ldr x1,=";
-        //empiler la valeur de l'entier
-        res+=Integer.toString(node.value)+"\n";
-        res+="push x1"+"\n";
+        res += "MOV     x9,    #" + node.value + "\n";
+        res += "push    x9\n";
         res += "// END IntegerNode\n";
         return res;
     }
 
+    // -------------- STRING ----
     @Override
     public String visit(StringNode node) {
         String res = "// StringNode\n";
-        res += "string = \"";
-        res += node.stringContent;
-        res += "\"\n";
+
+        String strlbl = addStringLitteral(node);
+        res += "ldr x0,    =" + strlbl + "\n";
+        res += "push    x0\n";
+
         res += "// END StringNode\n";
         return res;
     }
+
+    public String addStringLitteral(StringNode node) {
+        String name = "str_" + stringCounter;
+        dataSection += String.format("%s:\n .asciz  \"%s\"\n", name, node.stringContent);
+        stringCounter++;
+        return name;
+    }
+// ----------------- /STRING ----
 
     @Override
     public String visit(FunctionCall node) {
@@ -302,8 +315,8 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Negation node) {
         String res = "";
         res += node.negationTail.accept(this);
-        res += "bl ";
-        res += Arm64Functions.INT_NEG.call();
+        //res += "bl ";
+        res += "\n" + Arm64Functions.INT_NEG.call();
         return res;
     }
 
@@ -422,4 +435,5 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(And node) {
         return auxVisitBinaryOperator(node, Arm64Functions.LOG_AND);
     }
+
 }
