@@ -155,7 +155,9 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAssign node) {
         String res = "// ArrayAssign\n";
-
+        node.nombreDElements.accept(this);
+        node.element.accept(this);
+        res += Arm64Functions.ARRAY_ASSIGN.call();
         res += "// END ArrayAssign\n";
         return res;
     }
@@ -163,7 +165,9 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAccess node) {
         String res = "// ArrayAccess\n";
-
+        node.exp.accept(this);
+        node.index.accept(this);
+        res += Arm64Functions.ARRAY_ACCESS.call();
         res += "// END ArrayAccess\n";
         return res;
     }
