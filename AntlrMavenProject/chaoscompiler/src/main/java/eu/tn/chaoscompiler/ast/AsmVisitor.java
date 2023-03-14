@@ -38,15 +38,32 @@ public class AsmVisitor implements AstVisitor<String> {
         tdsController = TDScontroller.getInstance();
 
         try {
-            String asm="//BEGIN"+"\n";
+            // Début section data
+            dataSection ="""
+                            /********** ********** **********
+                             **********    DATA    **********
+                             ********** ********** **********/
+
+                            .section .data
+                            """;
+
             //importer les fonctions arm et les macros ;
-            asm+=".include \"base_macros.s\" "+"\n";
-            asm+=".include \"arithmetic_functions.s\""+"\n";
-            asm+=".global _start"+"\n";
-            asm+="_start:"+"\n";
+
+            String asm = """
+                    //BEGIN
+                    .include "base_macros.s"
+                    .include arithmetic_functions.s
+                    .global _start
+                    _start:
+                    """;
+            
             //Le programme
             asm+=node.expression.accept(this);
-            asm+="//END";
+            asm+="//END\n\n";
+
+            // Fin section data
+            asm += dataSection;
+
             System.out.println(asm);
         } catch (Exception e) {
             e.printStackTrace();
