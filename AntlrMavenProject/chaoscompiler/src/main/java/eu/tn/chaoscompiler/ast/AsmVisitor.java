@@ -126,7 +126,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-        res+="LDR x1,=";
+        res+="ldr x1,=";
         //empiler la valeur de l'entier
         res+=Integer.toString(node.value)+"\n";
         res+="push x1"+"\n";
@@ -243,27 +243,27 @@ public class AsmVisitor implements AstVisitor<String> {
         res+=output_condition+"\n";
         //récupération de la valeur de la condition
         res+="pop1927"+"\n";
-        res+="CMP x19,#0"+"\n";
+        res+="cmp x19,#0"+"\n";
         if(ifThenElseExpr.elseExpr!=null){
             //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute elses)
-            res+="BEQ _else_expr"+"\n";
-            res+="BNE _then_expr"+"\n";
+            res+="beq _else_expr"+"\n";
+            res+="bne _then_expr"+"\n";
 
             //Début du block de else
-            res+="_else_expr"+"\n";
+            res+="_else_expr:"+"\n";
             res+=ifThenElseExpr.elseExpr.accept(this);
-            res+="BL _end"+"\n";
+            res+="bl _end"+"\n";
         }
         else{//pas de else dans ifThen
-            res+="BNE _then_expr"+"\n";
-            res+="BEQ _end"+"\n";
+            res+="bne _then_expr"+"\n";
+            res+="beq _end"+"\n";
         }
         //Début de block de then
-        res+="_then_expr"+"\n";
+        res+="_then_expr:"+"\n";
         res+=ifThenElseExpr.thenExpr.accept(this);
-        res+="BL _end"+"\n";
+        res+="bl _end"+"\n";
         //Fin du block conditionnel
-        res+="_end END"+"\n";
+        res+="_end: .end"+"\n";
 
         res += "// END IfThenElse\n";
         return res;
