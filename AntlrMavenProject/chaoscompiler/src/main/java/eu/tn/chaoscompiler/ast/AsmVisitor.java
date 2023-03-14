@@ -1,8 +1,10 @@
 package eu.tn.chaoscompiler.ast;
 
 import eu.tn.chaoscompiler.asmtools.Arm64Functions;
+import eu.tn.chaoscompiler.asmtools.Registre;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.VariableDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.types.ArrayTypeDeclaration;
@@ -48,8 +50,30 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Let letExpr) {
         String res = "// Let\n";
+
+        // Calculer ch. STAT
+        // Mettre ch. STAT dans x28
+        // Mettre adresse prochaine instr dans LR (BL)
+
+        // Empiler @ retour qui est dans LR x30
+        // Empiler ch DYN qui est dans x29
+        // Mise à jour base
+        res += "mov x29, x31\n" ;
+        // Empiler ch STAT x28
+
+        // Réserver place variables locales
+        int nb_local_var = tdsController
+        // Sauvegarder registres de travail x19 - x27
+
         res += letExpr.decList.accept(this);
         res += letExpr.exprSeq.accept(this);
+
+        // Restaurer registres de travail x19 - x27
+        // Dépiler variables locales
+
+        // Restaurer ancienne base
+        res += "ldr x" + Registre.FP.ordinal() + ", [x" + Registre.SP.ordinal() + "]\n" ;
+
         res += "// END Let\n";
         return res;
     }
@@ -77,7 +101,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(FunctionDeclaration node) {
         String res = "// FunctionDeclaration\n";
-
+        // Cyrielle
         res += "// END FunctionDeclaration\n";
         return res;
     }
@@ -85,7 +109,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(VariableDeclaration node) {
         String res = "// VariableDeclaration\n";
-
+        // Cyrielle
         res += "// END VariableDeclaration\n";
         return res;
     }
@@ -93,7 +117,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayTypeDeclaration node) {
         String res = "// ArrayTypeDeclaration\n";
-
+        // Cyrielle
         res += "// END ArrayTypeDeclaration\n";
         return res;
     }
@@ -101,7 +125,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(NoRecordTypeDeclaration node) {
         String res = "// NoRecordTypeDeclaration\n";
-
+        // Cyrielle
         res += "// END NoRecordTypeDeclaration\n";
         return res;
     }
@@ -109,7 +133,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(RecordTypeDeclaration node) {
         String res = "// RecordTypeDeclaration\n";
-
+        // Cyrielle
         res += "// END RecordTypeDeclaration\n";
         return res;
     }
@@ -239,6 +263,10 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(DeclarationList node) {
         String res = "// DeclarationList\n";
+
+        for (Declaration dec:node.list) {
+            res += dec.accept(this) ;
+        }
 
         res += "// END DeclarationList\n";
         return res;
