@@ -231,7 +231,15 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(While whileExpr) {
         String res = "// While\n";
-
+        res+="bl _loop"+"\n";
+        res+="_loop:"+"\n";
+        res+=whileExpr.condExpr.accept(this)+"\n";
+        res+="pop x1"+"\n";
+        res+="cmp x1,#0"+"\n";
+        res+="beq _end"+"\n";
+        res+=whileExpr.doExpr.accept(this)+"\n";
+        res+="bl _loop"+"\n";
+        res+="_end: .end"+"\n";
         res += "// END While\n";
         return res;
     }
