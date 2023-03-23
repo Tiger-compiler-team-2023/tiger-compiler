@@ -101,3 +101,25 @@ array_access:
     // RES [1]
     push    x7
     ret
+
+chainage_st:
+    // Application du chainage statique (arg1/3 @CS, arg2/3 #scopes, arg3/3 depl)
+    // {x0, x1, x7}
+    // [3] -> [1]
+    
+    // ARGS [1]
+    pop     x0                              // arg3/3
+    pop     x1                              // arg2/3
+    pop     x7                              // arg1/3
+
+    // Implements chainage_st
+    chainage_st_loop:
+    LDR     x7,     [x7,    #-8]
+    subs    x1,     x1,     #1
+    bne     chainage_st_loop
+
+    LDR     x0,     [x7,    x0]
+
+    // RES [1]
+    push    x0
+    ret
