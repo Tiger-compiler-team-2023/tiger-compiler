@@ -73,11 +73,13 @@ public class AsmVisitor implements AstVisitor<String> {
         // Réserver place variables locales
         int nb_local_var = tdsController
         // Sauvegarder registres de travail x19 - x27
+        res += "pop1927\n" ;
 
         res += letExpr.decList.accept(this);
         res += letExpr.exprSeq.accept(this);
 
         // Restaurer registres de travail x19 - x27
+        res += "push1927\n" ;
         // Dépiler variables locales
 
         // Restaurer ancienne base
@@ -106,11 +108,9 @@ public class AsmVisitor implements AstVisitor<String> {
         res += "// END Sequence\n";
         return res;
     }
-
     @Override
     public String visit(FunctionDeclaration node) {
         String res = "// FunctionDeclaration\n";
-        // Cyrielle
         res += "// END FunctionDeclaration\n";
         return res;
     }
@@ -118,7 +118,6 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(VariableDeclaration node) {
         String res = "// VariableDeclaration\n";
-        // Cyrielle
         res += "// END VariableDeclaration\n";
         return res;
     }
@@ -126,7 +125,6 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayTypeDeclaration node) {
         String res = "// ArrayTypeDeclaration\n";
-        // Cyrielle
         res += "// END ArrayTypeDeclaration\n";
         return res;
     }
@@ -134,7 +132,6 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(NoRecordTypeDeclaration node) {
         String res = "// NoRecordTypeDeclaration\n";
-        // Cyrielle
         res += "// END NoRecordTypeDeclaration\n";
         return res;
     }
@@ -142,7 +139,6 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(RecordTypeDeclaration node) {
         String res = "// RecordTypeDeclaration\n";
-        // Cyrielle
         res += "// END RecordTypeDeclaration\n";
         return res;
     }
