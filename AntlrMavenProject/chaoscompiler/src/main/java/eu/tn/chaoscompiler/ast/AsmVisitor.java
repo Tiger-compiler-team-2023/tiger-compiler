@@ -23,6 +23,7 @@ import eu.tn.chaoscompiler.errors.ChaosError;
 import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
+import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import java.util.Stack;
 
@@ -82,34 +83,69 @@ public class AsmVisitor implements AstVisitor<String> {
         return null;
     }
 
+    public String appelantAvant() {
+
+        String res  = "" ;
+
+        tdsController.goDown();
+
+        // Empiler @ retour qui est dans LR x30
+        res += "push x" + Registre.LR.ordinal() + "\n" ;
+
+        // Empiler ch DYN qui est dans FP x29
+        res += "push x" + Registre.FP.ordinal() + "\n" ;
+
+        // Mise à jour base
+        res += "mov x" + Registre.FP.ordinal() + ", x" + Registre.SP.ordinal() + "\n" ;
+        // Empiler ch STAT x28
+        res += "push x" + Registre.ch_stat.ordinal() + "\n" ;
+
+        // Réserver place variables locales
+        int nbVarLocales = tdsController.getNbVar() ;
+        res += "mov x0, #0" ;
+        for (int i = 0 ; i < nbVarLocales ; i++) {
+            res += "pop x0" ;
+        }
+
+        // Sauvegarder registres de travail x19 - x27
+        res += "push1927\n" ;
+
+        return res ;
+    }
+
+    public String appelantApres() {
+        String res = "" ;
+
+        // Restaurer registres de travail x19 - x27
+        res += "pop1927\n" ;
+
+        // Dépiler variables locales
+        int nbVarLocales = tdsController.getNbVar() ;
+        for (int i = 0 ; i < nbVarLocales ; i++) {
+            res += "pop x0\n" ;
+        }
+
+        // Restaurer ancienne base
+        res += "ldr x" + Registre.FP.ordinal() + ", [x" + Registre.SP.ordinal() + "]\n" ;
+
+        tdsController.goUp();
+
+        return res ;
+    }
+
     @Override
     public String visit(Let letExpr) {
         String res = "// Let\n";
 
-        // Calculer ch. STAT
-        // Mettre ch. STAT dans x28
-        // Mettre adresse prochaine instr dans LR (BL)
+        // Calculer ch. STAT et le mettre ch. STAT dans x28
+        res += "add x" + Registre.ch_stat.ordinal() + ", x" + Registre.FP.ordinal() + ", #8\n" ;
 
-        // Empiler @ retour qui est dans LR x30
-        // Empiler ch DYN qui est dans x29
-        // Mise à jour base
-        res += "mov x29, x31\n" ;
-        // Empiler ch STAT x28
-
-        // Réserver place variables locales
-        int nb_local_var = tdsController
-        // Sauvegarder registres de travail x19 - x27
-        res += "pop1927\n" ;
+        res += appelantAvant() ;
 
         res += letExpr.decList.accept(this);
         res += letExpr.exprSeq.accept(this);
 
-        // Restaurer registres de travail x19 - x27
-        res += "push1927\n" ;
-        // Dépiler variables locales
-
-        // Restaurer ancienne base
-        res += "ldr x" + Registre.FP.ordinal() + ", [x" + Registre.SP.ordinal() + "]\n" ;
+        res += appelantApres() ;
 
         res += "// END Let\n";
         return res;
@@ -118,7 +154,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Id node) {
         String res = "// Id\n";
-        res += "idetifier = ";
+        res += "identifier = ";
         res += node.identifier;
         res += "\n";
         res += "// END Id\n";
@@ -203,6 +239,33 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(FunctionCall node) {
         String res = "// FunctionCall\n";
 
+        // Recuperer chainage statique
+        // Param 1
+        res += "push x" + Registre.FP.ordinal() + "\n" ;
+        // Param 2 : difference entre scope actuel et scope de la fonction
+        int diff = tdsController.getDiffScopeFunc(((Id) node.id).identifier) ;
+        res += "mov x0, #" + diff + "\n" ;
+        res += "push x0" ;
+        // Param 3 : deplacement (ici 0)
+        res += "mov x0, #0" ;
+        res += "push x0" ;
+        // Calcul
+        res += Arm64Functions.CHAINAGE_ST.call();
+        // Mettre ch STAT dans x28
+        res += "pop x" + Registre.ch_stat.ordinal() + "\n" ;
+
+        // empiler arguments
+        node.argList.accept(this) ;
+
+        // executer instr
+        FunctionType ft = (FunctionType) tdsController.findType(((Id)node.id).identifier) ;
+        res += "bl function_" + ft.getId() + "\n" ;
+
+        // depiler arguments
+        for (int i = 0 ; i <  ((ParameterList) node.argList).parameters.size() ; i++) {
+            res += "pop x0\n" ;
+        }
+
         res += "// END FunctionCall\n";
         return res;
     }
@@ -210,6 +273,10 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ParameterList node) {
         String res = "// ParameterList\n";
+
+        for (Ast a:node.parameters) {
+            a.accept(this) ;
+        }
 
         res += "// END ParameterList\n";
         return res;

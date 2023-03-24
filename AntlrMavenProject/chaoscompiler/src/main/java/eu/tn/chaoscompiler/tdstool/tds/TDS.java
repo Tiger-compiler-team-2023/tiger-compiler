@@ -24,6 +24,10 @@ public interface TDS {
     void addSub(TDS t);
     void setStartLine(int i);
 
+    int getNbVar() ;
+
+    int getDiffScopeFunc(String id) ;
+
     @Override
     String toString();
 

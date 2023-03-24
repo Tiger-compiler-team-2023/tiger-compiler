@@ -151,6 +151,24 @@ public class TDScontroller {
         }
     }
 
+    public void goUp() {
+        if (this.tds instanceof TDSlocal t) {
+            this.tds = t.getFather() ;
+        }
+    }
+
+    public void goDown() {
+        this.tds = ((TDSroot) this.tds).nextSubTds() ;
+    }
+
+    public int getNbVar() {
+        return this.tds.getNbVar() ;
+    }
+
+    public int getDiffScopeFunc(String id) {
+        return this.tds.getDiffScopeFunc(id) ;
+    }
+
     @Override
     public String toString() {
         return "{[TDScontroller]" + this.tds.toString() + "\n}";

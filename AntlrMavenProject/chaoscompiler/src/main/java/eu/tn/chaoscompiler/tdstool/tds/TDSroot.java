@@ -10,6 +10,8 @@ public class TDSroot implements TDS {
     public HashMap<String, Type> hmType;
     public HashMap<String, Value> hmVari;
     protected ArrayList<TDS> fullTDS;
+
+    protected int nextSubTdsIndex ;
     protected int startLine;
 
     protected int nextVarDpl ;
@@ -19,8 +21,9 @@ public class TDSroot implements TDS {
         this.hmType = new HashMap<String, Type>();
         this.hmVari = new HashMap<String, Value>();
         this.fullTDS = new ArrayList<TDS>();
-        this.nextVarDpl = 1 ;
-        this.nextParamDpl = -3 ;
+        this.nextVarDpl = 2 ;
+        this.nextParamDpl = -2 ;
+        this.nextSubTdsIndex = 0 ;
     }
 
     public HashMap<String, Type> getHmType() {
@@ -114,6 +117,32 @@ public class TDSroot implements TDS {
                 .map(ty -> (RecordType) ty)
                 .anyMatch(rt -> rt.getAttributs().stream()
                         .anyMatch(at -> at.getType() instanceof NotYetDeclarated));
+    }
+
+    public TDS nextSubTds() {
+        TDS next = this ;
+        if (this.nextSubTdsIndex >= 0 && this.nextSubTdsIndex < this.fullTDS.size()) {
+            next = this.fullTDS.get(this.nextSubTdsIndex) ;
+        }
+        this.nextSubTdsIndex++ ;
+        return next ;
+    }
+
+    public int getNbVar() {
+        return this.hmVari.size() ;
+    }
+
+    public int getDiffScopeFunc(String id) {
+        if (this instanceof TDSlocal) {
+            Type t = this.hmType.get(id);
+            if (t == null) {
+                return ((TDSlocal) this).getFather().getDiffScopeFunc(id) + 1 ;
+            } else {
+                return 0 ;
+            }
+        } else {
+            return 0 ;
+        }
     }
 
     @Override
