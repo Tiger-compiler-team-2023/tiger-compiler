@@ -60,6 +60,7 @@ public class AsmVisitor implements AstVisitor<String> {
                             /********** ********** **********
                              ********** FUNCTIONS  **********
                              ********** ********** **********/
+                             \n\n
                              """;
 
             //importer les fonctions arm et les macros ;
@@ -196,7 +197,7 @@ public class AsmVisitor implements AstVisitor<String> {
 
         fRes += appeleApres() ;
 
-        fRes += "// END Function " + ft.getId() + "\n" ;
+        fRes += "// END Function " + ft.getId() + "\n\n" ;
 
         this.funcSection += fRes ;
 
