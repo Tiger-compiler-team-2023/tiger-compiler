@@ -35,38 +35,41 @@ public class Main {
             ChaosParser parser = CustomParser.parse(new File(testFile));
             ChaosParser.ProgramContext program = parser.program();
 
-            // code d'affichage de l'arbre syntaxique
-            JFrame frame = new JFrame("Arbre syntaxique");
-            JPanel panel = new JPanel();
-            TreeViewer viewer = new TreeViewer(Arrays.asList(
-                    parser.getRuleNames()), program);
-            viewer.setScale(1); // Scale a little
-            panel.add(viewer);
-            frame.add(panel);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.pack();
-            frame.setVisible(true);
-
-            if (GestionnaireErreur.getNbErreur() > 0) {
-                GestionnaireErreur.getInstance().afficherErreurs();
-                return;
-            }
             AstCreator creator = new AstCreator();
             Ast ast = program.accept(creator);
 
-            // Génération du code graphviz pour l'AST
-            GraphVizVisitor graphViz = new GraphVizVisitor();
-            ast.accept(graphViz);
-            graphViz.dumpGraph("./src/test/ressources/tree.dot");
-            // Affichage du graphe dans le navigateur
-            GraphDisplayer.displayDotFile("./src/test/ressources/tree.dot");
+            if(false) {
+                // code d'affichage de l'arbre syntaxique
+                JFrame frame = new JFrame("Arbre syntaxique");
+                JPanel panel = new JPanel();
+                TreeViewer viewer = new TreeViewer(Arrays.asList(
+                        parser.getRuleNames()), program);
+                viewer.setScale(1); // Scale a little
+                panel.add(viewer);
+                frame.add(panel);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setVisible(true);
+
+                if (GestionnaireErreur.getNbErreur() > 0) {
+                    GestionnaireErreur.getInstance().afficherErreurs();
+                    return;
+                }
+            }
+                // Génération du code graphviz pour l'AST
+                GraphVizVisitor graphViz = new GraphVizVisitor();
+                ast.accept(graphViz);
+                graphViz.dumpGraph("./src/test/ressources/tree.dot");
+                // Affichage du graphe dans le navigateur
+                GraphDisplayer.displayDotFile("./src/test/ressources/tree.dot");
+
 
             // Tests sémantiques
             ast.accept(new ControlesSemantiques());
             GestionnaireErreur.getInstance().afficherErreurs();
             AsmVisitor asmvisitor= new AsmVisitor();
             ast.accept(asmvisitor);
-        } catch (IOException | RecognitionException e) {
+        } catch (RecognitionException e) {
             e.printStackTrace();
         }
     }
