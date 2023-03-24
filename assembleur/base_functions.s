@@ -5,6 +5,24 @@ Ce fichier contient les implémentations de différentes fonctions utilisables e
 /********** ********** **********
  ********** FONCTIONS  **********
  ********** ********** **********/
+print_str:
+    // Affiche arg1/1 sur la sortie standard
+    // {x0, x1, x2, x7}
+    // [1] -> [0]
+    pop     x0
+
+    // Implements print_str
+    push    x30
+    push    x0
+    push    x0
+    bl      str_len
+    pop     x2
+    pop     x1
+    print
+    pop     x30
+
+    // RES [0]
+    ret
 
 print_int16:
     // Affiche arg1/1 en hexadéciaml sur la sortie standard

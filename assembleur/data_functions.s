@@ -123,3 +123,23 @@ chainage_st:
     // RES [1]
     push    x0
     ret
+
+str_len:
+    // Push le nombre d'octet jusqu'à l'octet nul en partant de où arg1/1
+    // {x0, x1, x7}
+    // [1] -> [1]
+    
+    // ARGS [2]
+    pop     x0                              // arg1/1
+
+    // Implements str_len
+    mov     x7,     #0
+    str_len_loop:
+    ldrb    w1,     [x0, x7]
+    add     x7,     x7,     #1
+    cmp     w1,     #0
+    bne     str_len_loop
+   
+    // RES [1]
+    push    x7
+    ret

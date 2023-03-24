@@ -56,7 +56,6 @@ public class AsmVisitor implements AstVisitor<String> {
                             """;
 
             //importer les fonctions arm et les macros ;
-
             String asm = """
                     //BEGIN
                     .include "base_macros.s"
@@ -64,7 +63,7 @@ public class AsmVisitor implements AstVisitor<String> {
                     .global _start
                     _start:
                     """;
-            
+
             //Le programme
             asm+=node.expression.accept(this);
             asm+="//END\n\n";
@@ -180,6 +179,25 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(VariableDeclaration node) {
         String res = "// VariableDeclaration\n";
+
+        String type = node.getType().getId();
+        // Allocation mémoire
+        int taille = 16;
+        // On a l'adresse de la variable en haut de la pile
+        res += """
+        mov     x0,     #16
+        push    x0
+        bl      malloc"""; // On empile l'adresse dans le tas
+
+        node.value.accept(this); // On empile la valeur
+
+        res += """
+        pop     x0              // valeur
+        pop     x1              // adresse de la variable
+        str     x0,     [x1]    // écriture dans le tas
+        push    x1
+        """;
+
         res += "// END VariableDeclaration\n";
         return res;
     }
@@ -439,11 +457,9 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(DeclarationList node) {
         String res = "// DeclarationList\n";
-
-        for (Declaration dec:node.list) {
-            res += dec.accept(this) ;
-        }
-
+        res += node.list.stream()
+                .map(declaration -> declaration.accept(this) + "\n")
+                .reduce(res, String::concat);
         res += "// END DeclarationList\n";
         return res;
     }

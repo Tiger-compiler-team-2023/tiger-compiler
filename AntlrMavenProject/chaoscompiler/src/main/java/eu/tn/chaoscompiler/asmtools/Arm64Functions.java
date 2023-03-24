@@ -26,7 +26,9 @@ public enum Arm64Functions {
     INPUT_INT10("intput_int10", 0, 1),
     ARRAY_ASSIGN("array_assign", 2, 1),
     ARRAY_ACCESS("array_access", 2, 1),
-    CHAINAGE_ST("chainage_st", 3, 1);
+    CHAINAGE_ST("chainage_st", 3, 1),
+    STR_LEN("str_len", 1, 1),
+    PRINT_STR("print_str", 1, 0);
 
     public final String functionName;
     public final int nbArgs;
