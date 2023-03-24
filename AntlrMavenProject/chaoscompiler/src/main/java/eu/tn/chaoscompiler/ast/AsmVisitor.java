@@ -4,7 +4,6 @@ import eu.tn.chaoscompiler.asmtools.Arm64Functions;
 import eu.tn.chaoscompiler.asmtools.Registre;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
-import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.VariableDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.types.ArrayTypeDeclaration;
@@ -20,7 +19,6 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.errors.ChaosError;
-import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
@@ -32,6 +30,8 @@ public class AsmVisitor implements AstVisitor<String> {
     private TDScontroller tdsController;
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
     private String dataSection;
+
+    private String funcSection ;
     private int stringCounter;
     private int current_id;
     private static int counter_id_if=1;
@@ -42,6 +42,7 @@ public class AsmVisitor implements AstVisitor<String> {
     public Void visit(Program node) {
         stringCounter = 0;
         dataSection = "";
+        funcSection = "" ;
 
         tdsController = TDScontroller.getInstance();
 
@@ -54,6 +55,12 @@ public class AsmVisitor implements AstVisitor<String> {
 
                             .section .data
                             """;
+
+            funcSection = """
+                            /********** ********** **********
+                             ********** FUNCTIONS  **********
+                             ********** ********** **********/
+                             """;
 
             //importer les fonctions arm et les macros ;
             String asm = """
@@ -70,6 +77,8 @@ public class AsmVisitor implements AstVisitor<String> {
 
             // Fin section data
             asm += dataSection;
+            // section fonctions
+            asm += funcSection ;
 
             System.out.println(asm);
         } catch (Exception e) {
@@ -82,7 +91,7 @@ public class AsmVisitor implements AstVisitor<String> {
         return null;
     }
 
-    public String appelantAvant() {
+    public String appeleAvant() {
 
         String res  = "" ;
 
@@ -112,7 +121,7 @@ public class AsmVisitor implements AstVisitor<String> {
         return res ;
     }
 
-    public String appelantApres() {
+    public String appeleApres() {
         String res = "" ;
 
         // Restaurer registres de travail x19 - x27
@@ -139,12 +148,12 @@ public class AsmVisitor implements AstVisitor<String> {
         // Calculer ch. STAT et le mettre ch. STAT dans x28
         res += "add x" + Registre.ch_stat.ordinal() + ", x" + Registre.FP.ordinal() + ", #8\n" ;
 
-        res += appelantAvant() ;
+        res += appeleAvant() ;
 
         res += letExpr.decList.accept(this);
         res += letExpr.exprSeq.accept(this);
 
-        res += appelantApres() ;
+        res += appeleApres() ;
 
         res += "// END Let\n";
         return res;
@@ -172,7 +181,25 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(FunctionDeclaration node) {
         String res = "// FunctionDeclaration\n";
-        res += "// END FunctionDeclaration\n";
+
+        FunctionType ft = (FunctionType) tdsController.findType(((Id)node.objectId).identifier) ;
+
+        String fRes = "// Function " + ft.getId() + "\n" ;
+
+        // label
+        fRes += "function_" + ft.getToken() + ":\n" ;
+
+        fRes += appeleAvant() ;
+
+        // instructions
+        node.content.accept(this) ;
+
+        fRes += appeleApres() ;
+
+        fRes += "// END Function " + ft.getId() + "\n" ;
+
+        this.funcSection += fRes ;
+
         return res;
     }
 
@@ -277,7 +304,7 @@ public class AsmVisitor implements AstVisitor<String> {
 
         // executer instr
         FunctionType ft = (FunctionType) tdsController.findType(((Id)node.id).identifier) ;
-        res += "bl function_" + ft.getId() + "\n" ;
+        res += "bl function_" + ft.getToken() + "\n" ;
 
         // depiler arguments
         for (int i = 0 ; i <  ((ParameterList) node.argList).parameters.size() ; i++) {
