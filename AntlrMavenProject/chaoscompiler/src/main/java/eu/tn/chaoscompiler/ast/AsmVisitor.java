@@ -24,27 +24,53 @@ import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
+import java.util.Stack;
 
 public class AsmVisitor implements AstVisitor<String> {
 
     private TDScontroller tdsController;
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
+    private String dataSection;
+    private int stringCounter;
+    private int current_id;
+    private static int counter_id_if=1;
+    private static int counter_id_loop=1;
+    private Stack<Integer> stack_id = new Stack<Integer>(){};
 
     @Override
     public Void visit(Program node) {
+        stringCounter = 0;
+        dataSection = "";
+
         tdsController = TDScontroller.getInstance();
 
-        //String asm = node.accept(this) + "\nEND";
         try {
-            String asm="//BEGIN"+"\n";
+            // Début section data
+            dataSection ="""
+                            /********** ********** **********
+                             **********    DATA    **********
+                             ********** ********** **********/
+
+                            .section .data
+                            """;
+
             //importer les fonctions arm et les macros ;
-            asm+=".include \"base_macros.s\" "+"\n";
-            asm+=".include \"arithmetic_functions.s\""+"\n";
-            asm+=".global _start"+"\n";
-            asm+="_start:"+"\n";
+
+            String asm = """
+                    //BEGIN
+                    .include "base_macros.s"
+                    .include arithmetic_functions.s
+                    .global _start
+                    _start:
+                    """;
+            
             //Le programme
             asm+=node.expression.accept(this);
-            asm+="//END";
+            asm+="//END\n\n";
+
+            // Fin section data
+            asm += dataSection;
+
             System.out.println(asm);
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,23 +172,32 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         String res = "// IntegerNode\n";
-        res+="ldr x1,=";
-        //empiler la valeur de l'entier
-        res+=Integer.toString(node.value)+"\n";
-        res+="push x1"+"\n";
+        res += "MOV     x9,    #" + node.value + "\n";
+        res += "push    x9\n";
         res += "// END IntegerNode\n";
         return res;
     }
 
+    // -------------- STRING ----
     @Override
     public String visit(StringNode node) {
         String res = "// StringNode\n";
-        res += "string = \"";
-        res += node.stringContent;
-        res += "\"\n";
+
+        String strlbl = addStringLitteral(node);
+        res += "ldr x0,    =" + strlbl + "\n";
+        res += "push    x0\n";
+
         res += "// END StringNode\n";
         return res;
     }
+
+    public String addStringLitteral(StringNode node) {
+        String name = "str_" + stringCounter;
+        dataSection += String.format("%s:\n .asciz  \"%s\"\n", name, node.stringContent);
+        stringCounter++;
+        return name;
+    }
+// ----------------- /STRING ----
 
     @Override
     public String visit(FunctionCall node) {
@@ -250,50 +285,79 @@ public class AsmVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(While whileExpr) {
-        String res = "// While\n";
-        res+="bl _loop"+"\n";
-        res+="_loop:"+"\n";
+        if(stack_id.empty()){
+            stack_id.push(counter_id_loop);
+        }
+        else{
+            stack_id.push(stack_id.peek()+1);
+            counter_id_loop++;
+        }
+        //Initialisaiton de l'identifiant
+        current_id=stack_id.peek();
+        String res = "// While"+Integer.toString(current_id)+"\n";
+        res+="b _loop"+Integer.toString(current_id)+"\n";
+        res+="_loop_"+Integer.toString(current_id)+":"+"\n";
         res+=whileExpr.condExpr.accept(this)+"\n";
+        //Mise à jour de la valeur actuelle de l'identifiant
+        current_id=stack_id.peek();
         res+="pop x1"+"\n";
         res+="cmp x1,#0"+"\n";
-        res+="beq _end"+"\n";
+        res+="beq _end_loop_"+Integer.toString(current_id)+"\n";
         res+=whileExpr.doExpr.accept(this)+"\n";
-        res+="bl _loop"+"\n";
-        res+="_end: .end"+"\n";
-        res += "// END While\n";
+        //Mise à jour de la valeur actuelle de l'identifiant
+        current_id=stack_id.peek();
+        res+="b _loop_"+Integer.toString(current_id)+"\n";
+        res+="_end_loop_"+Integer.toString(current_id)+":"+"\n";
+        res += "// END While"+Integer.toString(current_id)+"\n";
+        stack_id.pop();
         return res;
     }
 
     @Override
     public String visit(IfThenElse ifThenElseExpr) {
-        String res = "// IfThenElse\n";
+        if(stack_id.empty()){
+            stack_id.push(counter_id_if);
+        }
+        else{
+            stack_id.push(stack_id.peek()+1);
+            counter_id_if++;
+        }
+        //Initialisation de la valeur de l'identifiant actuel
+        current_id = stack_id.peek();
+        String res = "// IfThenElse"+Integer.toString(current_id)+"\n";
         String output_condition = ifThenElseExpr.condExpr.accept(this);
+        //Mise ajour de l'identifiant actuel
+        current_id = stack_id.peek();
         res+=output_condition+"\n";
         //récupération de la valeur de la condition
-        res+="pop1927"+"\n";
-        res+="cmp x19,#0"+"\n";
+        res+="pop x1"+"\n";
+        res+="cmp x1,#0"+"\n";
         if(ifThenElseExpr.elseExpr!=null){
             //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute elses)
-            res+="beq _else_expr"+"\n";
-            res+="bne _then_expr"+"\n";
+            res+="beq _else_"+Integer.toString(current_id)+"\n";
+            res+="bne _then_"+Integer.toString(current_id)+"\n";
 
             //Début du block de else
-            res+="_else_expr:"+"\n";
+            res+="_else_"+Integer.toString(current_id)+"\n";
             res+=ifThenElseExpr.elseExpr.accept(this);
-            res+="bl _end"+"\n";
+            //Mise à jour de l'identifiant actuel
+            current_id = stack_id.peek();
+            res+="b _end_ifthenelse_"+Integer.toString(current_id)+"\n";
         }
         else{//pas de else dans ifThen
-            res+="bne _then_expr"+"\n";
-            res+="beq _end"+"\n";
+            res+="bne _then_"+Integer.toString(current_id)+"_expr"+"\n";
+            res+="beq _end_ifthenelse_"+Integer.toString(current_id)+"\n";
         }
         //Début de block de then
-        res+="_then_expr:"+"\n";
+        res+="_then_"+Integer.toString(current_id)+"\n";
         res+=ifThenElseExpr.thenExpr.accept(this);
-        res+="bl _end"+"\n";
+        // Mise à jour de l'identifiant actuel
+        current_id = stack_id.peek();
+        res+="b _end_ifthenelse_"+Integer.toString(current_id)+"\n";
         //Fin du block conditionnel
-        res+="_end: .end"+"\n";
-
-        res += "// END IfThenElse\n";
+        res+="_end_ifthenelse_"+Integer.toString(current_id)+":\n";
+        res += "// END IfThenElse"+Integer.toString(current_id)+"\n";
+        current_id = stack_id.pop();
         return res;
     }
 
@@ -326,8 +390,8 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Negation node) {
         String res = "";
         res += node.negationTail.accept(this);
-        res += "bl ";
-        res += Arm64Functions.INT_NEG.call();
+        //res += "bl ";
+        res += "\n" + Arm64Functions.INT_NEG.call();
         return res;
     }
 
@@ -446,4 +510,5 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(And node) {
         return auxVisitBinaryOperator(node, Arm64Functions.LOG_AND);
     }
+
 }
