@@ -235,6 +235,8 @@ public class AsmVisitor implements AstVisitor<String> {
             fRes.addTxt("push    x7 // RES");
         }
 
+        fRes.addTxt("ret");
+
         this.funcSection.addTxt(fRes.leaveSection());
 
         return res.leaveSection();
@@ -243,9 +245,6 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(VariableDeclaration node) {
         AsmCode res = new AsmCode("VariableDeclaration");
-
-        // Obtention du type
-        Type type = node.value.getType();
 
         // Valeur d'initialisation
         res.addTxt(node.value.accept(this));
@@ -324,12 +323,20 @@ public class AsmVisitor implements AstVisitor<String> {
         FunctionType ft = (FunctionType) node.id.getType();
         res.addTxt("bl function_" + ft.getToken());
 
+        if (node.getType() != Type.VOID_TYPE) {
+            res.addTxt("pop x7 // RES");
+        }
+
         res.addTxt("""
                 // GESTION FIN DU NOUVEAU SCOPE
                 mov     x1,     x28             // copie de Ch. STAT
                 ldr     x28,    [x28]           // ancien Ch. STAT
                 add     sp,     x1,     #16     // depile avec le Ch. DYN
                 """);
+
+        if (node.getType() != Type.VOID_TYPE) {
+            res.addTxt("push x7 // RES");
+        }
 
         return res.leaveSection();
     }
