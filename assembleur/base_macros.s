@@ -26,6 +26,12 @@ Ce fichier contient les implémentations de différentes macros utilisables en a
     LDR     \Xn,   [SP], 16
 .endm
 
+.macro at Xn
+    // Xn <- *Xn
+    // {Xn}
+    LDR     \Xn,    [\Xn]
+.endm
+
 .macro push915
     // push tous les registres qui doivent être enregistrés par l'appelant
     // {}

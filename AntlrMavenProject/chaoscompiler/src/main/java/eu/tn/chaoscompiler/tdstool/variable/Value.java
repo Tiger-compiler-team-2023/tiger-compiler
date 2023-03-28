@@ -10,6 +10,7 @@ public class Value implements Variable {
     protected String id;
     protected int token;
     protected int dpl ;
+    public int depth;
 
     public Value(Type type, String id) {
         this.type = type;

@@ -13,6 +13,7 @@ ari_int_neg:
     
     // ARGS [1]
     pop     x0                              // arg1/1
+    at      x0
 
     // Implements ari_int_neg
     mov     x7,     #0
@@ -29,7 +30,9 @@ ari_int_add:
     
     // ARGS [2]
     pop     x1                              // arg2/2
+    at      x1
     pop     x0                              // arg1/2
+    at      x0
 
     // Implements ari_int_add
     add     x7,     x0,     x1
@@ -45,7 +48,9 @@ ari_int_sub:
     
     // ARGS [2]
     pop     x1                              // arg2/2
+    at      x1
     pop     x0                              // arg1/2
+    at      x0
 
     // Implements ari_int_sub
     sub     x7,     x0,     x1
@@ -61,7 +66,9 @@ ari_int_mul:
     
     // ARGS [2]
     pop     x1                              // arg2/2
+    at      x1
     pop     x0                              // arg1/2
+    at      x0
 
     // Implements ari_int_mul
     mul     x7,     x0,     x1
@@ -77,7 +84,9 @@ ari_int_div:
     
     // ARGS [2]
     pop     x1                              // arg2/2
+    at      x1
     pop     x0                              // arg1/2
+    at      x0
 
     // Implements ari_int_div
     /*  Gestion des erreurs

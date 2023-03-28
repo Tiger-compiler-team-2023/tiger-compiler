@@ -114,11 +114,14 @@ chainage_st:
 
     // Implements chainage_st
     chainage_st_loop:
+    cmp     x1,     #0
+    beq     chainage_st_loop_end
     LDR     x7,     [x7,    #-8]
-    subs    x1,     x1,     #1
-    bne     chainage_st_loop
+    sub     x1,     x1,     #1
+    b       chainage_st_loop
+    chainage_st_loop_end:
 
-    LDR     x0,     [x7,    x0]
+    SUB     x0,     x7,     x0
 
     // RES [1]
     push    x0

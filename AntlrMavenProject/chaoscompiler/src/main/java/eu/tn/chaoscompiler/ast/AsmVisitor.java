@@ -23,11 +23,14 @@ import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
+import eu.tn.chaoscompiler.tdstool.variable.Value;
+
 import java.util.Stack;
 
 public class AsmVisitor implements AstVisitor<String> {
 
     private TDScontroller tdsController;
+    private int depth;
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
     private String dataSection;
 
@@ -45,12 +48,14 @@ public class AsmVisitor implements AstVisitor<String> {
         funcSection = "" ;
 
         tdsController = TDScontroller.getInstance();
+        this.depth = 0;
 
         try {
             // Début section data
             dataSection ="""
                 // fin FUNCTIONS
                 .include "arithmetic_functions.s"
+                .include "data_functions.s"
                 .include "base_functions.s"
                 // DATA
                 """;
@@ -67,6 +72,7 @@ public class AsmVisitor implements AstVisitor<String> {
                 .section .text
                 .global _start
                 _start:
+                mov     x29,    sp
                 // EXECUTION
                     """;
 
@@ -105,21 +111,21 @@ public class AsmVisitor implements AstVisitor<String> {
         tdsController.goDown();
 
         // Empiler @ retour qui est dans LR x30
-        res += "push x" + Registre.LR.ordinal() + "\n" ;
+        res += "push x" + Registre.LR.o() + "\n" ;
 
         // Empiler ch DYN qui est dans FP x29
-        res += "push x" + Registre.FP.ordinal() + "\n" ;
+        res += "push x" + Registre.FP.o() + "\n" ;
 
         // Mise à jour base
-        res += "mov x" + Registre.FP.ordinal() + ", x" + Registre.SP.ordinal() + "\n" ;
+        res += "mov x" + Registre.FP.o() + ", " + Registre.SP.n() + "\n" ;
         // Empiler ch STAT x28
-        res += "push x" + Registre.ch_stat.ordinal() + "\n" ;
+        res += "push x" + Registre.ch_stat.o() + "\n" ;
 
         // Réserver place variables locales
         int nbVarLocales = tdsController.getNbVar() ;
         res += "mov x0, #0\n" ;
         for (int i = 0 ; i < nbVarLocales ; i++) {
-            res += "pop x0" ;
+            res += "push x0\n" ;
         }
 
         return res ;
@@ -135,7 +141,7 @@ public class AsmVisitor implements AstVisitor<String> {
         }
 
         // Restaurer ancienne base
-        res += "ldr x" + Registre.FP.ordinal() + ", [x" + Registre.SP.ordinal() + "]\n" ;
+        res += "ldr x" + Registre.FP.o() + ", [" + Registre.SP.n() + "]\n" ;
 
         tdsController.goUp();
 
@@ -147,9 +153,10 @@ public class AsmVisitor implements AstVisitor<String> {
         String res = "// Let\n";
 
         // Calculer ch. STAT et le mettre ch. STAT dans x28
-        res += "add x" + Registre.ch_stat.ordinal() + ", x" + Registre.FP.ordinal() + ", #8\n" ;
+        res += "add x" + Registre.ch_stat.o() + ", x" + Registre.FP.o() + ", #16\n" ;
 
         res += appeleAvant() ;
+        this.depth ++;
 
         if (letExpr.decList != null)
             res += letExpr.decList.accept(this);
@@ -163,6 +170,8 @@ public class AsmVisitor implements AstVisitor<String> {
         if (letExpr.getType() != Type.VOID_TYPE) {
             res += "push x7 // RES\n";
         }
+        
+        this.depth --;
         res += "// END Let\n";
         return res;
     }
@@ -170,9 +179,18 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Id node) {
         String res = "// Id\n";
-        res += "identifier = ";
+        res += "// id = ";
         res += node.identifier;
         res += "\n";
+        Value val = tdsController.findVar(node.identifier);
+        int depth = this.depth - val.depth;
+        int depl = val.getDpl();
+        res += "push x" + Registre.ch_stat.o() + "\n";
+        res += "mov x0, #" + depth + "// depth\n";
+        res += "push x0\n";
+        res += "mov x0, #" + 16*(depl+2) + "// depl\n";
+        res += "push x0\n";
+        res += Arm64Functions.CHAINAGE_ST.call();
         res += "// END Id\n";
         return res;
     }
@@ -219,8 +237,15 @@ public class AsmVisitor implements AstVisitor<String> {
         Type type = node.value.getType();
 
         // Valeur d'initialisation
-        res += "// init\n";
         res += node.value.accept(this);
+
+        // Adresse d'écriture
+        res += node.objectId.accept(this);
+
+        // Ecriture à l'adresse
+        res += "pop x0 // adresse\n";
+        res += "pop x1 // val\n";
+        res += "STR x1, [x0]\n";
 
         res += "// END VariableDeclaration\n";
         return res;
@@ -283,7 +308,7 @@ public class AsmVisitor implements AstVisitor<String> {
 
         // Recuperer chainage statique
         // Param 1
-        res += "push x" + Registre.FP.ordinal() + "\n" ;
+        res += "push x" + Registre.FP.o() + "\n" ;
         // Param 2 : difference entre scope actuel et scope de la fonction
         int diff = tdsController.getDiffScopeFunc(((Id) node.id).identifier) ;
         res += "mov x0, #" + diff + "\n" ;
@@ -294,7 +319,7 @@ public class AsmVisitor implements AstVisitor<String> {
         // Calcul
         res += Arm64Functions.CHAINAGE_ST.call();
         // Mettre ch STAT dans x28
-        res += "pop x" + Registre.ch_stat.ordinal() + "\n" ;
+        res += "pop x" + Registre.ch_stat.o() + "\n" ;
 
         // empiler arguments
         node.argList.accept(this) ;

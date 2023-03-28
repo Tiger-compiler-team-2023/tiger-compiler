@@ -18,6 +18,7 @@ public class TDScontroller {
     @Getter protected TDS tds;
     // Singleton
     private static TDScontroller INSTANCE;
+    public int depth;
 
     public static TDScontroller getInstance(){
         if(INSTANCE == null){
@@ -32,6 +33,7 @@ public class TDScontroller {
 
     private TDScontroller() {
         this.tds = new TDSroot();
+        this.depth = 0;
         add(Type.INT_TYPE);
         add(Type.STRING_TYPE);
         add(Type.VOID_TYPE);
@@ -124,6 +126,8 @@ public class TDScontroller {
     }
 
     public void add(Variable var) {
+        if (var instanceof Value)
+            ((Value) var).depth = this.depth;
         this.tds.add(var);
     }
 
@@ -134,6 +138,7 @@ public class TDScontroller {
     public void down() {
         TDS t = new TDSlocal(this.tds);
         this.tds.addSub(t);
+        this.depth ++;
         this.tds = t;
     }
 
@@ -145,6 +150,7 @@ public class TDScontroller {
     public void up() {
         if (this.tds instanceof TDSlocal) {
             this.tds = ((TDSlocal) this.tds).getFather();
+            this.depth --;
         } else {
             // ERREUR
             throw new IllegalStateException("Impossible de monter plus haut que la racine de la TDS.");
