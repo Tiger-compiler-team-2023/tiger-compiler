@@ -21,7 +21,8 @@ public class GraphDisplayer {
             String encoded = URLEncoder.encode(dotFileString.toString(), StandardCharsets.UTF_8).replace("+", "%20");
             //String url = "http://dreampuf.github.io/GraphvizOnline/#" + encoded;
             String url = "https://nicolas-frache.github.io/GraphvizOnline/#" + encoded;
-            java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+            //java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+            System.out.println("AST : " + url + "\n\n");
 
         } catch (IOException e) {
             throw new RuntimeException("Erreur lors de la lecture du fichier dot:" + e.getMessage());

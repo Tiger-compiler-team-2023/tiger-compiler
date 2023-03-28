@@ -1,4 +1,5 @@
 let
+    var a := 5
 in
-    2+2
+    2+a
 end

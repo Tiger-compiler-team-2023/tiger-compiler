@@ -155,8 +155,14 @@ public class AsmVisitor implements AstVisitor<String> {
             res += letExpr.decList.accept(this);
         res += letExpr.exprSeq.accept(this);
 
+        if (letExpr.getType() != Type.VOID_TYPE) {
+            res += "pop x7 // RES\n";
+        }
         res += appeleApres() ;
 
+        if (letExpr.getType() != Type.VOID_TYPE) {
+            res += "push x7 // RES\n";
+        }
         res += "// END Let\n";
         return res;
     }
@@ -209,23 +215,12 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(VariableDeclaration node) {
         String res = "// VariableDeclaration\n";
 
-        String type = node.getType().getId();
-        // Allocation mémoire
-        int taille = 16;
-        // On a l'adresse de la variable en haut de la pile
-        res += """
-        mov     x0,     #16
-        push    x0
-        bl      malloc"""; // On empile l'adresse dans le tas
+        // Obtention du type
+        Type type = node.value.getType();
 
-        node.value.accept(this); // On empile la valeur
-
-        res += """
-        pop     x0              // valeur
-        pop     x1              // adresse de la variable
-        str     x0,     [x1]    // écriture dans le tas
-        push    x1
-        """;
+        // Valeur d'initialisation
+        res += "// init\n";
+        res += node.value.accept(this);
 
         res += "// END VariableDeclaration\n";
         return res;
@@ -478,7 +473,6 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Affect node) {
         String res = "// Affect\n";
-
         res += "// END Affect\n";
         return res;
     }
