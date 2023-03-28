@@ -4,6 +4,7 @@ import eu.tn.chaoscompiler.asmtools.Arm64Functions;
 import eu.tn.chaoscompiler.asmtools.Registre;
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.VariableDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.types.ArrayTypeDeclaration;
@@ -32,68 +33,101 @@ public class AsmVisitor implements AstVisitor<String> {
     private TDScontroller tdsController;
     private int depth;
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
-    private String dataSection;
-
-    private String funcSection ;
     private int stringCounter;
     private int current_id;
-    private static int counter_id_if=1;
-    private static int counter_id_loop=1;
-    private Stack<Integer> stack_id = new Stack<Integer>(){};
+    private static int counter_id_if = 1;
+    private static int counter_id_loop = 1;
+    private Stack<Integer> stack_id = new Stack<Integer>() {
+    };
+
+    private class AsmCode {
+        public String txt;
+        public String section_name;
+
+        public AsmCode(String section_name) {
+            this.txt = "// BEGIN " + section_name + "\n";
+            this.section_name = section_name;
+        }
+
+        @Override
+        public String toString() {
+            return this.txt;
+        }
+
+        public void addTxt(String txt) {
+            this.addTxt(txt, true);
+        }
+
+        public void addTxt(String txt, boolean first_indent) {
+            if (first_indent)
+                this.txt += "\t";
+            for (char ch : txt.toCharArray()) {
+                if (ch == '\n') {
+                    this.txt += "\n\t";
+                } else {
+                    this.txt += ch;
+                }
+            }
+            this.txt += "\n";
+        }
+
+        public String leaveSection() {
+            this.addTxt("// END " + this.section_name, false);
+            return this.toString();
+        }
+    }
+
+    private AsmCode dataSection;
+    private AsmCode funcSection;
 
     @Override
     public Void visit(Program node) {
         stringCounter = 0;
-        dataSection = "";
-        funcSection = "" ;
+
+        dataSection = new AsmCode("DATA");
+        funcSection = new AsmCode("FUNCTIONS");
 
         tdsController = TDScontroller.getInstance();
         this.depth = 0;
 
         try {
-            // Début section data
-            dataSection ="""
-                // fin FUNCTIONS
-                .include "arithmetic_functions.s"
-                .include "data_functions.s"
-                .include "base_functions.s"
-                // DATA
-                """;
+            ;
 
-            funcSection = "";
-
-            //importer les fonctions arm et les macros ;
             String asm = """
-                .include \"base_macros.s\"
-                // MACROS
-                
-                
-                // fin MACROS
-                .section .text
-                .global _start
-                _start:
-                mov     x29,    sp
-                // EXECUTION
+                    .include \"base_macros.s\"
+                    // MACROS
+                        // Pas de macro à ajouter
+                    // fin MACROS
+                        .section .text
+                        .global _start
+                        _start:
+                        mov     x29,    sp
+                    // EXECUTION
+                        """;
+
+            asm += node.expression.accept(this);
+
+            asm += """
+                    // fin EXECUTION
+                        exit #0
                     """;
 
-            //Le programme
-            asm+=node.expression.accept(this);
-            asm+="""
-                // fin EXECUTION
-                    exit #0
-                // FUNCTIONS
-                """;
+            asm += funcSection.leaveSection();
 
-            // section fonctions
-            asm += funcSection ;
-            // Fin section data
-            asm += dataSection;
             asm += """
-                // fin DATA
+                        .include "arithmetic_functions.s"
+                        .include "data_functions.s"
+                        .include "base_functions.s"
+                    """;
+
+            asm += dataSection.leaveSection();
+
+            asm += """
 
                     """;
 
             System.out.println(asm);
+
         } catch (Exception e) {
             e.printStackTrace();
             err.addUnrecognisedError(
@@ -106,424 +140,381 @@ public class AsmVisitor implements AstVisitor<String> {
 
     private static boolean idRdOly = true;
 
-    public String appeleAvant() {
-
-        String res  = "" ;
-
-        tdsController.goDown();
-
-        // Empiler @ retour qui est dans LR x30
-        res += "push x" + Registre.LR.o() + "\n" ;
-
-        // Empiler ch DYN qui est dans FP x29
-        res += "push x" + Registre.FP.o() + "\n" ;
-
-        // Mise à jour base
-        res += "mov x" + Registre.FP.o() + ", " + Registre.SP.n() + "\n" ;
-        // Empiler ch STAT x28
-        res += "push x" + Registre.ch_stat.o() + "\n" ;
-
-        // Réserver place variables locales
-        int nbVarLocales = tdsController.getNbVar() ;
-        res += "mov x0, #0\n" ;
-        for (int i = 0 ; i < nbVarLocales ; i++) {
-            res += "push x0\n" ;
-        }
-
-        return res ;
-    }
-
-    public String appeleApres() {
-        String res = "" ;
-
-        // Dépiler variables locales
-        int nbVarLocales = tdsController.getNbVar() ;
-        for (int i = 0 ; i < nbVarLocales ; i++) {
-            res += "pop x0\n" ;
-        }
-
-        // Restaurer ancienne base
-        res += "ldr x" + Registre.FP.o() + ", [" + Registre.SP.n() + "]\n" ;
-
-        tdsController.goUp();
-
-        return res ;
-    }
-
     @Override
     public String visit(Let letExpr) {
-        String res = "// Let\n";
+        AsmCode res = new AsmCode("Let");
 
         // Calculer ch. STAT et le mettre ch. STAT dans x28
-        res += "add x" + Registre.ch_stat.o() + ", x" + Registre.FP.o() + ", #16\n" ;
+        res.addTxt("add x" + Registre.ch_stat.o() + ", x" + Registre.FP.o() + ", #16");
 
-        res += appeleAvant() ;
-        this.depth ++;
+        res.addTxt("""
+                // GESTION DU NOUVEAU SCOPE
+                mov     x1,     sp
+                push    x1              // push sp
+                mov     x1,     x28     // copie de Ch. STAT
+                mov     x28,    sp      // nouveau Ch. STAT
+                push    x1              // push Ch. STAT
+                """);
+
+        this.depth++;
+        tdsController.goDown();
 
         if (letExpr.decList != null)
-            res += letExpr.decList.accept(this);
-        res += letExpr.exprSeq.accept(this);
+            res.addTxt(letExpr.decList.accept(this));
+        res.addTxt(letExpr.exprSeq.accept(this));
 
         if (letExpr.getType() != Type.VOID_TYPE) {
-            res += "pop x7 // RES\n";
+            res.addTxt("pop x7 // RES");
         }
-        res += appeleApres() ;
+
+        res.addTxt("""
+                // GESTION FIN DU NOUVEAU SCOPE
+                mov     x1,     x28             // copie de Ch. STAT
+                ldr     x28,    [x28]           // ancien Ch. STAT
+                add     sp,     x1,     #16     // depile avec le Ch. DYN
+                """);
 
         if (letExpr.getType() != Type.VOID_TYPE) {
-            res += "push x7 // RES\n";
+            res.addTxt("push x7 // RES");
         }
-        
-        this.depth --;
-        res += "// END Let\n";
-        return res;
+
+        tdsController.goUp();
+        this.depth--;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(Id node) {
-        String res = "// Id\n";
-        res += "// id = ";
-        res += node.identifier;
-        res += "\n";
+        AsmCode res = new AsmCode("Id " + node.identifier);
         Value val = tdsController.findVar(node.identifier);
         int depth = this.depth - val.depth;
         int depl = val.getDpl();
-        res += "push x" + Registre.ch_stat.o() + "\n";
-        res += "mov x0, #" + depth + "// depth\n";
-        res += "push x0\n";
-        res += "mov x0, #" + 16*(depl+2) + "// depl\n";
-        res += "push x0\n";
-        res += Arm64Functions.CHAINAGE_ST.call();
+        res.addTxt("push x" + Registre.ch_stat.o());
+        res.addTxt("mov x0, #" + depth + " // depth");
+        res.addTxt("push x0");
+        res.addTxt("mov x0, #" + 16 * (depl + 2) + " // depl");
+        res.addTxt("push x0");
+        res.addTxt(Arm64Functions.CHAINAGE_ST.call());
         if (idRdOly || !val.getType().equals(Type.INT_TYPE)) {
-            res += "at // i = *i";
+            res.addTxt("at // i = *i");
         }
-        res += "// END Id\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(Sequence node) {
-        String res = "// Sequence\n";
+        AsmCode res = new AsmCode("Sequence");
         for (Ast subNodes : node.instructions) {
-            res+=subNodes.accept(this);
+            res.addTxt(subNodes.accept(this));
         }
-        res += "// END Sequence\n";
-        return res;
+        return res.leaveSection();
     }
+
     @Override
     public String visit(FunctionDeclaration node) {
-        String res = "// FunctionDeclaration\n";
+        AsmCode res = new AsmCode("FunctionDeclaration");
 
-        FunctionType ft = (FunctionType) tdsController.findType(((Id)node.objectId).identifier) ;
+        FunctionType ft = (FunctionType) node.objectId.getType();
 
-        String fRes = "// Function " + ft.getId() + "\n" ;
+        AsmCode fRes = new AsmCode("Function " + ft.getId());
 
         // label
-        fRes += "function_" + ft.getToken() + ":\n" ;
+        fRes.addTxt("function_" + ft.getToken() + ":");
 
-        fRes += appeleAvant() ;
+        fRes.addTxt("push    x30 // @retour");
 
         // instructions
-        node.content.accept(this) ;
+        fRes.addTxt("// FctContent");
+        tdsController.goDown();
+        fRes.addTxt(node.content.accept(this));
+        tdsController.goUp();
 
-        fRes += appeleApres() ;
+        fRes.addTxt("pop     x30 // @retour");
 
-        fRes += "// END Function " + ft.getId() + "\n\n" ;
+        this.funcSection.addTxt(fRes.leaveSection());
 
-        this.funcSection += fRes ;
-
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(VariableDeclaration node) {
-        String res = "// VariableDeclaration\n";
+        AsmCode res = new AsmCode("VariableDeclaration");
 
         // Obtention du type
         Type type = node.value.getType();
 
         // Valeur d'initialisation
-        res += node.value.accept(this);
+        res.addTxt(node.value.accept(this));
 
         // Adresse d'écriture
         idRdOly = false;
-        res += node.objectId.accept(this);
+        res.addTxt(node.objectId.accept(this));
         idRdOly = true;
-        
-        // Ecriture à l'adresse
-        res += "pop x0 // adresse\n";
-        res += "pop x1 // val\n";
-        res += "STR x1, [x0]\n";
 
-        res += "// END VariableDeclaration\n";
-        return res;
+        // Ecriture à l'adresse
+        res.addTxt("pop x0 // adresse");
+        res.addTxt("pop x1 // val");
+        res.addTxt("STR x1, [x0]");
+        return res.leaveSection();
     }
 
     @Override
     public String visit(ArrayTypeDeclaration node) {
-        String res = "// ArrayTypeDeclaration\n";
-        res += "// END ArrayTypeDeclaration\n";
-        return res;
+        AsmCode res = new AsmCode("ArrayTypeDeclaration");
+        return res.leaveSection();
     }
 
     @Override
     public String visit(NoRecordTypeDeclaration node) {
-        String res = "// NoRecordTypeDeclaration\n";
-        res += "// END NoRecordTypeDeclaration\n";
-        return res;
+        AsmCode res = new AsmCode("NoRecordTypeDeclaration");
+        return res.leaveSection();
     }
 
     @Override
     public String visit(RecordTypeDeclaration node) {
-        String res = "// RecordTypeDeclaration\n";
-        res += "// END RecordTypeDeclaration\n";
-        return res;
+        AsmCode res = new AsmCode("RecordTypeDeclaration");
+        return res.leaveSection();
     }
 
     @Override
     public String visit(IntegerNode node) {
-        String res = "// IntegerNode\n";
-        res += "MOV     x9,    #" + node.value + "\n";
-        res += "push    x9\n";
-        res += "// END IntegerNode\n";
-        return res;
+        AsmCode res = new AsmCode("IntegerNode");
+        res.addTxt("MOV     x9,    #" + node.value);
+        res.addTxt("push    x9");
+        return res.leaveSection();
     }
 
-    // -------------- STRING ----
     @Override
     public String visit(StringNode node) {
-        String res = "// StringNode\n";
+        AsmCode res = new AsmCode("StringNode");
+        AsmCode dRes = new AsmCode("String lit Ln " + node.getNumLigne() + ", Col " + node.getNumColonne());
 
-        String strlbl = addStringLitteral(node);
-        res += "ldr x0,    =" + strlbl + "\n";
-        res += "push    x0\n";
+        dRes.addTxt(String.format("%s:\n .asciz  \"%s\"\n", "str_" + stringCounter, node.stringContent));
 
-        res += "// END StringNode\n";
-        return res;
-    }
+        res.addTxt("ldr x0,    =str_" + stringCounter);
+        res.addTxt("push    x0");
 
-    public String addStringLitteral(StringNode node) {
-        String name = "str_" + stringCounter;
-        dataSection += String.format("%s:\n .asciz  \"%s\"\n", name, node.stringContent);
+        dataSection.addTxt(dRes.leaveSection());
+
         stringCounter++;
-        return name;
+        return res.leaveSection();
     }
-// ----------------- /STRING ----
 
     @Override
     public String visit(FunctionCall node) {
-        String res = "// FunctionCall\n";
+        AsmCode res = new AsmCode("FunctionCall");
+
+        res.addTxt("""
+                // GESTION DU NOUVEAU SCOPE
+                mov     x1,     sp
+                push    x1              // push sp
+                mov     x1,     x28     // copie de Ch. STAT
+                mov     x28,    sp      // nouveau Ch. STAT
+                push    x1              // push Ch. STAT
+                """);
 
         // Recuperer chainage statique
         // Param 1
-        res += "push x" + Registre.FP.o() + "\n" ;
+        res.addTxt("push x" + Registre.FP.o());
         // Param 2 : difference entre scope actuel et scope de la fonction
-        int diff = tdsController.getDiffScopeFunc(((Id) node.id).identifier) ;
-        res += "mov x0, #" + diff + "\n" ;
-        res += "push x0" ;
+        int diff = tdsController.getDiffScopeFunc(((Id) node.id).identifier);
+        res.addTxt("mov x0, #" + diff);
+        res.addTxt("push x0");
         // Param 3 : deplacement (ici 0)
-        res += "mov x0, #0" ;
-        res += "push x0" ;
+        res.addTxt("mov x0, #0");
+        res.addTxt("push x0");
         // Calcul
-        res += Arm64Functions.CHAINAGE_ST.call();
+        res.addTxt(Arm64Functions.CHAINAGE_ST.call());
         // Mettre ch STAT dans x28
-        res += "pop x" + Registre.ch_stat.o() + "\n" ;
+        res.addTxt("pop x" + Registre.ch_stat.o());
 
         // empiler arguments
-        node.argList.accept(this) ;
+        node.argList.accept(this);
 
         // executer instr
-        FunctionType ft = (FunctionType) tdsController.findType(((Id)node.id).identifier) ;
-        res += "bl function_" + ft.getToken() + "\n" ;
+        FunctionType ft = (FunctionType) node.id.getType();
+        res.addTxt("bl function_" + ft.getToken());
 
         // depiler arguments
-        for (int i = 0 ; i <  ((ParameterList) node.argList).parameters.size() ; i++) {
-            res += "pop x0\n" ;
+        for (int i = 0; i < ((ParameterList) node.argList).parameters.size(); i++) {
+            res.addTxt("pop x0");
         }
 
-        res += "// END FunctionCall\n";
-        return res;
+        res.addTxt("""
+                // GESTION FIN DU NOUVEAU SCOPE
+                mov     x1,     x28             // copie de Ch. STAT
+                ldr     x28,    [x28]           // ancien Ch. STAT
+                add     sp,     x1,     #16     // depile avec le Ch. DYN
+                """);
+
+        return res.leaveSection();
     }
 
     @Override
     public String visit(ParameterList node) {
-        String res = "// ParameterList\n";
+        AsmCode res = new AsmCode("ParameterList");
 
-        for (Ast a:node.parameters) {
-            a.accept(this) ;
+        for (Ast a : node.parameters) {
+            a.accept(this);
         }
 
-        res += "// END ParameterList\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(ArrayAssign node) {
-        String res = "// ArrayAssign\n";
+        AsmCode res = new AsmCode("ArrayAssign");
         node.nombreDElements.accept(this);
         node.element.accept(this);
-        res += Arm64Functions.ARRAY_ASSIGN.call();
-        res += "// END ArrayAssign\n";
-        return res;
+        res.addTxt(Arm64Functions.ARRAY_ASSIGN.call());
+        return res.leaveSection();
     }
 
     @Override
     public String visit(ArrayAccess node) {
-        String res = "// ArrayAccess\n";
+        AsmCode res = new AsmCode("ArrayAccess");
         node.exp.accept(this);
         node.index.accept(this);
-        res += Arm64Functions.ARRAY_ACCESS.call();
-        res += "// END ArrayAccess\n";
-        return res;
+        res.addTxt(Arm64Functions.ARRAY_ACCESS.call());
+        return res.leaveSection();
     }
 
     @Override
     public String visit(RecordCreate node) {
-        String res = "// RecordCreate\n";
+        AsmCode res = new AsmCode("RecordCreate");
 
-        res += "// END RecordCreate\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(RecordAccess node) {
-        String res = "// RecordAccess\n";
+        AsmCode res = new AsmCode("RecordAccess");
 
-        res += "// END RecordAccess\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(FieldCreate node) {
-        String res = "// FieldCreate\n";
+        AsmCode res = new AsmCode("FieldCreate");
 
-        res += "// END FieldCreate\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(FieldDeclaration node) {
-        String res = "// FieldDeclaration\n";
+        AsmCode res = new AsmCode("FieldDeclaration");
 
-        res += "// END FieldDeclaration\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(FieldDecList node) {
-        String res = "// FieldDecList\n";
+        AsmCode res = new AsmCode("FieldDecList");
 
-        res += "// END FieldDecList\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(For forExpr) {
-        String res = "// For\n";
+        AsmCode res = new AsmCode("For");
 
-        res += "// END For\n";
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(While whileExpr) {
-        if(stack_id.empty()){
+        if (stack_id.empty()) {
             stack_id.push(counter_id_loop);
-        }
-        else{
-            stack_id.push(stack_id.peek()+1);
+        } else {
+            stack_id.push(stack_id.peek() + 1);
             counter_id_loop++;
         }
-        //Initialisaiton de l'identifiant
-        current_id=stack_id.peek();
-        String res = "// While"+Integer.toString(current_id)+"\n";
-        res+="b _loop"+Integer.toString(current_id)+"\n";
-        res+="_loop_"+Integer.toString(current_id)+":"+"\n";
-        res+=whileExpr.condExpr.accept(this)+"\n";
-        //Mise à jour de la valeur actuelle de l'identifiant
-        current_id=stack_id.peek();
-        res+="pop x1"+"\n";
-        res+="cmp x1,#0"+"\n";
-        res+="beq _end_loop_"+Integer.toString(current_id)+"\n";
-        res+=whileExpr.doExpr.accept(this)+"\n";
-        //Mise à jour de la valeur actuelle de l'identifiant
-        current_id=stack_id.peek();
-        res+="b _loop_"+Integer.toString(current_id)+"\n";
-        res+="_end_loop_"+Integer.toString(current_id)+":"+"\n";
-        res += "// END While"+Integer.toString(current_id)+"\n";
+        // Initialisaiton de l'identifiant
+        current_id = stack_id.peek();
+        AsmCode res = new AsmCode("While" + Integer.toString(current_id));
+        res.addTxt("b _loop" + Integer.toString(current_id));
+        res.addTxt("_loop_" + Integer.toString(current_id) + ":");
+        res.addTxt(whileExpr.condExpr.accept(this));
+        // Mise à jour de la valeur actuelle de l'identifiant
+        current_id = stack_id.peek();
+        res.addTxt("pop x1");
+        res.addTxt("cmp x1,#0");
+        res.addTxt("beq _end_loop_" + Integer.toString(current_id));
+        res.addTxt(whileExpr.doExpr.accept(this));
+        // Mise à jour de la valeur actuelle de l'identifiant
+        current_id = stack_id.peek();
+        res.addTxt("b _loop_" + Integer.toString(current_id));
+        res.addTxt("_end_loop_" + Integer.toString(current_id) + ":");
         stack_id.pop();
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(IfThenElse ifThenElseExpr) {
-        if(stack_id.empty()){
+        if (stack_id.empty()) {
             stack_id.push(counter_id_if);
-        }
-        else{
-            stack_id.push(stack_id.peek()+1);
+        } else {
+            stack_id.push(stack_id.peek() + 1);
             counter_id_if++;
         }
-        //Initialisation de la valeur de l'identifiant actuel
+        // Initialisation de la valeur de l'identifiant actuel
         current_id = stack_id.peek();
-        String res = "// IfThenElse"+Integer.toString(current_id)+"\n";
+        AsmCode res = new AsmCode("IfThenElse" + Integer.toString(current_id));
         String output_condition = ifThenElseExpr.condExpr.accept(this);
-        //Mise ajour de l'identifiant actuel
+        // Mise ajour de l'identifiant actuel
         current_id = stack_id.peek();
-        res+=output_condition+"\n";
-        //récupération de la valeur de la condition
-        res+="pop x1"+"\n";
-        res+="cmp x1,#0"+"\n";
-        if(ifThenElseExpr.elseExpr!=null){
-            //si le résultat de la condition est vrai (entier non nul, on exécute then sinon on exécute elses)
-            res+="beq _else_"+Integer.toString(current_id)+"\n";
-            res+="bne _then_"+Integer.toString(current_id)+"\n";
+        res.addTxt(output_condition);
+        // récupération de la valeur de la condition
+        res.addTxt("pop x1");
+        res.addTxt("cmp x1,#0");
+        if (ifThenElseExpr.elseExpr != null) {
+            // si le résultat de la condition est vrai (entier non nul, on exécute then
+            // sinon on exécute elses)
+            res.addTxt("beq _else_" + Integer.toString(current_id));
+            res.addTxt("bne _then_" + Integer.toString(current_id));
 
-            //Début du block de else
-            res+="_else_"+Integer.toString(current_id)+"\n";
-            res+=ifThenElseExpr.elseExpr.accept(this);
-            //Mise à jour de l'identifiant actuel
+            // Début du block de else
+            res.addTxt("_else_" + Integer.toString(current_id));
+            res.addTxt(ifThenElseExpr.elseExpr.accept(this));
+            // Mise à jour de l'identifiant actuel
             current_id = stack_id.peek();
-            res+="b _end_ifthenelse_"+Integer.toString(current_id)+"\n";
+            res.addTxt("b _end_ifthenelse_" + Integer.toString(current_id));
+        } else {// pas de else dans ifThen
+            res.addTxt("bne _then_" + Integer.toString(current_id) + "_expr");
+            res.addTxt("beq _end_ifthenelse_" + Integer.toString(current_id));
         }
-        else{//pas de else dans ifThen
-            res+="bne _then_"+Integer.toString(current_id)+"_expr"+"\n";
-            res+="beq _end_ifthenelse_"+Integer.toString(current_id)+"\n";
-        }
-        //Début de block de then
-        res+="_then_"+Integer.toString(current_id)+"\n";
-        res+=ifThenElseExpr.thenExpr.accept(this);
+        // Début de block de then
+        res.addTxt("_then_" + Integer.toString(current_id));
+        res.addTxt(ifThenElseExpr.thenExpr.accept(this));
         // Mise à jour de l'identifiant actuel
         current_id = stack_id.peek();
-        res+="b _end_ifthenelse_"+Integer.toString(current_id)+"\n";
-        //Fin du block conditionnel
-        res+="_end_ifthenelse_"+Integer.toString(current_id)+":\n";
-        res += "// END IfThenElse"+Integer.toString(current_id)+"\n";
+        res.addTxt("b _end_ifthenelse_" + Integer.toString(current_id));
+        // Fin du block conditionnel
+        res.addTxt("_end_ifthenelse_" + Integer.toString(current_id) + ":");
         current_id = stack_id.pop();
-        return res;
+        return res.leaveSection();
     }
 
     @Override
     public String visit(Affect node) {
-        String res = "// Affect\n";
+        AsmCode res = new AsmCode("Affect");
         node.rightValue.accept(this);
         idRdOly = false;
         node.leftValue.accept(this);
         idRdOly = true;
-        res += "pop x0 // adresse\n";
-        res += "pop x1 // val\n";
-        res += "STR x1, [x0]\n";
-        res += "// END Affect\n";
-        return res;
+        res.addTxt("pop x0 // adresse");
+        res.addTxt("pop x1 // val");
+        res.addTxt("STR x1, [x0]");
+        return res.leaveSection();
     }
 
     @Override
     public String visit(DeclarationList node) {
-        String res = "// DeclarationList\n";
-        res += node.list.stream()
-                .map(declaration -> declaration.accept(this) + "\n")
-                .reduce(res, String::concat);
-        res += "// END DeclarationList\n";
-        return res;
+        AsmCode res = new AsmCode("DeclarationList");
+        for (Declaration d : node.list) {
+            res.addTxt(d.accept(this));
+        }
+        return res.leaveSection();
     }
 
     /*
@@ -533,19 +524,19 @@ public class AsmVisitor implements AstVisitor<String> {
      */
     @Override
     public String visit(Negation node) {
-        String res = "";
-        res += node.negationTail.accept(this);
-        //res += "bl ";
-        res += "\n" + Arm64Functions.INT_NEG.call();
-        return res;
+        AsmCode res = new AsmCode("Negation");
+        res.addTxt(node.negationTail.accept(this));
+        // res.addTxt("bl ";
+        res.addTxt("\n" + Arm64Functions.INT_NEG.call());
+        return res.leaveSection();
     }
 
     private String auxVisitBinaryOperator(BinaryOperator node, Arm64Functions arm64Function) {
-        String res = "";
-        res += node.leftValue.accept(this);
-        res += node.rightValue.accept(this);
-        res += arm64Function.call();
-        return res;
+        AsmCode res = new AsmCode("Operateur binaire");
+        res.addTxt(node.leftValue.accept(this));
+        res.addTxt(node.rightValue.accept(this));
+        res.addTxt(arm64Function.call());
+        return res.leaveSection();
     }
 
     @Override

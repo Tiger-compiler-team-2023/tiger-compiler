@@ -269,6 +269,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         }
 
         node.setType(Type.VOID_TYPE);
+        node.objectId.setType(fType);
         return Type.VOID_TYPE;
     }
 

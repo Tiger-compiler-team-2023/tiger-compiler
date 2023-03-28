@@ -1,6 +1,5 @@
 let
-    var a := 5
-    var b := 6
+    function s(a:int, b:int):int = 2+b
 in
-    b+a
+    s(5, 6)
 end
