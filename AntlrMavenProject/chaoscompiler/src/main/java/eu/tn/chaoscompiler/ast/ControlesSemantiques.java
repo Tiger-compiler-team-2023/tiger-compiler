@@ -153,9 +153,9 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Type visit(Let letExpr) {
         tdsController.down(letExpr);
-        letExpr.decList.accept(this);
         // Vérifier le cas d'utilisation de break dans DecList
         if (letExpr.decList != null) {
+            letExpr.decList.accept(this);
             checkIfBreakExistsInDecList((DeclarationList) letExpr.decList);
         }
         Type typeSequence = letExpr.exprSeq.accept(this);

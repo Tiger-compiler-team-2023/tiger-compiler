@@ -117,22 +117,16 @@ public class AsmVisitor implements AstVisitor<String> {
 
         // Réserver place variables locales
         int nbVarLocales = tdsController.getNbVar() ;
-        res += "mov x0, #0" ;
+        res += "mov x0, #0\n" ;
         for (int i = 0 ; i < nbVarLocales ; i++) {
             res += "pop x0" ;
         }
-
-        // Sauvegarder registres de travail x19 - x27
-        res += "push1927\n" ;
 
         return res ;
     }
 
     public String appeleApres() {
         String res = "" ;
-
-        // Restaurer registres de travail x19 - x27
-        res += "pop1927\n" ;
 
         // Dépiler variables locales
         int nbVarLocales = tdsController.getNbVar() ;
@@ -157,7 +151,8 @@ public class AsmVisitor implements AstVisitor<String> {
 
         res += appeleAvant() ;
 
-        res += letExpr.decList.accept(this);
+        if (letExpr.decList != null)
+            res += letExpr.decList.accept(this);
         res += letExpr.exprSeq.accept(this);
 
         res += appeleApres() ;
