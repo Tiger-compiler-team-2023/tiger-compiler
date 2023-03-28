@@ -1,12 +1,1 @@
-let
-  type recty = {first:int, second:string}
-  type tblty = array of int
-  var mon_bel_enregistrement4 := recty {first = 1, second = "two"}
-  var i := 1
-  var mon_beau_tableau1 := tblty [12] of 18
-in (
-    i := (if 1<=2 then 1 else 2);
-    while 1 do (print("coucou"));
-    i := mon_beau_tableau1[2]
-  )
-end
+2+2

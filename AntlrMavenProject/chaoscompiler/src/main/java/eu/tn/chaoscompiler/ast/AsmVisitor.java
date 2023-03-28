@@ -49,37 +49,43 @@ public class AsmVisitor implements AstVisitor<String> {
         try {
             // Début section data
             dataSection ="""
-                            /********** ********** **********
-                             **********    DATA    **********
-                             ********** ********** **********/
+                // fin FUNCTIONS
+                .include "arithmetic_functions.s"
+                .include "base_functions.s"
+                // DATA
+                """;
 
-                            .section .data
-                            """;
-
-            funcSection = """
-                            /********** ********** **********
-                             ********** FUNCTIONS  **********
-                             ********** ********** **********/
-                             \n\n
-                             """;
+            funcSection = "";
 
             //importer les fonctions arm et les macros ;
             String asm = """
-                    //BEGIN
-                    .include "base_macros.s"
-                    .include arithmetic_functions.s
-                    .global _start
-                    _start:
+                .include \"base_macros.s\"
+                // MACROS
+                
+                
+                // fin MACROS
+                .section .text
+                .global _start
+                _start:
+                // EXECUTION
                     """;
 
             //Le programme
             asm+=node.expression.accept(this);
-            asm+="//END\n\n";
+            asm+="""
+                // fin EXECUTION
+                    exit #0
+                // FUNCTIONS
+                """;
 
-            // Fin section data
-            asm += dataSection;
             // section fonctions
             asm += funcSection ;
+            // Fin section data
+            asm += dataSection;
+            asm += """
+                // fin DATA
+
+                    """;
 
             System.out.println(asm);
         } catch (Exception e) {
