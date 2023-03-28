@@ -31,7 +31,6 @@ import java.util.Stack;
 public class AsmVisitor implements AstVisitor<String> {
 
     private TDScontroller tdsController;
-    private int depth;
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
     private int stringCounter;
     private int current_id;
@@ -88,7 +87,6 @@ public class AsmVisitor implements AstVisitor<String> {
         funcSection = new AsmCode("FUNCTIONS");
 
         tdsController = TDScontroller.getInstance();
-        this.depth = 0;
 
         try {
             ;
@@ -156,7 +154,6 @@ public class AsmVisitor implements AstVisitor<String> {
                 push    x1              // push Ch. STAT
                 """);
 
-        this.depth++;
         tdsController.goDown();
 
         if (letExpr.decList != null)
@@ -179,7 +176,6 @@ public class AsmVisitor implements AstVisitor<String> {
         }
 
         tdsController.goUp();
-        this.depth--;
         return res.leaveSection();
     }
 
@@ -187,12 +183,12 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Id node) {
         AsmCode res = new AsmCode("Id " + node.identifier);
         Value val = tdsController.findVar(node.identifier);
-        int depth = this.depth - val.depth;
+        int depth = val.depth;
         int depl = val.getDpl();
         res.addTxt("push x" + Registre.ch_stat.o());
         res.addTxt("mov x0, #" + depth + " // depth");
         res.addTxt("push x0");
-        res.addTxt("mov x0, #" + 16 * (depl + 2) + " // depl");
+        res.addTxt("mov x0, #" + 16 * (depl + 5) + " // depl");
         res.addTxt("push x0");
         res.addTxt(Arm64Functions.CHAINAGE_ST.call());
         if (idRdOly || !val.getType().equals(Type.INT_TYPE)) {
@@ -224,9 +220,9 @@ public class AsmVisitor implements AstVisitor<String> {
         fRes.addTxt("push    x30 // @retour");
 
         // instructions
-        fRes.addTxt("// FctContent");
         tdsController.goDown();
         fRes.addTxt(node.content.accept(this));
+
         tdsController.goUp();
 
         if (ft.outType != Type.VOID_TYPE) {
@@ -321,23 +317,8 @@ public class AsmVisitor implements AstVisitor<String> {
                 push    x1              // push Ch. STAT
                 """);
 
-        // Recuperer chainage statique
-        // Param 1
-        res.addTxt("push x" + Registre.FP.o());
-        // Param 2 : difference entre scope actuel et scope de la fonction
-        int diff = tdsController.getDiffScopeFunc(((Id) node.id).identifier);
-        res.addTxt("mov x0, #" + diff);
-        res.addTxt("push x0");
-        // Param 3 : deplacement (ici 0)
-        res.addTxt("mov x0, #0");
-        res.addTxt("push x0");
-        // Calcul
-        res.addTxt(Arm64Functions.CHAINAGE_ST.call());
-        // Mettre ch STAT dans x28
-        res.addTxt("pop x" + Registre.ch_stat.o());
-
         // empiler arguments
-        node.argList.accept(this);
+        res.addTxt(node.argList.accept(this));
 
         // executer instr
         FunctionType ft = (FunctionType) node.id.getType();
@@ -358,7 +339,7 @@ public class AsmVisitor implements AstVisitor<String> {
         AsmCode res = new AsmCode("ParameterList");
 
         for (Ast a : node.parameters) {
-            a.accept(this);
+            res.addTxt(a.accept(this));
         }
 
         return res.leaveSection();
