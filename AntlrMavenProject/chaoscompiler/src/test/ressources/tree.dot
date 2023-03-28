@@ -9,7 +9,7 @@ node [style=filled]
 	N4 [label="s", shape="ellipse", fillcolor="pink"];
 	N5 [label="int", shape="ellipse", fillcolor="pink"];
 	N6 [label="Addition", shape="diamond", fillcolor="brown1"];
-	N7 [label="2", shape="invtrapezium", fillcolor="pink"];
+	N7 [label="a", shape="ellipse", fillcolor="pink"];
 	N8 [label="b", shape="ellipse", fillcolor="pink"];
 	N9 [label="FieldDecList", shape="parallelogram", fillcolor="aquamarine"];
 	N10 [label="FieldDeclaration", shape="parallelogram", fillcolor="aquamarine"];

@@ -229,7 +229,15 @@ public class AsmVisitor implements AstVisitor<String> {
         fRes.addTxt(node.content.accept(this));
         tdsController.goUp();
 
+        if (ft.outType != Type.VOID_TYPE) {
+            fRes.addTxt("pop     x7 // RES");
+        }
+
         fRes.addTxt("pop     x30 // @retour");
+
+        if (ft.outType != Type.VOID_TYPE) {
+            fRes.addTxt("push    x7 // RES");
+        }
 
         this.funcSection.addTxt(fRes.leaveSection());
 
@@ -334,11 +342,6 @@ public class AsmVisitor implements AstVisitor<String> {
         // executer instr
         FunctionType ft = (FunctionType) node.id.getType();
         res.addTxt("bl function_" + ft.getToken());
-
-        // depiler arguments
-        for (int i = 0; i < ((ParameterList) node.argList).parameters.size(); i++) {
-            res.addTxt("pop x0");
-        }
 
         res.addTxt("""
                 // GESTION FIN DU NOUVEAU SCOPE
