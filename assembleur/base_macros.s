@@ -26,10 +26,12 @@ Ce fichier contient les implémentations de différentes macros utilisables en a
     LDR     \Xn,   [SP], 16
 .endm
 
-.macro at Xn
+.macro at
     // Xn <- *Xn
-    // {Xn}
-    LDR     \Xn,    [\Xn]
+    // {x1}
+    pop     x1
+    LDR     x1,     [x1]
+    push    x1
 .endm
 
 .macro push915

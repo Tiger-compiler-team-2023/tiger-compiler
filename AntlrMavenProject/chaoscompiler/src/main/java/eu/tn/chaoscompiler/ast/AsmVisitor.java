@@ -104,6 +104,8 @@ public class AsmVisitor implements AstVisitor<String> {
         return null;
     }
 
+    private static boolean idRdOly = true;
+
     public String appeleAvant() {
 
         String res  = "" ;
@@ -191,6 +193,9 @@ public class AsmVisitor implements AstVisitor<String> {
         res += "mov x0, #" + 16*(depl+2) + "// depl\n";
         res += "push x0\n";
         res += Arm64Functions.CHAINAGE_ST.call();
+        if (idRdOly || !val.getType().equals(Type.INT_TYPE)) {
+            res += "at // i = *i";
+        }
         res += "// END Id\n";
         return res;
     }
@@ -240,8 +245,10 @@ public class AsmVisitor implements AstVisitor<String> {
         res += node.value.accept(this);
 
         // Adresse d'écriture
+        idRdOly = false;
         res += node.objectId.accept(this);
-
+        idRdOly = true;
+        
         // Ecriture à l'adresse
         res += "pop x0 // adresse\n";
         res += "pop x1 // val\n";
@@ -498,6 +505,13 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Affect node) {
         String res = "// Affect\n";
+        node.rightValue.accept(this);
+        idRdOly = false;
+        node.leftValue.accept(this);
+        idRdOly = true;
+        res += "pop x0 // adresse\n";
+        res += "pop x1 // val\n";
+        res += "STR x1, [x0]\n";
         res += "// END Affect\n";
         return res;
     }
