@@ -16,18 +16,28 @@ import eu.tn.chaoscompiler.ast.nodes.references.*;
 import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
+import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
+import eu.tn.chaoscompiler.tdstool.variable.ArrayRecordType;
+import eu.tn.chaoscompiler.tdstool.variable.Type;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Visiteur qui part d'un AST existant et le modifie pour :
- *  - Transformer les records en tableaux d'adresses
- *  - Transformer les boucle for en let contenant une variable et un while
+ * - Transformer les records en tableaux d'adresses
+ * - Transformer les boucle for en let contenant une variable et un while
  */
 public class AstAdapterVisitor implements AstVisitor<Ast> {
+    private TDScontroller tdsController;
+    private ArrayList<Ast> toAdd = new ArrayList<>();
+    private Id lastRecordId;
+
 
     @Override
     public Void visit(Program node) {
+        tdsController = TDScontroller.getInstance();
+
         node.expression.accept(this);
         return null;
     }
@@ -41,46 +51,83 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     // ------- RECORD Declaration ----------
     @Override
     public Ast visit(RecordTypeDeclaration node) {
-        // TODO --------------------------------------
-        return node;
+        // TODO -------------------------------------
+        ArrayList<FieldDeclaration> fields = node.fields.list;
+
+        ArrayRecordType art = new ArrayRecordType(
+                node.objectId.identifier,
+                fields.stream().map(field -> field.fieldId.identifier).toList());
+        // On remplace l'ancier type record par le nouveau
+        tdsController.add(art);
+
+        return new ArrayTypeDeclaration(new Id(Type.POINTER_TYPE.getId())).setObjectId(node.objectId);
     }
 
     @Override
     public Ast visit(FieldDecList node) {
-        // TODO ----------------------------------
-        return node;
+        return null; // Traitement déjà fait dans RecordTypeDeclaration
     }
 
     @Override
     public Ast visit(FieldDeclaration node) {
-        // TODO --------------------------------
-        return null;
+        return null; // Traitement déjà fait dans RecordTypeDeclaration
     }
 
     // ------- RECORD Instanciation ----------
     @Override
     public Ast visit(RecordCreate node) {
-        // TODO --------------------------------------
-        return node;
+        System.out.println(tdsController.toJSONString());
+        ArrayRecordType type = (ArrayRecordType) tdsController.findType(node.idObject.toString());
+
+        ArrayAssign arrayAssign = new ArrayAssign(
+                node.idObject,
+                new IntegerNode(type.getNbFields()),
+                new IntegerNode(0));
+
+        Id idRecord = lastRecordId;
+
+        List<FieldCreate> fields = node.args.stream().map(arg -> (FieldCreate) arg).toList();
+        for (int i = 0; i < fields.size(); i++) {
+            toAdd.add(
+                    new Affect(
+                            new ArrayAccess(
+                                    idRecord,
+                                    new IntegerNode(i)
+                            ),
+                            fields.get(i).expr.accept(this)
+                    )
+            );
+        }
+        return arrayAssign;
     }
 
     @Override
     public Ast visit(FieldCreate node) {
-        // TODO ------------------------------
-        return node;
+        return null; // Traitement déjà fait dans RecordCreate
     }
 
     // ------- RECORD Access ----------
     @Override
     public Ast visit(RecordAccess node) {
-        // TODO --------------------------------------
-        return node;
+        Id index = (Id) node.index.accept(this);
+        Id idRecord = (Id) node.exp.accept(this);
+
+        ArrayRecordType type = (ArrayRecordType) tdsController.findType(idRecord.identifier);
+
+        return new ArrayAccess(idRecord, new IntegerNode(type.getIndexOfField(index.identifier)));
     }
 
 
     // ------- FOR ----------
     @Override
     public Ast visit(For node) {
+
+        tdsController.goDown();
+        node.doExpr = node.doExpr.accept(this);
+        node.endExpr = node.endExpr.accept(this);
+        node.startExpr = node.startExpr.accept(this);
+
+        tdsController.goUp();
         // TODO   --------------------------------------
         return node;
     }
@@ -93,20 +140,23 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(Sequence node) {
-        node.instructions = (ArrayList<Ast>) node.instructions.stream()
-                .map(ast -> ast.accept(this)).toList();
+        node.instructions = new ArrayList<>(node.instructions.stream()
+                .map(ast -> ast.accept(this)).toList());
         return node;
     }
 
     @Override
     public Ast visit(FunctionDeclaration node) {
+        tdsController.down(node);
         node.content.accept(this);
+        tdsController.goUp();
+
         return node;
     }
 
     @Override
     public Ast visit(VariableDeclaration node) {
-        // TODO
+        lastRecordId = node.objectId;
         node.value = node.value.accept(this);
         return node;
     }
@@ -131,8 +181,14 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(Let node) {
+        tdsController.goDown();
         node.decList.accept(this);
+
+        ((Sequence) node.exprSeq).instructions.addAll(toAdd);
+        toAdd.clear();
+
         node.exprSeq.accept(this);
+        tdsController.goUp();
         return node;
     }
 
@@ -143,7 +199,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         return node;
     }
 
-    public Ast binaryVisit(BinaryOperator node){
+    public Ast binaryVisit(BinaryOperator node) {
         node.leftValue = node.leftValue.accept(this);
         node.rightValue = node.rightValue.accept(this);
         return node;
@@ -248,8 +304,8 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(ParameterList node) {
-        node.parameters = (ArrayList<Ast>) node.parameters.stream()
-                .map(p -> p.accept(this)).toList();
+        node.parameters = new ArrayList<>(node.parameters.stream()
+                .map(p -> p.accept(this)).toList());
         return node;
     }
 

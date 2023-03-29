@@ -8,7 +8,6 @@ public class ArrayTypeDeclaration extends Declaration {
     public Id baseTypeId;
 
     public ArrayTypeDeclaration(Id baseTypeId) {
-        super();
         this.baseTypeId = baseTypeId;
     }
 

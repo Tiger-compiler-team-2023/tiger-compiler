@@ -37,6 +37,7 @@ public class TDScontroller {
         add(Type.INT_TYPE);
         add(Type.STRING_TYPE);
         add(Type.VOID_TYPE);
+        add(Type.POINTER_TYPE);
 
         FunctionType ft = new FunctionType("print", Type.VOID_TYPE);
         ft.addIn(Type.STRING_TYPE);
@@ -130,6 +131,7 @@ public class TDScontroller {
             ((Value) var).depth = this.depth;
         this.tds.add(var);
     }
+
 
     public void addParam(Value v) {
         this.tds.addParam(v) ;

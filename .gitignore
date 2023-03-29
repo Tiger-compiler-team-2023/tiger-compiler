@@ -527,3 +527,7 @@ AntlrMavenProject/.vscode/
 AntlrMavenProject/chaoscompiler/.vscode/
 
 AntlrMavenProject/chaoscompiler/src/.idea/
+
+java-project/src/main/main.iml
+
+java-project/src/test/test.iml
