@@ -14,7 +14,8 @@ public class Type implements Variable {
             INT_TYPE = new Type("int"),
             STRING_TYPE = new Type("string"),
             VOID_TYPE = new Type("void"),
-            INCR_TYPE = new Type("int");
+            INCR_TYPE = new Type("int"),
+            POINTER_TYPE = new Type("pointer");
 
     @Override
     public boolean equals(Object obj) {

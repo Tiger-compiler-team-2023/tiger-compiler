@@ -13,6 +13,11 @@ public final class Id extends Ast {
 
     public String identifier;
 
+    @Override
+    public String toString() {
+        return this.identifier;
+    }
+
 }
 
 

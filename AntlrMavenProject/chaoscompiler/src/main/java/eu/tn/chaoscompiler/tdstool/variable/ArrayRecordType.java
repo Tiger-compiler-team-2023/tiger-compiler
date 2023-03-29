@@ -19,4 +19,17 @@ public class ArrayRecordType extends ArrayType {
     public int getNbFields(){
         return fields.size();
     }
+
+    @Override
+    public String toJSONString() {
+        String s = "" ;
+        s += "{ " ;
+        s += "\"class\" : \"ArrayRecordType\",\n" ;
+        s += "\"token\" : \"" + token + "\",\n" ;
+        s += "\"id\" : \"" + this.getId() + "\",\n" ;
+        s += "\"elementsType\" : \"" + elementsType.getId() + "\",\n" ;
+        s += "\" nbFields\" : \"" + fields.size() + "\"" ;
+        s += " }" ;
+        return s ;
+    }
 }

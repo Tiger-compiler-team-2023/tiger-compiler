@@ -2,6 +2,7 @@ package eu.tn.chaoscompiler.ast;
 
 import eu.tn.chaoscompiler.ast.nodes.Program;
 import eu.tn.chaoscompiler.ast.nodes.Sequence;
+import eu.tn.chaoscompiler.ast.nodes.declarations.Declaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.FunctionDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.VariableDeclaration;
 import eu.tn.chaoscompiler.ast.nodes.declarations.types.ArrayTypeDeclaration;
@@ -18,6 +19,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.ArrayRecordType;
+import eu.tn.chaoscompiler.tdstool.variable.ArrayValue;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ import java.util.List;
  */
 public class AstAdapterVisitor implements AstVisitor<Ast> {
     private TDScontroller tdsController;
-    private ArrayList<Ast> toAdd = new ArrayList<>();
+    private final ArrayList<Ast> toAdd = new ArrayList<>();
     private Id lastRecordId;
 
 
@@ -42,24 +44,33 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         return null;
     }
 
+
+
+
+
+
+
     // **************************************************************
     // ** Les nœuds suivants peuvent subir un changement de nature  *
-    // ** Par ex : un RecordAccess deviendra un ArrayAccess      *
+    // ** Par ex: un RecordAccess deviendra un ArrayAccess          *
     // **************************************************************
 
 
     // ------- RECORD Declaration ----------
     @Override
     public Ast visit(RecordTypeDeclaration node) {
-        // TODO -------------------------------------
         ArrayList<FieldDeclaration> fields = node.fields.list;
 
-        ArrayRecordType art = new ArrayRecordType(
-                node.objectId.identifier,
-                fields.stream().map(field -> field.fieldId.identifier).toList());
-        // On remplace l'ancier type record par le nouveau
-        tdsController.add(art);
+        // On crée un nouveau type dans la TDS correspondant à un truc qui extends ArrayType,
+        // Ce type va remplacer l'ancier RecordType dans la TDS
+        tdsController.add(
+                new ArrayRecordType(
+                        node.objectId.identifier,
+                        fields.stream().map(field -> field.fieldId.identifier).toList()
+                )
+        );
 
+        // Ce nœud est transformé en un ArrayTypeDeclaration dans l'AST
         return new ArrayTypeDeclaration(new Id(Type.POINTER_TYPE.getId())).setObjectId(node.objectId);
     }
 
@@ -76,18 +87,28 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     // ------- RECORD Instanciation ----------
     @Override
     public Ast visit(RecordCreate node) {
-        System.out.println(tdsController.toJSONString());
         ArrayRecordType type = (ArrayRecordType) tdsController.findType(node.idObject.toString());
 
+        // On crée un nœud d'instanciation de tableau avec autant de fields que de champs du record
         ArrayAssign arrayAssign = new ArrayAssign(
                 node.idObject,
                 new IntegerNode(type.getNbFields()),
-                new IntegerNode(0));
+                new IntegerNode(0)
+        );
 
+        // Le nom de la variable qu'on est en train de créer n'est pas disponible dans le noeud,
+        // On a un attribut de classe qui nous permet de le récupérer
+        // Voir la méthode visit(VariableDeclaration node).
         Id idRecord = lastRecordId;
+        // On remplace donc l'ancienne variable record par un tableau dans la TDS
+        tdsController.add(new ArrayValue(type, idRecord.identifier));
 
+        // On met les champs du record dans une liste...
         List<FieldCreate> fields = node.args.stream().map(arg -> (FieldCreate) arg).toList();
+        // ... puis on itère sur cette liste...
         for (int i = 0; i < fields.size(); i++) {
+            // ... pour créer un nœud Affect par champs initialisé.
+            // Chaque nœud sera ajouter au début des instructions du let pour initialiser le tableau
             toAdd.add(
                     new Affect(
                             new ArrayAccess(
@@ -98,6 +119,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
                     )
             );
         }
+        // Ce nœud se transforme en nœud d'instanciation de tableau
         return arrayAssign;
     }
 
@@ -111,11 +133,14 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     public Ast visit(RecordAccess node) {
         Id index = (Id) node.index.accept(this);
         Id idRecord = (Id) node.exp.accept(this);
+        ArrayRecordType type = (ArrayRecordType) tdsController.findVar(idRecord.identifier).getType();
 
-        ArrayRecordType type = (ArrayRecordType) tdsController.findType(idRecord.identifier);
-
+        // On transforme les accès de record en accès de tableau.
+        // L'indice du tableau nous est donnée par getIndexOfField de la classe ArrayRecordType
         return new ArrayAccess(idRecord, new IntegerNode(type.getIndexOfField(index.identifier)));
     }
+
+
 
 
     // ------- FOR ----------
@@ -131,6 +156,15 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         // TODO   --------------------------------------
         return node;
     }
+
+
+
+
+
+
+
+
+
 
 
     // ************************************************************************
@@ -184,7 +218,10 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         tdsController.goDown();
         node.decList.accept(this);
 
-        ((Sequence) node.exprSeq).instructions.addAll(toAdd);
+        // On ajoute les instructions d'initialisation des nouveaux tableaux correspondant aux records
+        // en tête de tableau
+        ((Sequence) node.exprSeq).instructions.addAll(0, toAdd);
+        // On vide la liste des instructions à ajouter
         toAdd.clear();
 
         node.exprSeq.accept(this);
@@ -298,7 +335,11 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(DeclarationList node) {
-        node.list.forEach(decl -> decl.accept(this));
+        node.list = new ArrayList<>(
+                node.list.stream()
+                        .map(decl -> decl.accept(this))
+                        .map(decl -> (Declaration) decl).toList()
+        );
         return node;
     }
 
