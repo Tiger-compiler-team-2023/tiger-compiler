@@ -58,11 +58,12 @@ public class AsmVisitor implements AstVisitor<String> {
         }
 
         public void addTxt(String txt, boolean first_indent) {
+            String tab = "    ";
             if (first_indent)
-                this.txt += "\t";
+                this.txt += tab;
             for (char ch : txt.toCharArray()) {
                 if (ch == '\n') {
-                    this.txt += "\n\t";
+                    this.txt += "\n" + tab;
                 } else {
                     this.txt += ch;
                 }
@@ -105,10 +106,19 @@ public class AsmVisitor implements AstVisitor<String> {
 
             asm += node.expression.accept(this);
 
-            asm += """
-                    // fin EXECUTION
-                        exit #0
-                    """;
+            boolean debug = true;
+            if (debug) {
+                asm += """
+                        // fin EXECUTION
+                            pop x0
+                            exit x0
+                        """;
+            } else {
+                asm += """
+                        // fin EXECUTION
+                            exit #0
+                        """;
+            }
 
             asm += funcSection.leaveSection();
 
@@ -156,6 +166,10 @@ public class AsmVisitor implements AstVisitor<String> {
 
         tdsController.goDown();
 
+        res.addTxt("mov x0, #0");
+        for (int i = 0; i < tdsController.getNbVar(); i++)
+            res.addTxt("push x0 // var " + (i + 1) + "/" + tdsController.getNbVar());
+
         if (letExpr.decList != null)
             res.addTxt(letExpr.decList.accept(this));
         res.addTxt(letExpr.exprSeq.accept(this));
@@ -188,7 +202,7 @@ public class AsmVisitor implements AstVisitor<String> {
         res.addTxt("push x" + Registre.ch_stat.o());
         res.addTxt("mov x0, #" + depth + " // depth");
         res.addTxt("push x0");
-        res.addTxt("mov x0, #" + 16 * (depl + 5) + " // depl");
+        res.addTxt("mov x0, #" + 16 * depl + " // depl");
         res.addTxt("push x0");
         res.addTxt(Arm64Functions.CHAINAGE_ST.call());
         if (idRdOly || !val.getType().equals(Type.INT_TYPE)) {

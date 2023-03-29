@@ -18,12 +18,15 @@ node [style=filled]
 	N13 [label="FieldDeclaration", shape="parallelogram", fillcolor="aquamarine"];
 	N14 [label="b", shape="ellipse", fillcolor="pink"];
 	N15 [label="int", shape="ellipse", fillcolor="pink"];
-	N16 [label="Sequence", shape="invhouse", fillcolor="darkorchid1"];
-	N17 [label="FunctionCall", shape="folder", fillcolor="grey"];
-	N18 [label="s", shape="ellipse", fillcolor="pink"];
-	N19 [label="ParameterList", shape="folder", fillcolor="grey"];
-	N20 [label="5", shape="invtrapezium", fillcolor="pink"];
-	N21 [label="6", shape="invtrapezium", fillcolor="pink"];
+	N16 [label="VariableDeclaration", shape="parallelogram", fillcolor="aquamarine"];
+	N17 [label="a", shape="ellipse", fillcolor="pink"];
+	N18 [label="5", shape="invtrapezium", fillcolor="pink"];
+	N19 [label="Sequence", shape="invhouse", fillcolor="darkorchid1"];
+	N20 [label="FunctionCall", shape="folder", fillcolor="grey"];
+	N21 [label="s", shape="ellipse", fillcolor="pink"];
+	N22 [label="ParameterList", shape="folder", fillcolor="grey"];
+	N23 [label="a", shape="ellipse", fillcolor="pink"];
+	N24 [label="6", shape="invtrapezium", fillcolor="pink"];
 	N0 [label="Program", shape="Msquare", fillcolor="lightcoral"];
 
 	N3 -> N4; 
@@ -39,13 +42,16 @@ node [style=filled]
 	N9 -> N13; 
 	N3 -> N9; 
 	N2 -> N3; 
-	N1 -> N2; 
-	N17 -> N18; 
-	N19 -> N20; 
-	N19 -> N21; 
-	N17 -> N19; 
 	N16 -> N17; 
-	N1 -> N16; 
+	N16 -> N18; 
+	N2 -> N16; 
+	N1 -> N2; 
+	N20 -> N21; 
+	N22 -> N23; 
+	N22 -> N24; 
+	N20 -> N22; 
+	N19 -> N20; 
+	N1 -> N19; 
 	N0 -> N1; 
 
 }
