@@ -355,8 +355,8 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAssign node) {
         AsmCode res = new AsmCode("ArrayAssign");
-        node.nombreDElements.accept(this);
-        node.element.accept(this);
+        res.addTxt(node.nombreDElements.accept(this));
+        res.addTxt(node.element.accept(this));
         res.addTxt(Arm64Functions.ARRAY_ASSIGN.call());
         return res.leaveSection();
     }
@@ -364,8 +364,8 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAccess node) {
         AsmCode res = new AsmCode("ArrayAccess");
-        node.exp.accept(this);
-        node.index.accept(this);
+        res.addTxt(node.exp.accept(this));
+        res.addTxt(node.index.accept(this));
         res.addTxt(Arm64Functions.ARRAY_ACCESS.call());
         return res.leaveSection();
     }
@@ -489,9 +489,9 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(Affect node) {
         AsmCode res = new AsmCode("Affect");
-        node.rightValue.accept(this);
+        res.addTxt(node.rightValue.accept(this));
         idRdOly = false;
-        node.leftValue.accept(this);
+        res.addTxt(node.leftValue.accept(this));
         idRdOly = true;
         res.addTxt("pop x0 // adresse");
         res.addTxt("pop x1 // val");
