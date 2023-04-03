@@ -1,6 +1,5 @@
 let
-    function s(a:int, b:int):int = a+b
-    var a := 5
+    function f(n:int):int = if n = 0 then 1 else n*f(n-1)
 in
-    s(a, 6)
+    f(5)
 end

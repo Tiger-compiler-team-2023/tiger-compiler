@@ -197,8 +197,6 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Id node) {
         AsmCode res = new AsmCode("Id " + node.identifier);
         Value val = tdsController.findVar(node.identifier);
-        System.out.println(node.getNumLigne() + ":" + node.getNumColonne());
-        System.out.println(tdsController);
         int depth = val.depth;
         int depl = val.getDpl();
         res.addTxt("push x" + Registre.ch_stat.o());
@@ -485,7 +483,7 @@ public class AsmVisitor implements AstVisitor<String> {
             res.addTxt("bne _then_" + Integer.toString(current_id));
 
             // Début du block de else
-            res.addTxt("_else_" + Integer.toString(current_id));
+            res.addTxt("_else_" + Integer.toString(current_id) + ":");
             res.addTxt(ifThenElseExpr.elseExpr.accept(this));
             // Mise à jour de l'identifiant actuel
             current_id = stack_id.peek();
@@ -495,7 +493,7 @@ public class AsmVisitor implements AstVisitor<String> {
             res.addTxt("beq _end_ifthenelse_" + Integer.toString(current_id));
         }
         // Début de block de then
-        res.addTxt("_then_" + Integer.toString(current_id));
+        res.addTxt("_then_" + Integer.toString(current_id) + ":");
         res.addTxt(ifThenElseExpr.thenExpr.accept(this));
         // Mise à jour de l'identifiant actuel
         current_id = stack_id.peek();
