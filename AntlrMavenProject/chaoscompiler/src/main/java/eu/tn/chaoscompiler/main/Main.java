@@ -45,7 +45,7 @@ public class Main {
             // Tests sémantiques
             ast.accept(new ControlesSemantiques());
 
-            ast.accept(new AstAdapterVisitor());
+            //ast.accept(new AstAdapterVisitor());
 
             GraphVizVisitor graphViz2 = new GraphVizVisitor();
             ast.accept(graphViz2);
@@ -55,7 +55,7 @@ public class Main {
 
             GestionnaireErreur.getInstance().afficherErreurs();
             AsmVisitor asmvisitor= new AsmVisitor();
-            //ast.accept(asmvisitor);
+            ast.accept(asmvisitor);
         } catch (RecognitionException e) {
             e.printStackTrace();
         }

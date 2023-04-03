@@ -15,25 +15,28 @@ import lombok.Getter;
  * trouver et ajouter une variable dans l'arbre.
  */
 public class TDScontroller {
-    @Getter protected TDS tds;
+    @Getter
+    protected TDS tds;
     // Singleton
     private static TDScontroller INSTANCE;
     public int depth;
+    public int asmVisitorDepth;
 
-    public static TDScontroller getInstance(){
-        if(INSTANCE == null){
+    public static TDScontroller getInstance() {
+        if (INSTANCE == null) {
             INSTANCE = new TDScontroller();
         }
         return INSTANCE;
     }
 
-    public static void reset (){
+    public static void reset() {
         INSTANCE = new TDScontroller();
     }
 
     private TDScontroller() {
         this.tds = new TDSroot();
         this.depth = 0;
+        this.asmVisitorDepth = 0;
         add(Type.INT_TYPE);
         add(Type.STRING_TYPE);
         add(Type.VOID_TYPE);
@@ -132,15 +135,14 @@ public class TDScontroller {
         this.tds.add(var);
     }
 
-
     public void addParam(Value v) {
-        this.tds.addParam(v) ;
+        this.tds.addParam(v);
     }
 
     public void down() {
         TDS t = new TDSlocal(this.tds);
         this.tds.addSub(t);
-        this.depth ++;
+        this.depth++;
         this.tds = t;
     }
 
@@ -152,7 +154,7 @@ public class TDScontroller {
     public void up() {
         if (this.tds instanceof TDSlocal) {
             this.tds = ((TDSlocal) this.tds).getFather();
-            this.depth --;
+            this.depth--;
         } else {
             // ERREUR
             throw new IllegalStateException("Impossible de monter plus haut que la racine de la TDS.");
@@ -161,20 +163,22 @@ public class TDScontroller {
 
     public void goUp() {
         if (this.tds instanceof TDSlocal t) {
-            this.tds = t.getFather() ;
+            this.tds = t.getFather();
+            this.asmVisitorDepth--;
         }
     }
 
     public void goDown() {
-        this.tds = ((TDSroot) this.tds).nextSubTds() ;
+        this.tds = ((TDSroot) this.tds).nextSubTds();
+        this.asmVisitorDepth++;
     }
 
     public int getNbVar() {
-        return this.tds.getNbVar() ;
+        return this.tds.getNbVar();
     }
 
     public int getDiffScopeFunc(String id) {
-        return this.tds.getDiffScopeFunc(id) ;
+        return this.tds.getDiffScopeFunc(id);
     }
 
     @Override
@@ -183,6 +187,6 @@ public class TDScontroller {
     }
 
     public String toJSONString() {
-        return this.tds.toJSONString("") ;
+        return this.tds.toJSONString("");
     }
 }

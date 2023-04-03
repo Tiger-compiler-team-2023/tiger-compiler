@@ -197,10 +197,12 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Id node) {
         AsmCode res = new AsmCode("Id " + node.identifier);
         Value val = tdsController.findVar(node.identifier);
+        System.out.println(node.getNumLigne() + ":" + node.getNumColonne());
+        System.out.println(tdsController);
         int depth = val.depth;
         int depl = val.getDpl();
         res.addTxt("push x" + Registre.ch_stat.o());
-        res.addTxt("mov x0, #" + depth + " // depth");
+        res.addTxt("mov x0, #" + (depth - tdsController.asmVisitorDepth) + " // depth");
         res.addTxt("push x0");
         res.addTxt("mov x0, #" + 16 * depl + " // depl");
         res.addTxt("push x0");
@@ -234,10 +236,12 @@ public class AsmVisitor implements AstVisitor<String> {
         fRes.addTxt("push    x30 // @retour");
 
         // instructions
-        tdsController.goDown();
-        fRes.addTxt(node.content.accept(this));
-
-        tdsController.goUp();
+        tdsController.goDown(); // ne pas changer l'ordre des lignes
+        int depthMem = tdsController.asmVisitorDepth; // ne pas changer l'ordre des lignes
+        tdsController.asmVisitorDepth = 0; // ne pas changer l'ordre des lignes
+        fRes.addTxt(node.content.accept(this)); // ne pas changer l'ordre des lignes
+        tdsController.asmVisitorDepth = depthMem; // ne pas changer l'ordre des lignes
+        tdsController.goUp(); // ne pas changer l'ordre des lignes
 
         if (ft.outType != Type.VOID_TYPE) {
             fRes.addTxt("pop     x7 // RES");
@@ -331,7 +335,9 @@ public class AsmVisitor implements AstVisitor<String> {
                 """);
 
         // empiler arguments
+        tdsController.asmVisitorDepth --;
         res.addTxt(node.argList.accept(this));
+        tdsController.asmVisitorDepth ++;
 
         // executer instr
         FunctionType ft = (FunctionType) node.id.getType();
