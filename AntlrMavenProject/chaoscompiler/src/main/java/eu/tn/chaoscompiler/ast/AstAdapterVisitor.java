@@ -24,6 +24,7 @@ import eu.tn.chaoscompiler.tdstool.variable.Type;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Visiteur qui part d'un AST existant et le modifie pour :
@@ -66,7 +67,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         tdsController.add(
                 new ArrayRecordType(
                         node.objectId.identifier,
-                        fields.stream().map(field -> field.fieldId.identifier).toList()
+                        fields.stream().map(field -> field.fieldId.identifier).collect(Collectors.toList())
                 )
         );
 
@@ -104,7 +105,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         tdsController.add(new ArrayValue(type, idRecord.identifier));
 
         // On met les champs du record dans une liste...
-        List<FieldCreate> fields = node.args.stream().map(arg -> (FieldCreate) arg).toList();
+        List<FieldCreate> fields = node.args.stream().map(arg -> (FieldCreate) arg).collect(Collectors.toList());
         // ... puis on itère sur cette liste...
         for (int i = 0; i < fields.size(); i++) {
             // ... pour créer un nœud Affect par champs initialisé.
@@ -175,7 +176,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     @Override
     public Ast visit(Sequence node) {
         node.instructions = new ArrayList<>(node.instructions.stream()
-                .map(ast -> ast.accept(this)).toList());
+                .map(ast -> ast.accept(this)).collect(Collectors.toList()));
         return node;
     }
 
@@ -338,7 +339,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         node.list = new ArrayList<>(
                 node.list.stream()
                         .map(decl -> decl.accept(this))
-                        .map(decl -> (Declaration) decl).toList()
+                        .map(decl -> (Declaration) decl).collect(Collectors.toList())
         );
         return node;
     }
@@ -346,7 +347,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     @Override
     public Ast visit(ParameterList node) {
         node.parameters = new ArrayList<>(node.parameters.stream()
-                .map(p -> p.accept(this)).toList());
+                .map(p -> p.accept(this)).collect(Collectors.toList()));
         return node;
     }
 
