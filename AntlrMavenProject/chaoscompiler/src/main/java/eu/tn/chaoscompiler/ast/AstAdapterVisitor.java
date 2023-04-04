@@ -18,12 +18,15 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
+import eu.tn.chaoscompiler.tdstool.tds.TDSlocal;
 import eu.tn.chaoscompiler.tdstool.variable.ArrayRecordType;
 import eu.tn.chaoscompiler.tdstool.variable.ArrayValue;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
+import eu.tn.chaoscompiler.tdstool.variable.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
@@ -33,22 +36,43 @@ import java.util.stream.Collectors;
  */
 public class AstAdapterVisitor implements AstVisitor<Ast> {
     private TDScontroller tdsController;
+    /**
+     * Pour la sauvegarde temporaire des affectations à ajouter au début de partie do du let
+     */
     private final ArrayList<Ast> toAdd = new ArrayList<>();
     private Id lastRecordId;
+    /**
+     * Pile représentant l'emplacement actuel dans l'arbre de la TDS.
+     */
+    private Stack<Integer> tdsStack = new Stack<>();
+    private boolean exploringForScope = false;
 
 
     @Override
     public Void visit(Program node) {
+        tdsStack.push(0);
         tdsController = TDScontroller.getInstance();
 
         node.expression.accept(this);
         return null;
     }
 
+    /**
+     * Descend dans le scope suivant
+     */
+    public void down() {
+        tdsController.goDown(tdsStack.peek());
+        tdsStack.push(tdsStack.pop() + 1);
+        tdsStack.push(0);
+    }
 
-
-
-
+    /**
+     * Remonte dans le scope parent
+     */
+    public void up() {
+        tdsController.goUp();
+        tdsStack.pop();
+    }
 
 
     // **************************************************************
@@ -63,7 +87,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         ArrayList<FieldDeclaration> fields = node.fields.list;
 
         // On crée un nouveau type dans la TDS correspondant à un truc qui extends ArrayType,
-        // Ce type va remplacer l'ancier RecordType dans la TDS
+        // Ce type va remplacer l'ancien RecordType dans la TDS
         tdsController.add(
                 new ArrayRecordType(
                         node.objectId.identifier,
@@ -142,30 +166,65 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     }
 
 
-
-
     // ------- FOR ----------
     @Override
     public Ast visit(For node) {
+        // On transforme les boucles for en let contenant une variable et un while
+        var declarations = new DeclarationList();
+        declarations.addDeclaration(new VariableDeclaration((Id) node.id, new Id(Type.INT_TYPE.getId()), node.startExpr));
 
-        tdsController.goDown();
-        node.doExpr = node.doExpr.accept(this);
-        node.endExpr = node.endExpr.accept(this);
-        node.startExpr = node.startExpr.accept(this);
+        // Incrémentation du i à la fin de chaque itération
+        var do_in_while = new Sequence();
+        do_in_while.addInstr(node.doExpr);
+        do_in_while.addInstr(new Affect(node.id, new Addition(node.id, new IntegerNode(1))));
 
-        tdsController.goUp();
-        // TODO   --------------------------------------
-        return node;
+        // création du while avec la condition d'arrêt
+        var while_var = new While(new InferiorOrEquals(node.id, node.endExpr), do_in_while);
+
+        // conteneur du while
+        var sequence_containing_while = new Sequence();
+        sequence_containing_while.addInstr(while_var);
+
+        // création du let final puis accept sur celui-ci
+        var let = new Let(declarations, sequence_containing_while);
+
+        // ---- Update TDS ----
+        if(!exploringForScope){
+            exploringForScope = true;
+            // L'idée, c'est de créer une nouvelle TDS pour le scope de la variable i...
+            TDSlocal tdsLet = new TDSlocal(tdsController.getTds());
+            tdsLet.add(new Value(Type.INT_TYPE, ((Id) node.id).identifier));
+
+            // ... Le problème, c'est qu'on doit savoir comment positionner la nouvelle TDS dans l'arbre,
+            // en effet, il est possible que le for contienne des let, if, while, etc.
+            // pour ça on va accept le while et regarder où est la tête de lecture de la pile de TDS avant et après.
+            int subTdsBeforeWhile = tdsStack.peek();
+            //while_var.accept(this);
+            int subTdsAfterWhile = tdsStack.peek();
+
+            // Si on a un/des sous tds dans le for, on les place dans la tds du let
+            if (subTdsBeforeWhile != subTdsAfterWhile) {
+                for (int i = subTdsBeforeWhile; i < subTdsAfterWhile; i++) {
+                    tdsLet.getFullTDS().add(tdsController.getTds().getFullTDS().remove(i));
+                }
+
+                // On replace la tête de lecture de la tds au bon endroit
+                tdsStack.pop();
+                tdsStack.push(subTdsBeforeWhile);
+            }
+            // ...et dans tous les cas, on ajoute la tds au bon endroit
+            tdsController.getTds().getFullTDS().add(subTdsBeforeWhile, tdsLet);
+
+            // C'est peut-être tordu, mais je n'ai pas trouvé plus simple (╯°□°)╯︵ ┻━┻
+            exploringForScope = false;
+        }
+
+
+
+        // Ce nœud est remplacé par le let dans l'AST
+        let.accept(this);
+        return let;
     }
-
-
-
-
-
-
-
-
-
 
 
     // ************************************************************************
@@ -175,16 +234,16 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(Sequence node) {
-        node.instructions = new ArrayList<>(node.instructions.stream()
-                .map(ast -> ast.accept(this)).collect(Collectors.toList()));
+        node.instructions = node.instructions.stream()
+                .map(ast -> ast.accept(this)).collect(Collectors.toCollection(ArrayList::new));
         return node;
     }
 
     @Override
     public Ast visit(FunctionDeclaration node) {
-        tdsController.down(node);
+        down();
         node.content.accept(this);
-        tdsController.goUp();
+        up();
 
         return node;
     }
@@ -216,7 +275,8 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(Let node) {
-        tdsController.goDown();
+        var x = tdsStack.toString();
+        down();
         node.decList.accept(this);
 
         // On ajoute les instructions d'initialisation des nouveaux tableaux correspondant aux records
@@ -226,7 +286,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         toAdd.clear();
 
         node.exprSeq.accept(this);
-        tdsController.goUp();
+        up();
         return node;
     }
 
@@ -336,18 +396,16 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
 
     @Override
     public Ast visit(DeclarationList node) {
-        node.list = new ArrayList<>(
-                node.list.stream()
-                        .map(decl -> decl.accept(this))
-                        .map(decl -> (Declaration) decl).collect(Collectors.toList())
-        );
+        node.list = node.list.stream()
+                .map(decl -> decl.accept(this))
+                .map(decl -> (Declaration) decl).collect(Collectors.toCollection(ArrayList::new));
         return node;
     }
 
     @Override
     public Ast visit(ParameterList node) {
-        node.parameters = new ArrayList<>(node.parameters.stream()
-                .map(p -> p.accept(this)).collect(Collectors.toList()));
+        node.parameters = node.parameters.stream()
+                .map(p -> p.accept(this)).collect(Collectors.toCollection(ArrayList::new));
         return node;
     }
 

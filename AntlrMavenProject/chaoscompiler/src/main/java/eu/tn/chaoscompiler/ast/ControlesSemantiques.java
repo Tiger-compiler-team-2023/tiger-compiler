@@ -138,6 +138,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
     @Override
     public Void visit(Program node) {
         tdsController = TDScontroller.getInstance();
+        tdsController = TDScontroller.getInstance();
 
         try {
             node.expression.accept(this);
@@ -147,6 +148,7 @@ public class ControlesSemantiques implements AstVisitor<Type> {
                     "Erreur durant la construction de la table des symboles. Le programme est probablement mal formé" +
                             " mais le compilateur ne détecte pas l'erreur correctement.");
         }
+
         return null;
     }
 

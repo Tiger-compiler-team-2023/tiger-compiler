@@ -7,7 +7,9 @@ import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 import eu.tn.chaoscompiler.tdstool.variable.Variable;
+
 import lombok.Getter;
+import org.json.JSONObject;
 
 /**
  * Interface principale avec l'arbre des TDS.
@@ -168,9 +170,16 @@ public class TDScontroller {
         }
     }
 
-    public void goDown() {
+    public TDScontroller goDown() {
         this.tds = ((TDSroot) this.tds).nextSubTds();
         this.asmVisitorDepth++;
+        return this;
+    }
+
+    public TDScontroller goDown(int idxSubTds) {
+        this.tds = this.tds.getFullTDS().get(idxSubTds);
+        this.asmVisitorDepth++;
+        return this;
     }
 
     public int getNbVar() {
@@ -187,6 +196,6 @@ public class TDScontroller {
     }
 
     public String toJSONString() {
-        return this.tds.toJSONString("");
+        return new JSONObject(this.tds.toJSONString("")).toString(4);
     }
 }

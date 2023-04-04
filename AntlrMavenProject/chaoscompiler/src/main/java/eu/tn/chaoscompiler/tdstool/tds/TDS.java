@@ -1,5 +1,6 @@
 package eu.tn.chaoscompiler.tdstool.tds;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import eu.tn.chaoscompiler.tdstool.variable.Type;
@@ -9,6 +10,8 @@ import eu.tn.chaoscompiler.tdstool.variable.Variable;
 public interface TDS {
     public HashMap<String, Type> getHmType();
     public HashMap<String, Value> getHmVari();
+
+    public ArrayList<TDS> getFullTDS();
 
 
     Type findType(String id);

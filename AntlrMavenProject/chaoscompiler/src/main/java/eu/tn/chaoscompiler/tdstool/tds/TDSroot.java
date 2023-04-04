@@ -9,7 +9,7 @@ import lombok.Getter;
 public class TDSroot implements TDS {
     public HashMap<String, Type> hmType;
     public HashMap<String, Value> hmVari;
-    protected ArrayList<TDS> fullTDS;
+    public ArrayList<TDS> fullTDS;
 
     protected int nextSubTdsIndex ;
     protected int startLine;
@@ -32,6 +32,11 @@ public class TDSroot implements TDS {
 
     public HashMap<String, Value> getHmVari() {
         return this.hmVari;
+    }
+
+    @Override
+    public ArrayList<TDS> getFullTDS() {
+        return fullTDS;
     }
 
     public void addSub(TDS t) {
@@ -152,7 +157,6 @@ public class TDSroot implements TDS {
 
     @Override
     public String toJSONString(String child) {
-
         StringBuilder s = new StringBuilder("");
 
         s.append("{ ");
@@ -200,16 +204,15 @@ public class TDSroot implements TDS {
 
 
     public String childJSONString(Type t) {
-        if (t instanceof ArrayType at) {
-            return at.toJSONString();
-        } else if (t instanceof FunctionType ft) {
-            return ft.toJSONString();
-        } else if (t instanceof RecordType rt) {
-            return rt.toJSONString();
-        } else if (t instanceof TypeRename tr) {
-            return tr.toJSONString();
-        }
-
+        //if (t instanceof ArrayType at) {
+        //    return at.toJSONString();
+        //} else if (t instanceof FunctionType ft) {
+        //    return ft.toJSONString();
+        //} else if (t instanceof RecordType rt) {
+        //    return rt.toJSONString();
+        //} else if (t instanceof TypeRename tr) {
+        //    return tr.toJSONString();
+        //}
         return t.toJSONString();
     }
 }
