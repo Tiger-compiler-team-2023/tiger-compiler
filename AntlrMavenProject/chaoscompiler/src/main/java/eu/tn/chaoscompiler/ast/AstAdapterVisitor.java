@@ -44,8 +44,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     /**
      * Pile représentant l'emplacement actuel dans l'arbre de la TDS.
      */
-    private Stack<Integer> tdsStack = new Stack<>();
-    private boolean exploringForScope = false;
+    private final Stack<Integer> tdsStack = new Stack<>();
 
 
     @Override
@@ -169,9 +168,23 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     // ------- FOR ----------
     @Override
     public Ast visit(For node) {
+        down(); // Le contenu du for est dans un scope enfant
+
+        // On trouve un nom qui existe pas
+        String endId = "end_" + ((Id) node.id).identifier;
+        while (tdsController.existsVar(endId)) {
+            endId += "_";
+        }
+
+        // On met la valeur finale dans une variable pour éviter de la recalculer à chaque itération
+        var endValueDec = new VariableDeclaration(new Id(endId), new Id(Type.INT_TYPE.getId()), node.endExpr);
+        var iterationVarDec = new VariableDeclaration((Id) node.id, new Id(Type.INT_TYPE.getId()), node.startExpr);
+
         // On transforme les boucles for en let contenant une variable et un while
         var declarations = new DeclarationList();
-        declarations.addDeclaration(new VariableDeclaration((Id) node.id, new Id(Type.INT_TYPE.getId()), node.startExpr));
+        declarations.addDeclaration(iterationVarDec);
+        declarations.addDeclaration(endValueDec);
+
 
         // Incrémentation du i à la fin de chaque itération
         var do_in_while = new Sequence();
@@ -179,7 +192,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         do_in_while.addInstr(new Affect(node.id, new Addition(node.id, new IntegerNode(1))));
 
         // création du while avec la condition d'arrêt
-        var while_var = new While(new InferiorOrEquals(node.id, node.endExpr), do_in_while);
+        var while_var = new While(new InferiorOrEquals(node.id, new Id(endId)), do_in_while);
 
         // conteneur du while
         var sequence_containing_while = new Sequence();
@@ -188,41 +201,17 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         // création du let final puis accept sur celui-ci
         var let = new Let(declarations, sequence_containing_while);
 
-        // ---- Update TDS ----
-        if(!exploringForScope){
-            exploringForScope = true;
-            // L'idée, c'est de créer une nouvelle TDS pour le scope de la variable i...
-            TDSlocal tdsLet = new TDSlocal(tdsController.getTds());
-            tdsLet.add(new Value(Type.INT_TYPE, ((Id) node.id).identifier));
-
-            // ... Le problème, c'est qu'on doit savoir comment positionner la nouvelle TDS dans l'arbre,
-            // en effet, il est possible que le for contienne des let, if, while, etc.
-            // pour ça on va accept le while et regarder où est la tête de lecture de la pile de TDS avant et après.
-            int subTdsBeforeWhile = tdsStack.peek();
-            //while_var.accept(this);
-            int subTdsAfterWhile = tdsStack.peek();
-
-            // Si on a un/des sous tds dans le for, on les place dans la tds du let
-            if (subTdsBeforeWhile != subTdsAfterWhile) {
-                for (int i = subTdsBeforeWhile; i < subTdsAfterWhile; i++) {
-                    tdsLet.getFullTDS().add(tdsController.getTds().getFullTDS().remove(i));
-                }
-
-                // On replace la tête de lecture de la tds au bon endroit
-                tdsStack.pop();
-                tdsStack.push(subTdsBeforeWhile);
-            }
-            // ...et dans tous les cas, on ajoute la tds au bon endroit
-            tdsController.getTds().getFullTDS().add(subTdsBeforeWhile, tdsLet);
-
-            // C'est peut-être tordu, mais je n'ai pas trouvé plus simple (╯°□°)╯︵ ┻━┻
-            exploringForScope = false;
-        }
+        // ---- mise à jour TDS ----
+        // la TDS du for devient celle du let en remplaçant la variable
+        tdsController.add(new Value(Type.INT_TYPE, ((Id) node.id).identifier));
+        tdsController.add(new Value(Type.INT_TYPE, endId));
+        // On n'accepte pas directement le let pour rester dans le bon scope de la tds
+        let.decList.accept(this);
+        let.exprSeq.accept(this);
 
 
-
+        up();
         // Ce nœud est remplacé par le let dans l'AST
-        let.accept(this);
         return let;
     }
 

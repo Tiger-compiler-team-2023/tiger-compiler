@@ -449,48 +449,47 @@ public class ControlesSemantiques implements AstVisitor<Type> {
          * une sequence.
          */
 
-        /*
-         * if (!(forExpr.doExpr instanceof Sequence)) {
-         * Ast instruction = forExpr.doExpr;
-         * if (instruction instanceof Affect) {
-         * if (continuer) {
-         * // Vérifier si la partie gauche de l'instruction est un Id
-         * if (((Affect) instruction).leftValue instanceof Id) {
-         * String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
-         * // Vérifier si la valeur d'id est égale à l'indice de la boucle
-         * Value v = tdsController.getVariableOfId(forExpr.doExpr, id_left_value);
-         * if (v != null && v.getType() == Type.INCR_TYPE) {
-         * err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
-         * // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
-         * // assigné plusieurs fois dans la séquence
-         * continuer = false;
-         * }
-         * }
-         * }
-         * }
-         * } else {
-         * Sequence sequence = (Sequence) forExpr.doExpr;
-         * for (Ast instruction : sequence.instructions) {
-         * // Vérifier s'il y a une instruction d'affectation
-         * if (instruction instanceof Affect) {
-         * if (continuer) {
-         * // Vérifier si la partie gauche de l'instruction est un Id
-         * if (((Affect) instruction).leftValue instanceof Id) {
-         * String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
-         * // Vérifier si la valeur d'id est égale à l'indice de la boucle
-         * Value v = tdsController.getVariableOfId(forExpr.doExpr, id_left_value);
-         * if (v != null && v.getType() == Type.INCR_TYPE) {
-         * err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
-         * // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
-         * // assigné plusieurs fois dans la séquence
-         * continuer = false;
-         * }
-         * }
-         * }
-         * }
-         * }
-         * }
-         */
+        // if (!(forExpr.doExpr instanceof Sequence)) {
+        //    Ast instruction = forExpr.doExpr;
+        //    if (instruction instanceof Affect) {
+        //        if (continuer) {
+        //            // Vérifier si la partie gauche de l'instruction est un Id
+        //            if (((Affect) instruction).leftValue instanceof Id) {
+        //                String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
+        //                // Vérifier si la valeur d'id est égale à l'indice de la boucle
+        //                Value v = tdsController.getVariableOfId(forExpr.doExpr, id_left_value);
+        //                if (v != null && v.getType() == Type.INCR_TYPE) {
+        //                    err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
+        //                    // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
+        //                    // assigné plusieurs fois dans la séquence
+        //                    continuer = false;
+        //                }
+        //            }
+        //        }
+        //    }
+        //} else {
+        //    Sequence sequence = (Sequence) forExpr.doExpr;
+        //    for (Ast instruction : sequence.instructions) {
+        //        // Vérifier s'il y a une instruction d'affectation
+        //        if (instruction instanceof Affect) {
+        //            if (continuer) {
+        //                // Vérifier si la partie gauche de l'instruction est un Id
+        //                if (((Affect) instruction).leftValue instanceof Id) {
+        //                    String id_left_value = ((Id) ((Affect) instruction).leftValue).identifier;
+        //                    // Vérifier si la valeur d'id est égale à l'indice de la boucle
+        //                    Value v = tdsController.getVariableOfId(forExpr.doExpr, id_left_value);
+        //                    if (v != null && v.getType() == Type.INCR_TYPE) {
+        //                        err.addSemanticError(forExpr.doExpr, LOOP_COUNTER_AFFECT, id_left_value);
+        //                        // Pour afficher l'erreur une seule fois lorsque l'indice de la boucle est
+        //                        // assigné plusieurs fois dans la séquence
+        //                        continuer = false;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
 
         tdsController.up();
 
