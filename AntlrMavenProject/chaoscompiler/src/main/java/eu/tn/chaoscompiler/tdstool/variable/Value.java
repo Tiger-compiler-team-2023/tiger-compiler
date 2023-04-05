@@ -30,6 +30,13 @@ public class Value implements Variable {
         return this.token;
     }
 
+    public int getDpl() {
+        if (this.type instanceof FunctionType)
+            return 0;
+        else
+            return this.dpl;
+    }
+
     @Override
     public String toString() {
         return "\n\u001B[32m{[Value]\u001B[0mtype: " + this.type.toString() + ", id: \u001B[46m" + this.id

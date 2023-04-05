@@ -100,9 +100,9 @@ public class AsmVisitor implements AstVisitor<String> {
                         .section .text
                         .global _start
                         _start:
-                        mov     x29,    sp
+                        mov x29, sp
                     // EXECUTION
-                        """;
+                    """;
 
             asm += node.expression.accept(this);
 
@@ -146,23 +146,19 @@ public class AsmVisitor implements AstVisitor<String> {
         return null;
     }
 
-    private static boolean idRdOly = true;
+    private static boolean idRdOly = true; // Suis-je dans une situation de readonly d'entier
+    private static boolean idFctEnv = false; // Suis-je dans une situation de chainage statique de fonction
+    private static Stack<Integer> idCallStack = new Stack<Integer>(); // Pile des définitions de fonction pour trouver les fonctions récurcives et adapter le chaînage statique à cette situation
 
     @Override
-    public String visit(Let letExpr) {
+    public String visit(Let node) {
         AsmCode res = new AsmCode("Let");
-
-        // Calculer ch. STAT et le mettre ch. STAT dans x28
-        res.addTxt("add x" + Registre.ch_stat.o() + ", x" + Registre.FP.o() + ", #16");
-
-        res.addTxt("""
-                // GESTION DU NOUVEAU SCOPE
-                mov     x1,     sp
-                push    x1              // push sp
-                mov     x1,     x28     // copie de Ch. STAT
-                mov     x28,    sp      // nouveau Ch. STAT
-                push    x1              // push Ch. STAT
-                """);
+        res.addTxt("// GESTION DU NOUVEAU SCOPE");
+        res.addTxt("push " + Registre.ch_stat.n());
+        res.addTxt("push " + Registre.ch_dyn.n());
+        res.addTxt("mov " + Registre.ch_dyn.n() + ", " + Registre.SP.n() + " // Ch. DYN");
+        res.addTxt("push " + Registre.ch_stat.n());
+        res.addTxt("add " + Registre.ch_stat.n() + ", " + Registre.SP.n() + ", #16 // Ch. STAT");
 
         tdsController.goDown();
 
@@ -170,22 +166,21 @@ public class AsmVisitor implements AstVisitor<String> {
         for (int i = 0; i < tdsController.getNbVar(); i++)
             res.addTxt("push x0 // var " + (i + 1) + "/" + tdsController.getNbVar());
 
-        if (letExpr.decList != null)
-            res.addTxt(letExpr.decList.accept(this));
-        res.addTxt(letExpr.exprSeq.accept(this));
+        if (node.decList != null)
+            res.addTxt(node.decList.accept(this));
+        res.addTxt(node.exprSeq.accept(this));
 
-        if (letExpr.getType() != Type.VOID_TYPE) {
+        // Dépiler
+        res.addTxt("// GESTION FIN DU NOUVEAU SCOPE");
+        if (node.getType() != Type.VOID_TYPE) {
             res.addTxt("pop x7 // RES");
         }
 
-        res.addTxt("""
-                // GESTION FIN DU NOUVEAU SCOPE
-                mov     x1,     x28             // copie de Ch. STAT
-                ldr     x28,    [x28]           // ancien Ch. STAT
-                add     sp,     x1,     #16     // depile avec le Ch. DYN
-                """);
+        res.addTxt("mov " + Registre.SP.n() + ", " + Registre.ch_dyn.n() + " // Ch. DYN");
+        res.addTxt("pop " + Registre.ch_dyn.n() + " // Ch. DYN");
+        res.addTxt("pop " + Registre.ch_stat.n() + " // Ch. STAT");
 
-        if (letExpr.getType() != Type.VOID_TYPE) {
+        if (node.getType() != Type.VOID_TYPE) {
             res.addTxt("push x7 // RES");
         }
 
@@ -199,13 +194,13 @@ public class AsmVisitor implements AstVisitor<String> {
         Value val = tdsController.findVar(node.identifier);
         int depth = val.depth;
         int depl = val.getDpl();
-        res.addTxt("push x" + Registre.ch_stat.o());
+        res.addTxt("push " + Registre.ch_stat.n());
         res.addTxt("mov x0, #" + (depth - tdsController.asmVisitorDepth) + " // depth");
         res.addTxt("push x0");
         res.addTxt("mov x0, #" + 16 * depl + " // depl");
         res.addTxt("push x0");
         res.addTxt(Arm64Functions.CHAINAGE_ST.call());
-        if (idRdOly || !val.getType().equals(Type.INT_TYPE)) {
+        if (!idFctEnv && (idRdOly || !val.getType().equals(Type.INT_TYPE))) {
             res.addTxt("at // i = *i");
         }
         return res.leaveSection();
@@ -222,16 +217,17 @@ public class AsmVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(FunctionDeclaration node) {
+        FunctionType ft = (FunctionType) node.objectId.getType();
         AsmCode res = new AsmCode("FunctionDeclaration");
 
-        FunctionType ft = (FunctionType) node.objectId.getType();
+        idCallStack.push(ft.getToken());
 
         AsmCode fRes = new AsmCode("Function " + ft.getId());
 
         // label
         fRes.addTxt("function_" + ft.getToken() + ":");
 
-        fRes.addTxt("push    x30 // @retour");
+        fRes.addTxt("push " + Registre.LR.n() + " // @retour");
 
         // instructions
         tdsController.goDown(); // ne pas changer l'ordre des lignes
@@ -242,18 +238,20 @@ public class AsmVisitor implements AstVisitor<String> {
         tdsController.goUp(); // ne pas changer l'ordre des lignes
 
         if (ft.outType != Type.VOID_TYPE) {
-            fRes.addTxt("pop     x7 // RES");
+            fRes.addTxt("pop x7 // RES");
         }
 
-        fRes.addTxt("pop     x30 // @retour");
+        fRes.addTxt("pop " + Registre.LR.n() + " // @retour");
 
         if (ft.outType != Type.VOID_TYPE) {
-            fRes.addTxt("push    x7 // RES");
+            fRes.addTxt("push x7 // RES");
         }
 
         fRes.addTxt("ret");
 
         this.funcSection.addTxt(fRes.leaveSection());
+
+        idCallStack.pop();
 
         return res.leaveSection();
     }
@@ -298,8 +296,8 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IntegerNode node) {
         AsmCode res = new AsmCode("IntegerNode");
-        res.addTxt("MOV     x9,    #" + node.value);
-        res.addTxt("push    x9");
+        res.addTxt("MOV x9, #" + node.value);
+        res.addTxt("push x9");
         return res.leaveSection();
     }
 
@@ -308,10 +306,10 @@ public class AsmVisitor implements AstVisitor<String> {
         AsmCode res = new AsmCode("StringNode");
         AsmCode dRes = new AsmCode("String lit Ln " + node.getNumLigne() + ", Col " + node.getNumColonne());
 
-        dRes.addTxt(String.format("%s:\n .asciz  \"%s\"\n", "str_" + stringCounter, node.stringContent));
+        dRes.addTxt(String.format("%s:\n .asciz \"%s\"\n", "str_" + stringCounter, node.stringContent));
 
-        res.addTxt("ldr x0,    =str_" + stringCounter);
-        res.addTxt("push    x0");
+        res.addTxt("ldr x0, =str_" + stringCounter);
+        res.addTxt("push x0");
 
         dataSection.addTxt(dRes.leaveSection());
 
@@ -321,36 +319,40 @@ public class AsmVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(FunctionCall node) {
+        FunctionType ft = (FunctionType) node.id.getType();
         AsmCode res = new AsmCode("FunctionCall");
-
-        res.addTxt("""
-                // GESTION DU NOUVEAU SCOPE
-                mov     x1,     sp
-                push    x1              // push sp
-                mov     x1,     x28     // copie de Ch. STAT
-                mov     x28,    sp      // nouveau Ch. STAT
-                push    x1              // push Ch. STAT
-                """);
+        res.addTxt("// GESTION DU NOUVEAU SCOPE");
+        res.addTxt("push " + Registre.ch_stat.n());
+        res.addTxt("push " + Registre.ch_dyn.n());
+        res.addTxt("mov " + Registre.ch_dyn.n() + ", " + Registre.SP.n() + " // Ch. DYN");
+        if (!idCallStack.isEmpty() && idCallStack.peek() == ft.getToken())
+        {
+            res.addTxt("push " + Registre.ch_stat.n() + " // Appel récursif");
+        }
+        else {
+            idFctEnv = true;
+            res.addTxt(node.id.accept(this));
+            idFctEnv = false;
+        }
+        res.addTxt("add " + Registre.ch_stat.n() + ", " + Registre.SP.n() + ", #16 // Ch. STAT");
 
         // empiler arguments
-        tdsController.asmVisitorDepth --;
+        tdsController.asmVisitorDepth--;
         res.addTxt(node.argList.accept(this));
-        tdsController.asmVisitorDepth ++;
+        tdsController.asmVisitorDepth++;
 
         // executer instr
-        FunctionType ft = (FunctionType) node.id.getType();
         res.addTxt("bl function_" + ft.getToken());
 
+        // Dépiler
+        res.addTxt("// GESTION FIN DU NOUVEAU SCOPE");
         if (node.getType() != Type.VOID_TYPE) {
             res.addTxt("pop x7 // RES");
         }
 
-        res.addTxt("""
-                // GESTION FIN DU NOUVEAU SCOPE
-                mov     x1,     x28             // copie de Ch. STAT
-                ldr     x28,    [x28]           // ancien Ch. STAT
-                add     sp,     x1,     #16     // depile avec le Ch. DYN
-                """);
+        res.addTxt("mov " + Registre.SP.n() + ", " + Registre.ch_dyn.n() + " // Ch. DYN");
+        res.addTxt("pop " + Registre.ch_dyn.n() + " // Ch. DYN");
+        res.addTxt("pop " + Registre.ch_stat.n() + " // Ch. STAT");
 
         if (node.getType() != Type.VOID_TYPE) {
             res.addTxt("push x7 // RES");

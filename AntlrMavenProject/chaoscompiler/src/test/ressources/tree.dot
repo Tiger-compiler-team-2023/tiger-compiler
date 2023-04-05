@@ -29,7 +29,7 @@ node [style=filled]
 	N24 [label="FunctionCall", shape="folder", fillcolor="grey"];
 	N25 [label="f", shape="ellipse", fillcolor="pink"];
 	N26 [label="ParameterList", shape="folder", fillcolor="grey"];
-	N27 [label="5", shape="invtrapezium", fillcolor="pink"];
+	N27 [label="4", shape="invtrapezium", fillcolor="pink"];
 	N0 [label="Program", shape="Msquare", fillcolor="lightcoral"];
 
 	N3 -> N4; 

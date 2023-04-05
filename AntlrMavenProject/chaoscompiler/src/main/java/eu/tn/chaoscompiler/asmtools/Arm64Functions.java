@@ -48,7 +48,7 @@ public enum Arm64Functions {
         res += nbArgs;
         res += "] -> [";
         res += nbRes;
-        res += "]\n";
+        res += "]";
         return res;
     }
 

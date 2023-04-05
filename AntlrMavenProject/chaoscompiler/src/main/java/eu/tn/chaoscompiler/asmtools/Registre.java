@@ -28,20 +28,27 @@ public enum Registre {
     x25(25),
     x26(26),
     x27(27),
-    ch_stat(28),
-    FP(29),
-    LR(30),
-    SP(31, "SP");
+    ch_stat(28, "Ch. STAT"),
+    ch_dyn(29, "Ch. DYN"),
+    LR(30, "@retour"),
+    SP(31, "STACK", "SP");
 
     private int o;
+    private String desc;
     private String n;
 
     private Registre(int o) {
         this.o = o;
     }
 
-    private Registre(int o, String n) {
+    private Registre(int o, String desc) {
         this.o = o;
+        this.desc = desc;
+    }
+
+    private Registre(int o, String desc, String n) {
+        this.o = o;
+        this.desc = desc;
         this.n = n;
     }
 
@@ -50,9 +57,13 @@ public enum Registre {
     }
 
     public String n() {
+        String res = "";
         if (this.n != null)
-            return this.n;
+            res += this.n;
         else
-            return "x" + this.o;
+            res += "x" + this.o;
+        if (this.desc != null)
+            res += "/*" + this.desc + "*/";
+        return res;
     }
 }
