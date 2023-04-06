@@ -29,8 +29,8 @@ public enum Errors {
     NO_VALUE_ERROR("\033[0;35m %s \u001B[0m n'a pas pu être initialisée (n'a pas de valeur)"),
     BAD_AFFECT_TYPE("Une valeur de type \033[0;34m %s \u001B[0m ne peut pas être affectée à une variable de type \033[0;34m %s \u001B[0m"),
     CANT_AFFECT_TO_FOR_INDEX("Impossible d'affecter une valeur à l'indice d'une boucle for"),
+    FOR_END_VALUE_GREATER_THAN_START("La valeur d'initialisation de la variable d'incrémentation (\033[0;34m %s \u001B[0m) ne doit pas être supérieur à la valeur finale \033[0;34m %s \u001B[0m"),
     LOOP_TYPE("%s"),//la coloration de l'affichage a été ajouté dans ControlesSemantiques.java dans la méthode visit(For forExpr)
-    LOOP_COUNTER_AFFECT("l'indice %s de la boucle For ne doit pas être assigné à l'intérieur de la boucle"),
 
     INT_EXPECTED("Une valeur de type\033[0;34m int \u001B[0m est attendue (type donné : \033[0;34m %s \u001B[0m)"),
 

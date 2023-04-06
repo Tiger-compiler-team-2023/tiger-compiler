@@ -18,7 +18,6 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
-import eu.tn.chaoscompiler.tdstool.tds.TDSlocal;
 import eu.tn.chaoscompiler.tdstool.variable.ArrayRecordType;
 import eu.tn.chaoscompiler.tdstool.variable.ArrayValue;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
@@ -26,15 +25,24 @@ import eu.tn.chaoscompiler.tdstool.variable.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
 /**
- * Visiteur qui part d'un AST existant et le modifie pour :
+ * PARTIE 1 - Visiteur qui part d'un AST existant et le modifie pour :
  * - Transformer les records en tableaux d'adresses
  * - Transformer les boucle for en let contenant une variable et un while
+ * <p>
+ * <p>
+ * PARTIE 2 - OPTIMISATION SUR l'AST
+ * <p>
+ * - Les séquences qui ont un seul fils sont supprimées
+ * - Les expresssions arithmétiques et booléennes sont simplifiées autant que possible
+ *      - Y compris avec le court-circuit des and et or si possible
+ * - Un nœud while dont la condition est simplifiée à false est supprimée
  */
-public class AstAdapterVisitor implements AstVisitor<Ast> {
+public class AstOptimizerVisitor implements AstVisitor<Ast> {
     private TDScontroller tdsController;
     /**
      * Pour la sauvegarde temporaire des affectations à ajouter au début de partie do du let
@@ -206,8 +214,8 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         tdsController.add(new Value(Type.INT_TYPE, ((Id) node.id).identifier));
         tdsController.add(new Value(Type.INT_TYPE, endId));
         // On n'accepte pas directement le let pour rester dans le bon scope de la tds
-        let.decList.accept(this);
-        let.exprSeq.accept(this);
+        let.decList = let.decList.accept(this);
+        let.exprSeq = let.exprSeq.accept(this);
 
 
         up();
@@ -224,7 +232,20 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     @Override
     public Ast visit(Sequence node) {
         node.instructions = node.instructions.stream()
-                .map(ast -> ast.accept(this)).collect(Collectors.toCollection(ArrayList::new));
+                // Accept sur chaque instruction
+                .map(ast -> ast.accept(this))
+                // On filtre les nœuds séquences vides (possible dans le cas d'un while supprimé).
+                .filter(ast -> {
+                    if (!(ast instanceof Sequence s)) return true;
+                    return s.instructions.size() != 0;
+                })
+                // On récupère la liste d'instructions (<=> toList() en java moderne)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // Si la séquence a un unique élément, elle ne sert à rien
+        if (node.instructions.size() == 1) {
+            return node.instructions.get(0);
+        }
         return node;
     }
 
@@ -266,7 +287,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     public Ast visit(Let node) {
         var x = tdsStack.toString();
         down();
-        node.decList.accept(this);
+        node.decList = node.decList.accept(this);
 
         // On ajoute les instructions d'initialisation des nouveaux tableaux correspondant aux records
         // en tête de tableau
@@ -274,7 +295,7 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
         // On vide la liste des instructions à ajouter
         toAdd.clear();
 
-        node.exprSeq.accept(this);
+        node.exprSeq = node.exprSeq.accept(this);
         up();
         return node;
     }
@@ -282,85 +303,179 @@ public class AstAdapterVisitor implements AstVisitor<Ast> {
     @Override
     public Ast visit(While node) {
         node.condExpr = node.condExpr.accept(this);
-        node.doExpr.accept(this);
+        int indexBeforeDo = tdsStack.peek();
+        node.doExpr = node.doExpr.accept(this);
+        int indexAfterDo = tdsStack.peek();
+
+        // Si le while est evaluable à false, on le supprime de la tds
+        if (node.condExpr instanceof IntegerNode integerNode && integerNode.value == 0) {
+            // Si le while contient une sous tds, on la supprime
+            for (int i = 0; i < indexAfterDo - indexBeforeDo; i++) {
+                tdsController.getTds().getFullTDS().remove(indexBeforeDo);
+            }
+            // On remet l'index de la tds à l'index avant le do qu'on a supprimé
+            tdsStack.pop();
+            tdsStack.push(indexBeforeDo);
+            return new Sequence();
+        }
         return node;
     }
 
-    public Ast binaryVisit(BinaryOperator node) {
+    int leftValue, rightValue;
+
+    public void binaryVisit(BinaryOperator node) {
         node.leftValue = node.leftValue.accept(this);
         node.rightValue = node.rightValue.accept(this);
-        return node;
+    }
+
+    /**
+     * Visite les deux fils, et retourne vrai si les deux sont des entiers terminaux (donc optimisables)
+     */
+    public boolean binaryVisitAndCheckOptimizable(BinaryOperator node) {
+        binaryVisit(node);
+        if (node.leftValue instanceof IntegerNode && node.rightValue instanceof IntegerNode) {
+            leftValue = ((IntegerNode) node.leftValue).value;
+            rightValue = ((IntegerNode) node.rightValue).value;
+            return true;
+        }
+        return false;
     }
 
     @Override
     public Ast visit(Addition node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode(leftValue + rightValue);
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Affect node) {
-        return binaryVisit(node);
+        binaryVisit(node);
+        return node;
     }
 
     @Override
     public Ast visit(And node) {
-        return binaryVisit(node);
+        int indexBeforeAcccept = tdsStack.peek();
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue != 0 && rightValue != 0 ? 1 : 0));
+        }
+
+        // Dans le cas d'un And, un côté à false suffit à optimiser.
+        // on optimise que s'il n'y pas de let dans le contenu d'un des fils
+        if (indexBeforeAcccept == tdsStack.peek()){
+            if (node.leftValue instanceof IntegerNode left){
+                return (left.value == 0 ? new IntegerNode(0) : node.rightValue);
+            }
+            if (node.rightValue instanceof IntegerNode right){
+                return (right.value == 0 ? new IntegerNode(0) : node.leftValue);
+            }
+        }
+
+        return node;
     }
 
     @Override
+    public Ast visit(Or node) {
+        int indexBeforeAcccept = tdsStack.peek();
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue != 0 || rightValue != 0 ? 1 : 0));
+        }
+
+        // Dans le cas d'un Or, un côté à true suffit à optimiser.
+        // on optimise que s'il n'y pas de let dans le contenu d'un des fils
+        if (indexBeforeAcccept == tdsStack.peek()){
+            if (node.leftValue instanceof IntegerNode left){
+                return (left.value != 0 ? new IntegerNode(1) : node.rightValue);
+            }
+            if (node.rightValue instanceof IntegerNode right){
+                return (right.value != 0 ? new IntegerNode(1) : node.leftValue);
+            }
+        }
+        return node;
+    }
+
+
+    @Override
     public Ast visit(Division node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode(leftValue / rightValue);
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Equals node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue == rightValue ? 1 : 0));
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Inferior node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue < rightValue ? 1 : 0));
+        }
+        return node;
     }
 
     @Override
     public Ast visit(InferiorOrEquals node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue <= rightValue ? 1 : 0));
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Multiplication node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode(leftValue * rightValue);
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Negation node) {
         node.negationTail = node.negationTail.accept(this);
+        if (node.negationTail instanceof IntegerNode integerNode) {
+            return new IntegerNode(-integerNode.value);
+        }
         return node;
     }
 
     @Override
     public Ast visit(NotEquals node) {
-        return binaryVisit(node);
-    }
-
-    @Override
-    public Ast visit(Or node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue != rightValue ? 1 : 0));
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Soustraction node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode(leftValue - rightValue);
+        }
+        return node;
     }
 
     @Override
     public Ast visit(Superior node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue > rightValue ? 1 : 0));
+        }
+        return node;
     }
 
     @Override
     public Ast visit(SuperiorOrEquals node) {
-        return binaryVisit(node);
+        if (binaryVisitAndCheckOptimizable(node)) {
+            return new IntegerNode((leftValue >= rightValue ? 1 : 0));
+        }
+        return node;
     }
 
     @Override

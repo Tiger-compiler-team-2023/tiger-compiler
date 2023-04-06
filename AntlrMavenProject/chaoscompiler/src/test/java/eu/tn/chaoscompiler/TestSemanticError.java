@@ -257,4 +257,37 @@ public final class TestSemanticError extends TigerTest {
         TigerAssert.assertSemanticErrors(Errors.BAD_ARGUMENT_NUMBER, " let function foo() = print('Hello') in foo(1) end ");
     }
 
+    @Test
+    public void ifThenElse() {
+        TigerAssert.assertCorrectSemantic(" if 1 then 2 else 3");
+        TigerAssert.assertCorrectSemantic(" if 1 then 2 else if 3 then 4 else 5");
+        TigerAssert.assertCorrectSemantic(" if 1 then 'a' else 'b'");
+        TigerAssert.assertCorrectSemantic(" if 1 then print(str_1)");
+
+        TigerAssert.assertSemanticErrors(Errors.INCOMPATIBLES_THEN_ELSE, " if 1 then 2 else str_1");
+        TigerAssert.assertSemanticErrors(Errors.INCOMPATIBLES_THEN_ELSE, " if 1 then str_1 else 2");
+        TigerAssert.assertSemanticErrors(Errors.THEN_WITH_TYPE, " if 1 then 2");
+    }
+
+    @Test
+    public void whileLoop() {
+        TigerAssert.assertCorrectSemantic(" while 1 do print(str_1)");
+        TigerAssert.assertCorrectSemantic(" while 1 do while 3 do print(str_1)");
+
+        TigerAssert.assertSemanticErrors(Errors.NO_VOID_WHILE, " while 1 do 1");
+        TigerAssert.assertSemanticErrors(Errors.INT_EXPECTED, " while 'a' do print(str_1)");
+    }
+
+    @Test
+    public void forLoop() {
+        TigerAssert.assertCorrectSemantic(" for i := 1 to 10 do print(str_1)");
+        TigerAssert.assertCorrectSemantic(" for i := 1 to 10 do for j := 1 to 10 do print(str_1)");
+
+        TigerAssert.assertSemanticErrors(Errors.LOOP_TYPE, " for i := 1 to 10 do 1");
+        TigerAssert.assertSemanticErrors(Errors.LOOP_TYPE, " for i := 'a' to 10 do print(str_1)");
+        TigerAssert.assertSemanticErrors(Errors.LOOP_TYPE, " for i := 1 to 'a' do print(str_1)");
+        TigerAssert.assertSemanticErrors(Errors.CANT_AFFECT_TO_FOR_INDEX, " for i := 1 to 10 do i := i-1");
+
+        TigerAssert.assertSemanticErrors(Errors.FOR_END_VALUE_GREATER_THAN_START, " for i := 10 to 1 do print(str_1)");
+    }
 }
