@@ -1,0 +1,26 @@
+/*
+  Affectations simples at expression arithmétiques
+*/
+let
+  var a:=-26
+  var b:int:=5
+  var c:=1+3-5+30
+  var d:=4*40/20
+in
+  print("a ");
+  printi(a);
+  print("\n");
+  print("b ");printi(b);print("\n");
+  a:=b;
+  print("Apres affectation a ");printi(a);print("\n");
+  print("Expressions arithmetiques avec gestion de priorite \n");
+  print("c ");printi(c);print("\n");
+  print("d ");printi(d);print("\n")
+end
+/*
+  Résultat attendu
+  a = 5
+  b = -26
+  c = 29
+  d = 8
+*/

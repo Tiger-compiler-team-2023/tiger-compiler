@@ -1,0 +1,19 @@
+/*
+  Déclaration des variables
+*/
+let
+  var a:=4
+  var b:int:=-1
+in
+  print("a ");
+  printi(a);
+  print("\n");
+  print("b ");
+  printi(b);
+  print("\n")
+end
+/*
+  Résultat attendu
+  a = 4
+  b = -1
+*/

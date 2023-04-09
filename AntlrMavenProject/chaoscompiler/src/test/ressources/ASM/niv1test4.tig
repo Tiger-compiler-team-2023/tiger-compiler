@@ -1,0 +1,25 @@
+/*
+ Structures simples : if, while, for
+*/
+let
+  var input:=0
+  var a:=3
+  var r:=1
+in
+  /* If */
+  if(input=0) then print("la valeur de l input est nulle") else print("la valeur de l input n est pas nulle");
+  /* For
+    Calcul de la somme arithmétique
+*/
+  for i:=0 to 7 do input:=input+i;
+  print("u0 est 0 \n");print("la somme arithmetique S7 tel que est ");printi(input);print("\n");
+  /* While
+    Calcul du factoriel de 3
+  */
+  while(a<>0) do (r:=r*a;a:=a-1);
+  print("3! est ");printi(r);print("\n")
+end
+/*
+  Résultat attendu
+
+*/

@@ -1,0 +1,45 @@
+/*
+  Expression arithmétiques
+    - avec des variables
+    - gestion de priorité
+    - opérations logiques
+*/
+let
+  var a1:=2
+  var a2:int:=18
+  var a3:=9
+  var r1:=0
+  var r2:=0
+  var r3:=0
+  var r4:=0
+in
+  print("a1 a2 a3 \t");
+  printi(a1);
+  print(" ");
+  printi(a2);
+  print(" ");
+  printi(a3);
+  print("\n");
+    /* Gestion de priorités */
+  print("Expressions arithemetiques \n");
+  r1:=a1-a2+a3*a1;
+  r2:=a2/a3*a1-a1;
+  r3:=4+4*40/20-1;
+   /* Opérateurs logique */
+  r4:=0 | 1 & 2;
+
+  print("r1 r2 r3 \t");
+  printi(r1);
+  print(" ");
+  printi(r2);
+  print(" ");
+  printi(r3);
+  print("\n")
+end
+/*
+  Résultat attendu
+  r1 : 20
+  r2 : -16
+  r3 : 2
+  r4 : 1
+*/
