@@ -279,7 +279,8 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
     public Ast visit(IfThenElse node) {
         node.condExpr = node.condExpr.accept(this);
         node.thenExpr = node.thenExpr.accept(this);
-        node.elseExpr = node.elseExpr.accept(this);
+        if (node.elseExpr != null)
+            node.elseExpr = node.elseExpr.accept(this);
         return node;
     }
 
