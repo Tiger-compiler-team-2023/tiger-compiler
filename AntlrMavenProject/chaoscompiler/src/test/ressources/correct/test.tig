@@ -1,12 +1,13 @@
 let
-    var N := 0
-    var s := 0
+    var N := 5
+    type tblty = array of int
+    var tbl := tblty [N] of 0
     var i := 0
 in
-    N := intput();
-    while i <= N do (
-        s := s + i;
+    printi(N);
+    while i < N do (
+        tbl[i] := i;
         i := i + 1
     );
-    printi(s)
+    printi(tbl[2])
 end

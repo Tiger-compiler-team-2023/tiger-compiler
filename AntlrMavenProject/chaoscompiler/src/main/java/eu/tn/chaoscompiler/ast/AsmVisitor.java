@@ -202,7 +202,7 @@ public class AsmVisitor implements AstVisitor<String> {
         res.addTxt("mov x0, #" + 16 * depl + " // depl");
         res.addTxt("push x0");
         res.addTxt(Arm64Functions.CHAINAGE_ST.call());
-        if (!idFctEnv && (idRdOly || !val.getType().equals(Type.INT_TYPE))) {
+        if (!idFctEnv && idRdOly) {
             res.addTxt("at // i = *i");
         }
         return res.leaveSection();
@@ -263,12 +263,14 @@ public class AsmVisitor implements AstVisitor<String> {
         AsmCode res = new AsmCode("VariableDeclaration");
 
         // Valeur d'initialisation
+        boolean rdOlyTmp = idRdOly;
+        idRdOly = true;
         res.addTxt(node.value.accept(this));
 
         // Adresse d'écriture
         idRdOly = false;
         res.addTxt(node.objectId.accept(this));
-        idRdOly = true;
+        idRdOly = rdOlyTmp;
 
         // Ecriture à l'adresse
         res.addTxt("pop x0 // adresse");
@@ -323,9 +325,13 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(FunctionCall node) {
         FunctionType ft = (FunctionType) node.id.getType();
         AsmCode res = new AsmCode("FunctionCall");
+        boolean rdOlyTmp;
         if (ft.getToken() < 0) {
             // empiler arguments
+            rdOlyTmp = idRdOly;
+            idRdOly = true;
             res.addTxt(node.argList.accept(this));
+            idRdOly = rdOlyTmp;
 
             res.addTxt("// Fonction de la stdlib (id=" + ft.getId() + ")");
             switch (ft.getToken()) {
@@ -367,9 +373,12 @@ public class AsmVisitor implements AstVisitor<String> {
             res.addTxt("add " + Registre.ch_stat.n() + ", " + Registre.SP.n() + ", #16 // Ch. STAT");
 
             // empiler arguments
+            rdOlyTmp = idRdOly;
+            idRdOly = true;
             tdsController.asmVisitorDepth--;
             res.addTxt(node.argList.accept(this));
             tdsController.asmVisitorDepth++;
+            idRdOly = rdOlyTmp;
 
             // executer instr
             res.addTxt("bl function_" + ft.getToken());
@@ -406,8 +415,12 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAssign node) {
         AsmCode res = new AsmCode("ArrayAssign");
+        boolean rdOlyTmp = idRdOly;
+        idRdOly = true;
         res.addTxt(node.nombreDElements.accept(this));
+        idRdOly = true;
         res.addTxt(node.element.accept(this));
+        idRdOly = rdOlyTmp;
         res.addTxt(Arm64Functions.ARRAY_ASSIGN.call());
         return res.leaveSection();
     }
@@ -415,9 +428,15 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(ArrayAccess node) {
         AsmCode res = new AsmCode("ArrayAccess");
+        boolean rdOlyTmp = idRdOly;
+        idRdOly = true;
         res.addTxt(node.exp.accept(this));
+        idRdOly = true;
         res.addTxt(node.index.accept(this));
+        idRdOly = rdOlyTmp;
         res.addTxt(Arm64Functions.ARRAY_ACCESS.call());
+        if (idRdOly)
+            res.addTxt("at // i = *i");
         return res.leaveSection();
     }
 
@@ -541,9 +560,10 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(Affect node) {
         AsmCode res = new AsmCode("Affect");
         res.addTxt(node.rightValue.accept(this));
+        boolean rdOlyTmp = idRdOly;
         idRdOly = false;
         res.addTxt(node.leftValue.accept(this));
-        idRdOly = true;
+        idRdOly = rdOlyTmp;
         res.addTxt("pop x0 // adresse");
         res.addTxt("pop x1 // val");
         res.addTxt("STR x1, [x0]");
