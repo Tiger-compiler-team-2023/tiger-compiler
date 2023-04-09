@@ -541,7 +541,7 @@ public class AsmVisitor implements AstVisitor<String> {
             current_id = stack_id.peek();
             res.addTxt("b _end_ifthenelse_" + Integer.toString(current_id));
         } else {// pas de else dans ifThen
-            res.addTxt("bne _then_" + Integer.toString(current_id) + "_expr");
+            res.addTxt("bne _then_" + Integer.toString(current_id));
             res.addTxt("beq _end_ifthenelse_" + Integer.toString(current_id));
         }
         // Début de block de then
