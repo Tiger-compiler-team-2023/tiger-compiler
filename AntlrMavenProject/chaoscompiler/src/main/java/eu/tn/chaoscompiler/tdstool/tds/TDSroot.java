@@ -22,7 +22,7 @@ public class TDSroot implements TDS {
         this.hmVari = new HashMap<String, Value>();
         this.fullTDS = new ArrayList<TDS>();
         this.nextVarDpl = 2;
-        this.nextParamDpl = -2;
+        this.nextParamDpl = 2;
         this.nextSubTdsIndex = 0;
     }
 
@@ -112,7 +112,7 @@ public class TDSroot implements TDS {
     public void addParam(Value v) {
         v.setDpl(this.nextParamDpl);
         this.hmVari.put(v.getId(), v);
-        this.nextParamDpl--;
+        this.nextParamDpl++;
     }
 
     public boolean hasNoDeclaredType() {
