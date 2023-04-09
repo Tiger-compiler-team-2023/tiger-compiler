@@ -11,19 +11,19 @@ public class TDSroot implements TDS {
     public HashMap<String, Value> hmVari;
     public ArrayList<TDS> fullTDS;
 
-    protected int nextSubTdsIndex ;
+    protected int nextSubTdsIndex;
     protected int startLine;
 
-    protected int nextVarDpl ;
-    protected int nextParamDpl ;
+    protected int nextVarDpl;
+    protected int nextParamDpl;
 
     public TDSroot() {
         this.hmType = new HashMap<String, Type>();
         this.hmVari = new HashMap<String, Value>();
         this.fullTDS = new ArrayList<TDS>();
-        this.nextVarDpl = 2 ;
-        this.nextParamDpl = 2 ;
-        this.nextSubTdsIndex = 0 ;
+        this.nextVarDpl = 2;
+        this.nextParamDpl = -2;
+        this.nextSubTdsIndex = 0;
     }
 
     public HashMap<String, Type> getHmType() {
@@ -93,7 +93,7 @@ public class TDSroot implements TDS {
         if (var instanceof Value val) {
             val.setDpl(this.nextVarDpl);
             this.hmVari.put(val.getId(), val);
-            this.nextVarDpl++ ;
+            this.nextVarDpl++;
         } else {
             // Si le type a déjà été utilisé sous forme de NotYetDeclarated,
             // on remplace toutes les occurrences existantes dans les records
@@ -112,10 +112,10 @@ public class TDSroot implements TDS {
     public void addParam(Value v) {
         v.setDpl(this.nextParamDpl);
         this.hmVari.put(v.getId(), v);
-        this.nextParamDpl++ ;
+        this.nextParamDpl--;
     }
 
-    public boolean hasNoDeclaredType(){
+    public boolean hasNoDeclaredType() {
         return hmType.keySet().stream()
                 .map(key -> hmType.get(key))
                 .filter(ty -> ty instanceof RecordType)
@@ -125,28 +125,28 @@ public class TDSroot implements TDS {
     }
 
     public TDS nextSubTds() {
-        TDS next = this ;
+        TDS next = this;
         if (this.nextSubTdsIndex >= 0 && this.nextSubTdsIndex < this.fullTDS.size()) {
-            next = this.fullTDS.get(this.nextSubTdsIndex) ;
+            next = this.fullTDS.get(this.nextSubTdsIndex);
         }
-        this.nextSubTdsIndex++ ;
-        return next ;
+        this.nextSubTdsIndex++;
+        return next;
     }
 
     public int getNbVar() {
-        return this.hmVari.size() ;
+        return this.hmVari.size();
     }
 
     public int getDiffScopeFunc(String id) {
         if (this instanceof TDSlocal) {
             Type t = this.hmType.get(id);
             if (t == null) {
-                return ((TDSlocal) this).getFather().getDiffScopeFunc(id) + 1 ;
+                return ((TDSlocal) this).getFather().getDiffScopeFunc(id) + 1;
             } else {
-                return 0 ;
+                return 0;
             }
         } else {
-            return 0 ;
+            return 0;
         }
     }
 

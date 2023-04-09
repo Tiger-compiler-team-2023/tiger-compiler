@@ -19,7 +19,7 @@ public class TypeRename extends Type {
         String s = "" ;
         s += "{ " ;
         s += "\"class\" : \"RenameType\",\n" ;
-        s += "\"token\" : \"" + Integer.toString(token) + "\",\n" ;
+        s += "\"token\" : \"" + token + "\",\n" ;
         s += "\"id\" : \"" + id + "\",\n" ;
         s += "\"originalType\" : \"" + oriType.getId() + "\"" ;
         s += " }" ;
