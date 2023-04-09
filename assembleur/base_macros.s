@@ -111,8 +111,8 @@ Ce fichier contient les implémentations de différentes macros utilisables en a
     // x2 -> taille max de la str
     // {x0, x8}
     // x0 <- taille lue
-    mov     x0,     #2
-    mov     x8,     #64
+    mov     x0,     #0
+    mov     x8,     #63
     svc     #0
 .endm
 
