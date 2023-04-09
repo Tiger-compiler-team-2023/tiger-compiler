@@ -325,9 +325,7 @@ public class AsmVisitor implements AstVisitor<String> {
         AsmCode res = new AsmCode("FunctionCall");
         if (ft.getToken() < 0) {
             // empiler arguments
-            tdsController.asmVisitorDepth--;
             res.addTxt(node.argList.accept(this));
-            tdsController.asmVisitorDepth++;
 
             res.addTxt("// Fonction de la stdlib (id=" + ft.getId() + ")");
             switch (ft.getToken()) {
@@ -476,7 +474,7 @@ public class AsmVisitor implements AstVisitor<String> {
         // Initialisaiton de l'identifiant
         current_id = stack_id.peek();
         AsmCode res = new AsmCode("While" + Integer.toString(current_id));
-        res.addTxt("b _loop" + Integer.toString(current_id));
+        res.addTxt("b _loop_" + Integer.toString(current_id));
         res.addTxt("_loop_" + Integer.toString(current_id) + ":");
         res.addTxt(whileExpr.condExpr.accept(this));
         // Mise à jour de la valeur actuelle de l'identifiant

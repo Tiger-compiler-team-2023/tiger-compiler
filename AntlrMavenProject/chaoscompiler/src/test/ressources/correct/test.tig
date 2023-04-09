@@ -1,5 +1,12 @@
 let
-    function f(n:int):int = if n = 0 then 1 else n*f(n-1)
+    var N := 0
+    var s := 0
+    var i := 0
 in
-    printi(f(intput()))
+    N := intput();
+    while i <= N do (
+        s := s + i;
+        i := i + 1
+    );
+    printi(s)
 end
