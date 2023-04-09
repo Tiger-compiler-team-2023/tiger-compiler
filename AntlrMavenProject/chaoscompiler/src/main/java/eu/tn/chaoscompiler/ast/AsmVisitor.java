@@ -106,7 +106,7 @@ public class AsmVisitor implements AstVisitor<String> {
 
             asm += node.expression.accept(this);
 
-            boolean debug = true;
+            boolean debug = false;
             if (debug) {
                 asm += """
                         // fin EXECUTION
@@ -148,7 +148,9 @@ public class AsmVisitor implements AstVisitor<String> {
 
     private static boolean idRdOly = true; // Suis-je dans une situation de readonly d'entier
     private static boolean idFctEnv = false; // Suis-je dans une situation de chainage statique de fonction
-    private static Stack<Integer> idCallStack = new Stack<Integer>(); // Pile des définitions de fonction pour trouver les fonctions récurcives et adapter le chaînage statique à cette situation
+    private static Stack<Integer> idCallStack = new Stack<Integer>(); // Pile des définitions de fonction pour trouver
+                                                                      // les fonctions récurcives et adapter le chaînage
+                                                                      // statique à cette situation
 
     @Override
     public String visit(Let node) {
@@ -321,41 +323,72 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(FunctionCall node) {
         FunctionType ft = (FunctionType) node.id.getType();
         AsmCode res = new AsmCode("FunctionCall");
-        res.addTxt("// GESTION DU NOUVEAU SCOPE");
-        res.addTxt("push " + Registre.ch_stat.n());
-        res.addTxt("push " + Registre.ch_dyn.n());
-        res.addTxt("mov " + Registre.ch_dyn.n() + ", " + Registre.SP.n() + " // Ch. DYN");
-        if (!idCallStack.isEmpty() && idCallStack.peek() == ft.getToken())
-        {
-            res.addTxt("push " + Registre.ch_stat.n() + " // Appel récursif");
-        }
-        else {
-            idFctEnv = true;
-            res.addTxt(node.id.accept(this));
-            idFctEnv = false;
-        }
-        res.addTxt("add " + Registre.ch_stat.n() + ", " + Registre.SP.n() + ", #16 // Ch. STAT");
+        if (ft.getToken() < 0) {
+            // empiler arguments
+            tdsController.asmVisitorDepth--;
+            res.addTxt(node.argList.accept(this));
+            tdsController.asmVisitorDepth++;
 
-        // empiler arguments
-        tdsController.asmVisitorDepth--;
-        res.addTxt(node.argList.accept(this));
-        tdsController.asmVisitorDepth++;
+            res.addTxt("// Fonction de la stdlib (id=" + ft.getId() + ")");
+            switch (ft.getToken()) {
+                case -1:
+                    res.addTxt(Arm64Functions.PRINT_STR.call());
+                    break;
+                case -2:
+                    res.addTxt(Arm64Functions.PRINT_INT10.call());
+                    break;
+                case -3:
+                    res.addTxt(Arm64Functions.PRINT_INT16.call());
+                    break;
+                case -4:
+                    res.addTxt(Arm64Functions.INPUT_INT10.call());
+                    break;
+                case -5:
+                    res.addTxt("pop x0");
+                    res.addTxt("exit x0");
+                    break;
+                default:
+                    res.addTxt("exit #1");
+                    break;
+            }
+        } else {
+            res.addTxt("// GESTION DU NOUVEAU SCOPE");
+            res.addTxt("push " + Registre.ch_stat.n());
+            res.addTxt("push " + Registre.ch_dyn.n());
+            res.addTxt("mov " + Registre.ch_dyn.n() + ", " + Registre.SP.n() + " // Ch. DYN");
+            if (!idCallStack.isEmpty() && idCallStack.peek() == ft.getToken()) {
+                res.addTxt("push " + Registre.ch_stat.n() + " // Appel récursif");
+            } else if (ft.getToken() < 0) {
+                res.addTxt("mov x0, #0 // stdlib function -> no Ch. STAT");
+                res.addTxt("push x0 // stdlib function -> no Ch. STAT");
+            } else {
+                idFctEnv = true;
+                res.addTxt(node.id.accept(this));
+                idFctEnv = false;
+            }
+            res.addTxt("add " + Registre.ch_stat.n() + ", " + Registre.SP.n() + ", #16 // Ch. STAT");
 
-        // executer instr
-        res.addTxt("bl function_" + ft.getToken());
+            // empiler arguments
+            tdsController.asmVisitorDepth--;
+            res.addTxt(node.argList.accept(this));
+            tdsController.asmVisitorDepth++;
 
-        // Dépiler
-        res.addTxt("// GESTION FIN DU NOUVEAU SCOPE");
-        if (node.getType() != Type.VOID_TYPE) {
-            res.addTxt("pop x7 // RES");
-        }
+            // executer instr
+            res.addTxt("bl function_" + ft.getToken());
 
-        res.addTxt("mov " + Registre.SP.n() + ", " + Registre.ch_dyn.n() + " // Ch. DYN");
-        res.addTxt("pop " + Registre.ch_dyn.n() + " // Ch. DYN");
-        res.addTxt("pop " + Registre.ch_stat.n() + " // Ch. STAT");
+            // Dépiler
+            res.addTxt("// GESTION FIN DU NOUVEAU SCOPE");
+            if (node.getType() != Type.VOID_TYPE) {
+                res.addTxt("pop x7 // RES");
+            }
 
-        if (node.getType() != Type.VOID_TYPE) {
-            res.addTxt("push x7 // RES");
+            res.addTxt("mov " + Registre.SP.n() + ", " + Registre.ch_dyn.n() + " // Ch. DYN");
+            res.addTxt("pop " + Registre.ch_dyn.n() + " // Ch. DYN");
+            res.addTxt("pop " + Registre.ch_stat.n() + " // Ch. STAT");
+
+            if (node.getType() != Type.VOID_TYPE) {
+                res.addTxt("push x7 // RES");
+            }
         }
 
         return res.leaveSection();

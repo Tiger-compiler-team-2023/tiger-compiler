@@ -18,6 +18,12 @@ public class Value implements Variable {
         this.token = TokenGiver.getToken();
     }
 
+    public Value(Type type, String id, int token) {
+        this.type = type;
+        this.id = id;
+        this.token = token;
+    }
+
     public Type getType() {
         return this.type;
     }

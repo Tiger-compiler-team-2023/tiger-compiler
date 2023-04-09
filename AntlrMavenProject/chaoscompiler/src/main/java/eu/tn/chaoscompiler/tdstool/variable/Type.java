@@ -36,6 +36,11 @@ public class Type implements Variable {
         this.token = TokenGiver.getToken();
     }
 
+    public Type(String id, int token) {
+        this.id = id;
+        this.token = token;
+    }
+
     public Type getType() {
         return this;
     }

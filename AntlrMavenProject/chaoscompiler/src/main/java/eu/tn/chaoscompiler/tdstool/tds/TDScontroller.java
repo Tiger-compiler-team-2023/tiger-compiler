@@ -44,10 +44,36 @@ public class TDScontroller {
         add(Type.VOID_TYPE);
         add(Type.POINTER_TYPE);
 
-        FunctionType ft = new FunctionType("print", Type.VOID_TYPE);
-        ft.addIn(Type.STRING_TYPE);
-        Value print = new Value(ft, "print");
-        add(print);
+        /*
+         * BEGIN STANDARD
+         */
+        // print (-1)
+        FunctionType print_ft = new FunctionType("print", Type.VOID_TYPE, -1);
+        print_ft.addIn(Type.STRING_TYPE);
+        Value print_fct = new Value(print_ft, "print", -1);
+        add(print_fct);
+        // printi (-2)
+        FunctionType printi_ft = new FunctionType("printi", Type.VOID_TYPE, -2);
+        printi_ft.addIn(Type.INT_TYPE);
+        Value printi_fct = new Value(printi_ft, "printi", -2);
+        add(printi_fct);
+        // printi16 (-3)
+        FunctionType printi16_ft = new FunctionType("printi16", Type.VOID_TYPE, -3);
+        printi16_ft.addIn(Type.INT_TYPE);
+        Value printi16_fct = new Value(printi16_ft, "printi16", -3);
+        add(printi16_fct);
+        // inputi (-4)
+        FunctionType inputi_ft = new FunctionType("intput", Type.INT_TYPE, -4);
+        Value inputi_fct = new Value(inputi_ft, "intput", -4);
+        add(inputi_fct);
+        // exit (-5)
+        FunctionType exit_ft = new FunctionType("exit", Type.VOID_TYPE, -5);
+        exit_ft.addIn(Type.INT_TYPE);
+        Value exit_fct = new Value(exit_ft, "exit", -5);
+        add(exit_fct);
+        /*
+         * END LIBARY STANDARD
+         */
 
         this.tds.setStartLine(0);
     }

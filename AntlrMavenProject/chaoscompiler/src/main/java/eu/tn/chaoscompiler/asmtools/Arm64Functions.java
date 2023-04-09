@@ -23,7 +23,7 @@ public enum Arm64Functions {
     STR_LE("ari_str_LE", 2, 1),
     PRINT_INT10("print_int10", 1, 0),
     PRINT_INT16("print_int16", 1, 0),
-    INPUT_INT10("intput_int10", 0, 1),
+    INPUT_INT10("input_int10", 0, 1),
     ARRAY_ASSIGN("array_assign", 2, 1),
     ARRAY_ACCESS("array_access", 2, 1),
     CHAINAGE_ST("chainage_st", 3, 1),

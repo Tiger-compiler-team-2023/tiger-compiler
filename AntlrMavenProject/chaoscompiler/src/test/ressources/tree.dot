@@ -27,9 +27,10 @@ node [style=filled]
 	N22 [label="int", shape="ellipse", fillcolor="pink"];
 	N23 [label="Sequence", shape="invhouse", fillcolor="darkorchid1"];
 	N24 [label="FunctionCall", shape="folder", fillcolor="grey"];
-	N25 [label="f", shape="ellipse", fillcolor="pink"];
+	N25 [label="printi", shape="ellipse", fillcolor="pink"];
 	N26 [label="ParameterList", shape="folder", fillcolor="grey"];
-	N27 [label="4", shape="invtrapezium", fillcolor="pink"];
+	N27 [label="Negation", shape="diamond", fillcolor="brown1"];
+	N28 [label="10", shape="invtrapezium", fillcolor="pink"];
 	N0 [label="Program", shape="Msquare", fillcolor="lightcoral"];
 
 	N3 -> N4; 
@@ -54,6 +55,7 @@ node [style=filled]
 	N2 -> N3; 
 	N1 -> N2; 
 	N24 -> N25; 
+	N27 -> N28; 
 	N26 -> N27; 
 	N24 -> N26; 
 	N23 -> N24; 

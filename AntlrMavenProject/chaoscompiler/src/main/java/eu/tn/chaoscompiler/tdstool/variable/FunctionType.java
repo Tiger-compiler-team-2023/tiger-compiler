@@ -18,6 +18,12 @@ public class FunctionType extends Type {
         this.outType = outType;
     }
 
+    public FunctionType(String id, Type outType, int token) {
+        super(id, token);
+        this.inTypes = new ArrayList<Type>();
+        this.outType = outType;
+    }
+
     public void addIn(Type in) {
         this.inTypes.add(in);
     }
