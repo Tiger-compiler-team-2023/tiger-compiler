@@ -26,6 +26,8 @@ import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
 import eu.tn.chaoscompiler.tdstool.variable.Type;
 import eu.tn.chaoscompiler.tdstool.variable.Value;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Stack;
 
 public class AsmVisitor implements AstVisitor<String> {
@@ -135,6 +137,12 @@ public class AsmVisitor implements AstVisitor<String> {
                     """;
 
             System.out.println(asm);
+            String file_out_name = "../../out.s";
+            File file_out_cr = new File(file_out_name);
+            file_out_cr.createNewFile();
+            FileWriter file_out_wr = new FileWriter(file_out_name);
+            file_out_wr.write(asm);
+            file_out_wr.close();
 
         } catch (Exception e) {
             e.printStackTrace();
