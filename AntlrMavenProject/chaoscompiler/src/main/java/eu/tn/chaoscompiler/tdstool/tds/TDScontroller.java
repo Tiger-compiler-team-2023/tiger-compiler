@@ -164,6 +164,8 @@ public class TDScontroller {
     }
 
     public void addParam(Value v) {
+        if (v instanceof Value)
+            ((Value) v).depth = this.depth;
         this.tds.addParam(v);
     }
 

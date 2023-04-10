@@ -95,7 +95,7 @@ public class AsmVisitor implements AstVisitor<String> {
             ;
 
             String asm = """
-                    .include \"base_macros.s\"
+                    .include \"assembleur/base_macros.s\"
                     // MACROS
                         // Pas de macro à ajouter
                     // fin MACROS
@@ -125,9 +125,9 @@ public class AsmVisitor implements AstVisitor<String> {
             asm += funcSection.leaveSection();
 
             asm += """
-                        .include "arithmetic_functions.s"
-                        .include "data_functions.s"
-                        .include "base_functions.s"
+                        .include "assembleur/arithmetic_functions.s"
+                        .include "assembleur/data_functions.s"
+                        .include "assembleur/base_functions.s"
                     """;
 
             asm += dataSection.leaveSection();
@@ -136,7 +136,7 @@ public class AsmVisitor implements AstVisitor<String> {
 
                     """;
 
-            System.out.println(asm);
+            // System.out.println(asm);
             String file_out_name = "../../out.s";
             File file_out_cr = new File(file_out_name);
             file_out_cr.createNewFile();
@@ -205,6 +205,7 @@ public class AsmVisitor implements AstVisitor<String> {
         int depth = val.depth;
         int depl = val.getDpl();
         res.addTxt("push " + Registre.ch_stat.n());
+        System.out.println(node.identifier + "\t" + depth + "\t" + depl + "\t" + tdsController.asmVisitorDepth);
         res.addTxt("mov x0, #" + (depth - tdsController.asmVisitorDepth) + " // depth");
         res.addTxt("push x0");
         res.addTxt("mov x0, #" + 16 * depl + " // depl");
@@ -240,12 +241,9 @@ public class AsmVisitor implements AstVisitor<String> {
         fRes.addTxt("push " + Registre.LR.n() + " // @retour");
 
         // instructions
-        tdsController.goDown(); // ne pas changer l'ordre des lignes
-        int depthMem = tdsController.asmVisitorDepth; // ne pas changer l'ordre des lignes
-        tdsController.asmVisitorDepth = 0; // ne pas changer l'ordre des lignes
-        fRes.addTxt(node.content.accept(this)); // ne pas changer l'ordre des lignes
-        tdsController.asmVisitorDepth = depthMem; // ne pas changer l'ordre des lignes
-        tdsController.goUp(); // ne pas changer l'ordre des lignes
+        tdsController.goDown();
+        fRes.addTxt(node.content.accept(this));
+        tdsController.goUp();
 
         if (ft.outType != Type.VOID_TYPE) {
             fRes.addTxt("pop x7 // RES");
