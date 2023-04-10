@@ -1,0 +1,31 @@
+/*
+ print
+ records et tableaux
+ break
+ définitions de type
+*/
+let
+  type arrayType=array of int
+  type recType={a:int,b:int,c:arrayType}
+  var arr:=  arrayType[3] of 0
+  var rec:=recType{a=23,b=45,c=arr}
+  var s:int:=0
+in
+  for i:=0 to 2 do(
+    rec.c[i]:=i+2
+  );
+  printi(rec.a);
+  print("\n");
+  printi(rec.b);
+  print("\n");
+  for i:=0 to 2 do(
+    printi(rec.c[i]);
+    print("\n")
+  );
+  print("la somme des valeur des entiers du record");
+  s:=rec.a+rec.b;
+  for j:=0 to 2 do(
+    s:=rec.c[j]
+  );
+  printi(s)
+end
