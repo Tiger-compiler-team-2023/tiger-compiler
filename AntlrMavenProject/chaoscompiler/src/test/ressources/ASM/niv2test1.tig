@@ -1,0 +1,34 @@
+/*
+ Structures simples : if, while, for
+*/
+let
+  function addition(a:int, b:int):int=a+b
+  function soustraction(a:int, b:int):int=a-b
+  function multiplication(a:int, b:int):int=a*b
+  function division(a:int, b:int):int=
+  if(b<>0) then (
+    print("le second membre ne doit pas etre null");0
+  )
+  else(
+    a/b
+  )
+  function modulo(a:int,b:int):int=a-(a/b)*b
+  function puissance(a:int,n:int):int=(
+    let
+      var b:=a
+    in
+      if(n=0) then(a:=1) else(
+        while(n<>1) do (
+          a:=a*b;
+          n:=n-1
+        )
+      )
+    end;a
+   )
+in
+  print("resulat de l addition ");printi(addition(2,5));print("\n");
+  print("resulat de la soustraction ");printi(soustraction(20,500));print("\n");
+  print("resulat de le multiplication ");printi(multiplication(12,12));print("\n");
+  print("resulat de la division ");printi(modulo(5,2));print("\n");
+  print("2 expo 18 ");printi(puissance(2,18));print("\n")
+end

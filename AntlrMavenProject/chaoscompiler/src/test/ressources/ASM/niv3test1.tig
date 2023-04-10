@@ -1,0 +1,43 @@
+/*
+ Appels récursifs des fonctions
+ Structures imbriqués : if, while, for
+*/
+let
+  function fibonacci(n:int):int=(
+    if(n=0) then (0) else(
+      if(n=1) then(1) else(
+        fibonacci(n-1)+fibonacci(n-2)
+      )
+    )
+  )
+  function factoriel(n:int):int=(
+    if(n=0 | n=1) then 1 else(
+      n*factoriel(n-1)
+    )
+  )
+  function bouclesimbriques()=(
+    for i:=0 to 7 do (
+      for j:=0 to 5 do (
+        printi(j);print(" ")
+      );
+      print("\n")
+    )
+  )
+  function whilefor()=(
+  let
+    var i:int:=0
+  in
+    while(i<=5) do (
+      for j:=1 to i do(
+        printi(i);print(" ")
+      );
+      print("\n")
+    )
+  end
+  )
+in
+  print("fib de 5 ");printi(fibonacci(5));print("\n");
+  print("factoriel de 13 ");printi(factoriel(13));print("\n");
+  print("boucles imbriques \n");bouclesimbriques();print("\n");
+  print("whilefor \n");whilefor();print("\n")
+end
