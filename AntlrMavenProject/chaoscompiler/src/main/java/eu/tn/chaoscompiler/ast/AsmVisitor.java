@@ -90,11 +90,12 @@ public class AsmVisitor implements AstVisitor<String> {
         funcSection = new AsmCode("FUNCTIONS");
 
         tdsController = TDScontroller.getInstance();
+        String asm = null;
 
         try {
             ;
 
-            String asm = """
+            asm = """
                     .include \"assembleur/base_macros.s\"
                     // MACROS
                         // Pas de macro à ajouter
@@ -135,14 +136,7 @@ public class AsmVisitor implements AstVisitor<String> {
             asm += """
 
                     """;
-
-            // System.out.println(asm);
-            String file_out_name = "../../out.s";
-            File file_out_cr = new File(file_out_name);
-            file_out_cr.createNewFile();
-            FileWriter file_out_wr = new FileWriter(file_out_name);
-            file_out_wr.write(asm);
-            file_out_wr.close();
+            node.setAsm(asm);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,7 +144,6 @@ public class AsmVisitor implements AstVisitor<String> {
                     "Erreur durant l'écriture du code assembleur",
                     ChaosError.typeError.SEMANTIC_ERROR);
         }
-
         return null;
     }
 
