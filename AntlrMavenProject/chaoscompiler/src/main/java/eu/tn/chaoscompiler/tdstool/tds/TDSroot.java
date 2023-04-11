@@ -89,6 +89,11 @@ public class TDSroot implements TDS {
         }
     }
 
+    public void add(Value val, Value fromRecord) {
+        val.setDpl(fromRecord.getDpl());
+        this.hmVari.put(val.getId(), val);
+    }
+
     public void add(Variable var) {
         if (var instanceof Value val) {
             val.setDpl(this.nextVarDpl);
@@ -202,17 +207,16 @@ public class TDSroot implements TDS {
         return s.toString();
     }
 
-
     public String childJSONString(Type t) {
-        //if (t instanceof ArrayType at) {
-        //    return at.toJSONString();
-        //} else if (t instanceof FunctionType ft) {
-        //    return ft.toJSONString();
-        //} else if (t instanceof RecordType rt) {
-        //    return rt.toJSONString();
-        //} else if (t instanceof TypeRename tr) {
-        //    return tr.toJSONString();
-        //}
+        // if (t instanceof ArrayType at) {
+        // return at.toJSONString();
+        // } else if (t instanceof FunctionType ft) {
+        // return ft.toJSONString();
+        // } else if (t instanceof RecordType rt) {
+        // return rt.toJSONString();
+        // } else if (t instanceof TypeRename tr) {
+        // return tr.toJSONString();
+        // }
         return t.toJSONString();
     }
 }

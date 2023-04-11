@@ -163,6 +163,11 @@ public class TDScontroller {
         this.tds.add(var);
     }
 
+    public void add(Value val, Value fromRecord) {
+        val.depth = this.depth;
+        this.tds.add(val, fromRecord);
+    }
+
     public void addParam(Value v) {
         if (v instanceof Value)
             ((Value) v).depth = this.depth;

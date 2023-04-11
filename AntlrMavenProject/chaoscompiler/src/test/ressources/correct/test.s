@@ -17,83 +17,49 @@
     mov x0, #0
     push x0 // var 1/1
     // BEGIN DeclarationList
-        // BEGIN FunctionDeclaration
-        // END FunctionDeclaration
+        // BEGIN ArrayTypeDeclaration
+        // END ArrayTypeDeclaration
         
-    // END DeclarationList
-    
-    // BEGIN FunctionCall
-        // GESTION DU NOUVEAU SCOPE
-        push x28/*Ch. STAT*/
-        push x29/*Ch. DYN*/
-        mov x29/*Ch. DYN*/, SP/*STACK*/ // Ch. DYN
-        // BEGIN Id f
-            push x28/*Ch. STAT*/
-            mov x0, #0 // depth
-            push x0
-            mov x0, #0 // depl
-            push x0
-            bl chainage_st // [3] -> [1]
-        // END Id f
-        
-        add x28/*Ch. STAT*/, SP/*STACK*/, #16 // Ch. STAT
-        // BEGIN ParameterList
-            // BEGIN IntegerNode
-                MOV x9, #5
-                push x9
-            // END IntegerNode
-            
-        // END ParameterList
-        
-        bl function_6
-        // GESTION FIN DU NOUVEAU SCOPE
-        pop x7 // RES
-        mov SP/*STACK*/, x29/*Ch. DYN*/ // Ch. DYN
-        pop x29/*Ch. DYN*/ // Ch. DYN
-        pop x28/*Ch. STAT*/ // Ch. STAT
-        push x7 // RES
-    // END FunctionCall
-    
-    // GESTION FIN DU NOUVEAU SCOPE
-    pop x7 // RES
-    mov SP/*STACK*/, x29/*Ch. DYN*/ // Ch. DYN
-    pop x29/*Ch. DYN*/ // Ch. DYN
-    pop x28/*Ch. STAT*/ // Ch. STAT
-    push x7 // RES
-// END Let
-// fin EXECUTION
-    exit #0
-// BEGIN FUNCTIONS
-    // BEGIN Function f
-        function_6:
-        push x30/*@retour*/ // @retour
-        // BEGIN IfThenElse1
-            // BEGIN Operateur binaire
-                // BEGIN Id n
-                    push x28/*Ch. STAT*/
-                    mov x0, #0 // depth
-                    push x0
-                    mov x0, #32 // depl
-                    push x0
-                    bl chainage_st // [3] -> [1]
-                    at // i = *i
-                // END Id n
+        // BEGIN VariableDeclaration
+            // BEGIN ArrayAssign
+                // BEGIN IntegerNode
+                    MOV x9, #2
+                    push x9
+                // END IntegerNode
                 
                 // BEGIN IntegerNode
                     MOV x9, #0
                     push x9
                 // END IntegerNode
                 
-                bl ari_int_EQ // [2] -> [1]
-            // END Operateur binaire
+                bl array_assign // [2] -> [1]
+            // END ArrayAssign
             
-            pop x1
-            cmp x1,#0
-            beq _else_1
-            bne _then_1
-            _else_1:
-            // BEGIN Operateur binaire
-                // BEGIN Id n
+            // BEGIN Id r
+                push x28/*Ch. STAT*/
+                mov x0, #0 // depth
+                push x0
+                mov x0, #32 // depl
+                push x0
+                bl chainage_st // [3] -> [1]
+            // END Id r
+            
+            pop x0 // adresse
+            pop x1 // val
+            STR x1, [x0]
+        // END VariableDeclaration
+        
+    // END DeclarationList
+    
+    // BEGIN Sequence
+        // BEGIN Affect
+            // BEGIN IntegerNode
+                MOV x9, #5
+                push x9
+            // END IntegerNode
+            
+            // BEGIN ArrayAccess
+                // BEGIN Id r
                     push x28/*Ch. STAT*/
                     mov x0, #0 // depth
                     push x0
@@ -101,70 +67,127 @@
                     push x0
                     bl chainage_st // [3] -> [1]
                     at // i = *i
-                // END Id n
+                // END Id r
                 
-                // BEGIN FunctionCall
-                    // GESTION DU NOUVEAU SCOPE
-                    push x28/*Ch. STAT*/
-                    push x29/*Ch. DYN*/
-                    mov x29/*Ch. DYN*/, SP/*STACK*/ // Ch. DYN
-                    push x28/*Ch. STAT*/ // Appel récursif
-                    add x28/*Ch. STAT*/, SP/*STACK*/, #16 // Ch. STAT
-                    // BEGIN ParameterList
-                        // BEGIN Operateur binaire
-                            // BEGIN Id n
-                                push x28/*Ch. STAT*/
-                                mov x0, #1 // depth
-                                push x0
-                                mov x0, #32 // depl
-                                push x0
-                                bl chainage_st // [3] -> [1]
-                                at // i = *i
-                            // END Id n
-                            
-                            // BEGIN IntegerNode
-                                MOV x9, #1
-                                push x9
-                            // END IntegerNode
-                            
-                            bl ari_int_sub // [2] -> [1]
-                        // END Operateur binaire
-                        
-                    // END ParameterList
-                    
-                    bl function_6
-                    // GESTION FIN DU NOUVEAU SCOPE
-                    pop x7 // RES
-                    mov SP/*STACK*/, x29/*Ch. DYN*/ // Ch. DYN
-                    pop x29/*Ch. DYN*/ // Ch. DYN
-                    pop x28/*Ch. STAT*/ // Ch. STAT
-                    push x7 // RES
-                // END FunctionCall
+                // BEGIN IntegerNode
+                    MOV x9, #0
+                    push x9
+                // END IntegerNode
                 
-                bl ari_int_mul // [2] -> [1]
-            // END Operateur binaire
+                bl array_access // [2] -> [1]
+            // END ArrayAccess
             
-            b _end_ifthenelse_1
-            _then_1:
-            // BEGIN IntegerNode
-                MOV x9, #1
-                push x9
-            // END IntegerNode
-            
-            b _end_ifthenelse_1
-            _end_ifthenelse_1:
-        // END IfThenElse1
+            pop x0 // adresse
+            pop x1 // val
+            STR x1, [x0]
+        // END Affect
         
-        pop x7 // RES
-        pop x30/*@retour*/ // @retour
-        push x7 // RES
-        ret
-    // END Function f
+        // BEGIN Affect
+            // BEGIN StringNode
+                ldr x0, =str_0
+                push x0
+            // END StringNode
+            
+            // BEGIN ArrayAccess
+                // BEGIN Id r
+                    push x28/*Ch. STAT*/
+                    mov x0, #0 // depth
+                    push x0
+                    mov x0, #32 // depl
+                    push x0
+                    bl chainage_st // [3] -> [1]
+                    at // i = *i
+                // END Id r
+                
+                // BEGIN IntegerNode
+                    MOV x9, #1
+                    push x9
+                // END IntegerNode
+                
+                bl array_access // [2] -> [1]
+            // END ArrayAccess
+            
+            pop x0 // adresse
+            pop x1 // val
+            STR x1, [x0]
+        // END Affect
+        
+        // BEGIN FunctionCall
+            // BEGIN ParameterList
+                // BEGIN ArrayAccess
+                    // BEGIN Id r
+                        push x28/*Ch. STAT*/
+                        mov x0, #0 // depth
+                        push x0
+                        mov x0, #32 // depl
+                        push x0
+                        bl chainage_st // [3] -> [1]
+                        at // i = *i
+                    // END Id r
+                    
+                    // BEGIN IntegerNode
+                        MOV x9, #0
+                        push x9
+                    // END IntegerNode
+                    
+                    bl array_access // [2] -> [1]
+                    at // i = *i
+                // END ArrayAccess
+                
+            // END ParameterList
+            
+            // Fonction de la stdlib (id=printi)
+            bl print_int10 // [1] -> [0]
+        // END FunctionCall
+        
+        // BEGIN FunctionCall
+            // BEGIN ParameterList
+                // BEGIN ArrayAccess
+                    // BEGIN Id r
+                        push x28/*Ch. STAT*/
+                        mov x0, #0 // depth
+                        push x0
+                        mov x0, #32 // depl
+                        push x0
+                        bl chainage_st // [3] -> [1]
+                        at // i = *i
+                    // END Id r
+                    
+                    // BEGIN IntegerNode
+                        MOV x9, #1
+                        push x9
+                    // END IntegerNode
+                    
+                    bl array_access // [2] -> [1]
+                    at // i = *i
+                // END ArrayAccess
+                
+            // END ParameterList
+            
+            // Fonction de la stdlib (id=print)
+            bl print_str // [1] -> [0]
+        // END FunctionCall
+        
+    // END Sequence
     
+    // GESTION FIN DU NOUVEAU SCOPE
+    mov SP/*STACK*/, x29/*Ch. DYN*/ // Ch. DYN
+    pop x29/*Ch. DYN*/ // Ch. DYN
+    pop x28/*Ch. STAT*/ // Ch. STAT
+// END Let
+// fin EXECUTION
+    exit #0
+// BEGIN FUNCTIONS
 // END FUNCTIONS
     .include "assembleur/arithmetic_functions.s"
     .include "assembleur/data_functions.s"
     .include "assembleur/base_functions.s"
 // BEGIN DATA
+    // BEGIN String lit Ln 3, Col 23
+        str_0:
+         .asciz "coucou"
+        
+    // END String lit Ln 3, Col 23
+    
 // END DATA
 

@@ -21,6 +21,7 @@ public interface TDS {
     Boolean existsVar(String id);
 
     void add(Variable var);
+    void add(Value val, Value fromRecord);
 
     void addParam(Value v) ;
 

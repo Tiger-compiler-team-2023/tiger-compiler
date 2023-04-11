@@ -1,10 +1,7 @@
 let
-    function f(n:int):int = 
-        if n = 0
-        then
-            1
-        else
-            n * f(n - 1)
+    type rec = {i : int, s : string}
+    var r := rec {i=5, s="coucou"}
 in
-    f(5)
+    printi(r.i);
+    print(r.s)
 end
