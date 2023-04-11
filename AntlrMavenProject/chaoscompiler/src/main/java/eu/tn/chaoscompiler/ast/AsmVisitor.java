@@ -152,6 +152,7 @@ public class AsmVisitor implements AstVisitor<String> {
     private static Stack<Integer> idCallStack = new Stack<Integer>(); // Pile des définitions de fonction pour trouver
                                                                       // les fonctions récurcives et adapter le chaînage
                                                                       // statique à cette situation
+    private static Stack<String> loopStack = new Stack<String>();
 
     @Override
     public String visit(Let node) {
@@ -193,19 +194,25 @@ public class AsmVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(Id node) {
-        AsmCode res = new AsmCode("Id " + node.identifier);
-        Value val = tdsController.findVar(node.identifier);
-        int depth = val.depth;
-        int depl = val.getDpl();
-        res.addTxt("push " + Registre.ch_stat.n());
-        System.out.println(node.identifier + "\t" + depth + "\t" + depl + "\t" + tdsController.asmVisitorDepth);
-        res.addTxt("mov x0, #" + (tdsController.asmVisitorDepth - depth) + " // depth");
-        res.addTxt("push x0");
-        res.addTxt("mov x0, #" + 16 * depl + " // depl");
-        res.addTxt("push x0");
-        res.addTxt(Arm64Functions.CHAINAGE_ST.call());
-        if (!idFctEnv && idRdOly) {
-            res.addTxt("at // i = *i");
+        AsmCode res;
+        if (node.identifier.equals("break")) {
+            res = new AsmCode("Id " + node.identifier);
+            res.addTxt("b " + loopStack.firstElement());
+        } else {
+            res = new AsmCode("Id " + node.identifier);
+            Value val = tdsController.findVar(node.identifier);
+            int depth = val.depth;
+            int depl = val.getDpl();
+            res.addTxt("push " + Registre.ch_stat.n());
+            System.out.println(node.identifier + "\t" + depth + "\t" + depl + "\t" + tdsController.asmVisitorDepth);
+            res.addTxt("mov x0, #" + (tdsController.asmVisitorDepth - depth) + " // depth");
+            res.addTxt("push x0");
+            res.addTxt("mov x0, #" + 16 * depl + " // depl");
+            res.addTxt("push x0");
+            res.addTxt(Arm64Functions.CHAINAGE_ST.call());
+            if (!idFctEnv && idRdOly) {
+                res.addTxt("at // i = *i");
+            }
         }
         return res.leaveSection();
     }
@@ -500,12 +507,14 @@ public class AsmVisitor implements AstVisitor<String> {
         res.addTxt("pop x1");
         res.addTxt("cmp x1,#0");
         res.addTxt("beq _end_loop_" + Integer.toString(current_id));
+        loopStack.push("_end_loop_" + Integer.toString(current_id));
         res.addTxt(whileExpr.doExpr.accept(this));
         // Mise à jour de la valeur actuelle de l'identifiant
         current_id = stack_id.peek();
         res.addTxt("b _loop_" + Integer.toString(current_id));
         res.addTxt("_end_loop_" + Integer.toString(current_id) + ":");
         stack_id.pop();
+        loopStack.pop();
         return res.leaveSection();
     }
 
