@@ -204,9 +204,9 @@ public class TDScontroller {
         return this;
     }
 
-    public TDScontroller goDown(int idxSubTds) {
+    public TDScontroller down(int idxSubTds) {
         this.tds = this.tds.getFullTDS().get(idxSubTds);
-        this.asmVisitorDepth++;
+        this.depth++;
         return this;
     }
 

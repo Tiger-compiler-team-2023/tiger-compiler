@@ -68,7 +68,7 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
      * Descend dans le scope suivant
      */
     public void down() {
-        tdsController.goDown(tdsStack.peek());
+        tdsController.down(tdsStack.peek());
         tdsStack.push(tdsStack.pop() + 1);
         tdsStack.push(0);
     }
@@ -77,7 +77,7 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
      * Remonte dans le scope parent
      */
     public void up() {
-        tdsController.goUp();
+        tdsController.up();
         tdsStack.pop();
     }
 

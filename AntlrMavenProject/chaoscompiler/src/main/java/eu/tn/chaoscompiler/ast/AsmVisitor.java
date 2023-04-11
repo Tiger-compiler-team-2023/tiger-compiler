@@ -198,7 +198,8 @@ public class AsmVisitor implements AstVisitor<String> {
         int depth = val.depth;
         int depl = val.getDpl();
         res.addTxt("push " + Registre.ch_stat.n());
-        res.addTxt("mov x0, #" + (depth - tdsController.asmVisitorDepth) + " // depth");
+        System.out.println(node.identifier + "\t" + depth + "\t" + depl + "\t" + tdsController.asmVisitorDepth);
+        res.addTxt("mov x0, #" + (tdsController.asmVisitorDepth - depth) + " // depth");
         res.addTxt("push x0");
         res.addTxt("mov x0, #" + 16 * depl + " // depl");
         res.addTxt("push x0");
@@ -373,9 +374,9 @@ public class AsmVisitor implements AstVisitor<String> {
             // empiler arguments
             rdOlyTmp = idRdOly;
             idRdOly = true;
-            tdsController.asmVisitorDepth--;
-            res.addTxt(node.argList.accept(this));
             tdsController.asmVisitorDepth++;
+            res.addTxt(node.argList.accept(this));
+            tdsController.asmVisitorDepth--;
             idRdOly = rdOlyTmp;
 
             // executer instr
