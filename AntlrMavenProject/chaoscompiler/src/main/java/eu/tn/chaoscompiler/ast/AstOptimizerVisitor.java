@@ -211,7 +211,6 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
 
         // ---- mise à jour TDS ----
         // la TDS du for devient celle du let en remplaçant la variable
-        tdsController.add(new Value(Type.INT_TYPE, ((Id) node.id).identifier));
         tdsController.add(new Value(Type.INT_TYPE, endId));
         // On n'accepte pas directement le let pour rester dans le bon scope de la tds
         let.decList = let.decList.accept(this);
