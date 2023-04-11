@@ -27,6 +27,16 @@ Membres du groupe :
 - 15 dec. 2022 : [Réunion 8](Documents/2022-12-15_CR_08.pdf).
 
 ---
+# Utilisation de l'application
+- Cloner le dépot git
+- Executer le fichier [./tigerCompiler.jar]() avec :
+``` shell
+java -jar ./tigerCompiler.jar
+```
+Voir la syntaxe:
+![image](Documents/cli.png)
+
+
 # MAVEN
 ## Utilisation de Maven
 ### Installer Maven

@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.concurrent.Callable;
 
-@Command(name = "tigc", mixinStandardHelpOptions = true, version = "1.0",
+@Command(name = "tigerCompiler", mixinStandardHelpOptions = true, version = "1.0",
         header ="" +
                 "@|blue  _____ _                    ____                      _ _           \n|@" +
                 "@|blue |_   _(_) __ _  ___ _ __   / ___|___  _ __ ___  _ __ (_) | ___ _ __ \n|@" +
@@ -43,7 +43,7 @@ public class MainCLI implements Callable<Integer> {
     String destination;
 
     @Option(names = {"-a", "--ast", "--display-ast"}, description = "Affiche le lien pour l'affichage de l'arbre " +
-            "arbre abstrait syntaxique.")
+            "syntaxique abstrait.")
     boolean displayAST = false;
 
     public static void main(String... args) {
