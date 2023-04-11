@@ -217,6 +217,9 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
         let.decList = let.decList.accept(this);
         let.exprSeq = let.exprSeq.accept(this);
 
+        // Le type du let est void, cela sert pour la génération de l'ASM
+        while_var.setType(Type.VOID_TYPE);
+        let.setType(Type.VOID_TYPE);
 
         up();
         // Ce nœud est remplacé par le let dans l'AST

@@ -197,7 +197,7 @@ public class AsmVisitor implements AstVisitor<String> {
         AsmCode res;
         if (node.identifier.equals("break")) {
             res = new AsmCode("Id " + node.identifier);
-            res.addTxt("b " + loopStack.firstElement());
+            res.addTxt("b " + loopStack.peek());
         } else {
             res = new AsmCode("Id " + node.identifier);
             Value val = tdsController.findVar(node.identifier);
