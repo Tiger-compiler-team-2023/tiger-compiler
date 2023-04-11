@@ -119,7 +119,13 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
     // ------- RECORD Instanciation ----------
     @Override
     public Ast visit(RecordCreate node) {
+        // Le nom de la variable qu'on est en train de créer n'est pas disponible dans le noeud,
+        // On a un attribut de classe qui nous permet de le récupérer
+        // Voir la méthode visit(VariableDeclaration node).
+        Id idRecord = lastRecordId;
+
         ArrayRecordType type = (ArrayRecordType) tdsController.findType(node.idObject.toString());
+        Value rec = tdsController.findVar(idRecord.identifier);
 
         // On crée un nœud d'instanciation de tableau avec autant de fields que de champs du record
         ArrayAssign arrayAssign = new ArrayAssign(
@@ -128,12 +134,8 @@ public class AstOptimizerVisitor implements AstVisitor<Ast> {
                 new IntegerNode(0)
         );
 
-        // Le nom de la variable qu'on est en train de créer n'est pas disponible dans le noeud,
-        // On a un attribut de classe qui nous permet de le récupérer
-        // Voir la méthode visit(VariableDeclaration node).
-        Id idRecord = lastRecordId;
         // On remplace donc l'ancienne variable record par un tableau dans la TDS
-        tdsController.add(new ArrayValue(type, idRecord.identifier));
+        tdsController.add(new ArrayValue(type, idRecord.identifier), rec);
 
         // On met les champs du record dans une liste...
         List<FieldCreate> fields = node.args.stream().map(arg -> (FieldCreate) arg).collect(Collectors.toList());
