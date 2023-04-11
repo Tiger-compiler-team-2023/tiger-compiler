@@ -31,7 +31,8 @@ let
       for j:=1 to i do(
         printi(i);print(" ")
       );
-      print("\n")
+      print("\n");
+      i := i+1
     )
   end
   )

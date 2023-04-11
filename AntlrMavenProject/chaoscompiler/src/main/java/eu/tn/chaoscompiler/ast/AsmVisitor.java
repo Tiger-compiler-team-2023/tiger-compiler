@@ -491,6 +491,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(While whileExpr) {
         if (stack_id.empty()) {
+            counter_id_loop++;
             stack_id.push(counter_id_loop);
         } else {
             stack_id.push(stack_id.peek() + 1);
@@ -521,6 +522,7 @@ public class AsmVisitor implements AstVisitor<String> {
     @Override
     public String visit(IfThenElse ifThenElseExpr) {
         if (stack_id.empty()) {
+            counter_id_if++;
             stack_id.push(counter_id_if);
         } else {
             stack_id.push(stack_id.peek() + 1);
