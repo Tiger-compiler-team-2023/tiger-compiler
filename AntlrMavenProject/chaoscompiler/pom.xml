@@ -2,6 +2,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>eu.tn.chaoscompiler</groupId>
+    <artifactId>chaoscompiler</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+    <name>ChaosCompiler</name>
+
+    <url>https://gitlab.telecomnancy.univ-lorraine.fr/Theo.Goureau/pcl-goureau1u</url>
+    <properties>
+        <!--<maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <exec.mainClass>eu/tn/chaoscompiler/main/MainCLI.java</exec.mainClass>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.antlr</groupId>
@@ -11,7 +27,7 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-maven-plugin</artifactId>
-            <version>4.11.1</version>
+            <version>4.12.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -37,22 +53,16 @@
             <version>20230227</version>
         </dependency>
 
+        <!-- Pour la gestion de l'interface CLI -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.7.2</version>
+        </dependency>
+
     </dependencies>
 
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>eu.tn.chaoscompiler</groupId>
-    <artifactId>chaoscompiler</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-    <name>ChaosCompiler</name>
 
-    <url>https://gitlab.telecomnancy.univ-lorraine.fr/Theo.Goureau/pcl-goureau1u</url>
-    <properties>
-        <!--<maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>-->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <exec.mainClass>eu/tn/chaoscompiler/main/Main.java</exec.mainClass>
-    </properties>
     <build>
         <plugins>
             <!-- Plugin to compile the g4 files ahead of the java files
@@ -77,6 +87,7 @@
                     <visitor>true</visitor>
                 </configuration>
             </plugin>
+
             <!-- Version de java pour la compilation et version du bytecode genéré -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -85,6 +96,21 @@
                 <configuration>
                     <source>19</source>
                     <target>19</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>info.picocli</groupId>
+                            <artifactId>picocli-codegen</artifactId>
+                            <version>4.7.2</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.26</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+                    </compilerArgs>
                 </configuration>
                 <executions>
                     <execution>
@@ -108,7 +134,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>eu.tn.chaoscompiler.main.Main</mainClass>
+                            <mainClass>eu/tn/chaoscompiler/main/MainCLI</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -127,6 +153,30 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.1</version>
+            </plugin>
+
+            <!-- Plugin pour créer un exécutable en shell -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>2.1.0</version>
+                <configuration>
+                    <assembleDirectory>target</assembleDirectory>
+                    <programs>
+                        <program>
+                            <mainClass>eu/tn/chaoscompiler/main/MainCLI</mainClass>
+                            <name>tigc</name>
+                        </program>
+                    </programs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
