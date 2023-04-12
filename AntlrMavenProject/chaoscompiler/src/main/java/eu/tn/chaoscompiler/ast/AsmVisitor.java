@@ -28,6 +28,7 @@ import eu.tn.chaoscompiler.tdstool.variable.Value;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Stack;
 
 public class AsmVisitor implements AstVisitor<String> {
@@ -411,8 +412,9 @@ public class AsmVisitor implements AstVisitor<String> {
     public String visit(ParameterList node) {
         AsmCode res = new AsmCode("ParameterList");
 
-        for (Ast a : node.parameters) {
-            res.addTxt(a.accept(this));
+        for (int i = node.parameters.size()-1; i >= 0; i--)
+        {
+            res.addTxt(node.parameters.get(i).accept(this));
         }
 
         return res.leaveSection();
