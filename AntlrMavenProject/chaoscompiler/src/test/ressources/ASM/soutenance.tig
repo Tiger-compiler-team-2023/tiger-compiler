@@ -1,0 +1,146 @@
+let
+    var N := 0      /* Variable pour les entrees */
+
+    /* ---   QUI ALLONS-NOUS VOIR AUJOURD'HUI ?   --- */
+    type Tbl = array of string
+    var t := Tbl [ 5 ] of ""      /* Liste des personnages */
+
+    /* ---   NEWTON VS. LEIBNIZ   --- */
+    type Mathematicien = {nom:string, naissance:string}
+    var newton := Mathematicien {nom = "Newton", naissance = "1643-01-04"}
+    var leibniz := Mathematicien {nom = "Leibniz", naissance = "1646-07-01"}
+
+    /* ---   PYTHAGORE   --- */
+    function pythagore() =       /* Affiche les tables de 0 a 10 */
+    (   for i :=0 to 10 do
+        (   for j :=0 to 10 do
+            (   printi(i*j)
+            ;   print("\t")
+            )
+        ;    print("\n")
+    )   )
+    
+    /* ---   FIBONACCI  --- */
+    function fibonacci(n:int):int =       /* Calcule le n-ieme terme de la suite de Fibonacci en complexite exponentielle */
+    (   if(n=0)
+        then (0)
+        else
+        (   if(n=1)
+            then (1)
+            else
+            (   fibonacci(n-1)
+            +   fibonacci(n-2)
+    )   )   )
+
+    /* ---   PASCAL   --- */
+    function parmi(k:int, n:int):int =      /* Affiche le triangle de Pascal sur n niveaux */
+    (   if (k=0 | k=n)
+        then 1
+        else
+        (   parmi(k-1, n-1)
+        +   parmi(k, n-1)
+        )
+    )
+
+    var x := 0      /* Variable pour les boucles while imbriquees */
+    var y := 0      /* Variable pour les boucles while imbriquees */
+
+in  print("\n---   QUI ALLONS-NOUS VOIR AUJOURD'HUI ?   ---\n")
+;   t[ 0 ] := "Newton"
+;   t[ 1 ] := "Leibniz"
+;   t[ 2 ] := "Pythagore"
+;   t[ 3 ] := "Fibonacci"
+;   t[ 4 ] := "Pascal"
+;   while (N <> 314) do
+    (   print("Passez au programme suivant avec le code 314.\n")
+    ;   print("Pour decouvrir un personnage, entrez un nombre entre 0 et 4 : ")
+    ;   N := intput()
+    ;   if N = 314
+        then print("Niveau suivant !\n")
+        else
+        (print("Personnage ")
+        ;   printi(N)
+        ;   print(": ")
+        ;   print(t[ N ])
+        ;   print("\n\n")
+    )   )
+/*
+    QUI ALLONS-NOUS VOIR AUJOURD'HUI ?
+    - utilisations de tableaux
+    - controles semantiques dynamiques
+    - print, printi, intput
+    - while simple
+*/
+
+;   print("\n---   NEWTON VS. LEIBNIZ   ---\n")
+;   if leibniz.naissance = newton.naissance
+    then
+    (   print(leibniz.nom)
+    ;   print(" et ")
+    ;   print(newton.nom)
+    ;   print("sont jumeaux !\n")
+    )
+    else if leibniz.naissance < newton.naissance
+    then
+    (   print(newton.nom)
+    ;   print(" est plus jeune que ")
+    ;   print(leibniz.nom)
+    ;   print(" !\n")
+    )
+    else
+    (   print(leibniz.nom)
+    ;   print(" est plus jeune que ")
+    ;   print(newton.nom)
+    ;   print(" !\n")
+    )
+/*
+    NEWTON VS. LEIBNIZ
+    - utilisations de records
+    - if-then-else imbrique
+    - comparaison de strings
+*/
+
+;   print("\n---   PYTHAGORE   ---\n")
+;   pythagore()
+/*
+    PYTHAGORE
+    - fonction simple
+    - for imbriques
+    - arithmetique simple
+*/
+
+;   print("\n---   FIBONACCI   ---\n")
+;   print("Calcul du n-ieme terme de la suite de Fibonacci. N : ")
+;   N := intput()
+;   print("fibo( ")
+;   printi(N)
+;   print(") : ")
+;   printi(fibonacci(N))
+;   print("\n")
+/*
+    FIBONACCI
+    - fonction recursive
+    - complexite exponentielle (on peut calculer le 35-ieme terme en 2)
+*/
+
+;   print("\n---   PASCAL   ---\n")
+;   print("Affichage du triangle de pascal sur N niveaux. N : ")
+;   N := intput()
+;   while x <= N do
+    (   while y <= x do
+        (   printi(parmi(y, x))
+        ;   print("\t")
+        ;   y := y+1
+        )
+    ;   print("\n")
+    ;   y := 0
+    ;   x := x+1
+    )
+/*
+    PASCAL
+    - fonction recursive avec plusieurs parametres
+    - boucles while imbriquees
+*/
+
+;   print("\n")
+end
