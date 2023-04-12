@@ -20,6 +20,7 @@ import eu.tn.chaoscompiler.ast.nodes.terminals.Id;
 import eu.tn.chaoscompiler.ast.nodes.terminals.IntegerNode;
 import eu.tn.chaoscompiler.ast.nodes.terminals.StringNode;
 import eu.tn.chaoscompiler.errors.ChaosError;
+import eu.tn.chaoscompiler.errors.Errors;
 import eu.tn.chaoscompiler.errors.GestionnaireErreur;
 import eu.tn.chaoscompiler.tdstool.tds.TDScontroller;
 import eu.tn.chaoscompiler.tdstool.variable.FunctionType;
@@ -485,9 +486,12 @@ public class AsmVisitor implements AstVisitor<String> {
 
     @Override
     public String visit(For forExpr) {
-        AsmCode res = new AsmCode("For");
-
-        return res.leaveSection();
+        // A cette étape les noeuds for sont devenus des while
+        //AsmCode res = new AsmCode("For");
+        //return res.leaveSection();
+        err.addSemanticError(forExpr, Errors.SEMANTIC_ERROR,
+                "Erreur lors de la conversion des for en while");
+        return null;
     }
 
     @Override
@@ -501,23 +505,26 @@ public class AsmVisitor implements AstVisitor<String> {
         }
         // Initialisaiton de l'identifiant
         current_id = stack_id.peek();
-        AsmCode res = new AsmCode("While" + Integer.toString(current_id));
-        res.addTxt("b _loop_" + Integer.toString(current_id));
-        res.addTxt("_loop_" + Integer.toString(current_id) + ":");
+        AsmCode res = new AsmCode("While" + current_id);
+        res.addTxt("b _loop_" + current_id);
+        res.addTxt("_loop_" + current_id + ":");
         res.addTxt(whileExpr.condExpr.accept(this));
+
         // Mise à jour de la valeur actuelle de l'identifiant
         current_id = stack_id.peek();
         res.addTxt("pop x1");
         res.addTxt("cmp x1,#0");
-        res.addTxt("beq _end_loop_" + Integer.toString(current_id));
-        loopStack.push("_end_loop_" + Integer.toString(current_id));
+        res.addTxt("beq _end_loop_" + current_id);
+        loopStack.push("_end_loop_" + current_id);
         res.addTxt(whileExpr.doExpr.accept(this));
+
         // Mise à jour de la valeur actuelle de l'identifiant
         current_id = stack_id.peek();
-        res.addTxt("b _loop_" + Integer.toString(current_id));
-        res.addTxt("_end_loop_" + Integer.toString(current_id) + ":");
+        res.addTxt("b _loop_" + current_id);
+        res.addTxt("_end_loop_" + current_id + ":");
         stack_id.pop();
         loopStack.pop();
+
         return res.leaveSection();
     }
 
@@ -532,7 +539,7 @@ public class AsmVisitor implements AstVisitor<String> {
         }
         // Initialisation de la valeur de l'identifiant actuel
         current_id = stack_id.peek();
-        AsmCode res = new AsmCode("IfThenElse" + Integer.toString(current_id));
+        AsmCode res = new AsmCode("IfThenElse" + current_id);
         String output_condition = ifThenElseExpr.condExpr.accept(this);
         // Mise ajour de l'identifiant actuel
         current_id = stack_id.peek();
@@ -543,27 +550,27 @@ public class AsmVisitor implements AstVisitor<String> {
         if (ifThenElseExpr.elseExpr != null) {
             // si le résultat de la condition est vrai (entier non nul, on exécute then
             // sinon on exécute elses)
-            res.addTxt("beq _else_" + Integer.toString(current_id));
-            res.addTxt("bne _then_" + Integer.toString(current_id));
+            res.addTxt("beq _else_" + current_id);
+            res.addTxt("bne _then_" + current_id);
 
             // Début du block de else
-            res.addTxt("_else_" + Integer.toString(current_id) + ":");
+            res.addTxt("_else_" + current_id + ":");
             res.addTxt(ifThenElseExpr.elseExpr.accept(this));
             // Mise à jour de l'identifiant actuel
             current_id = stack_id.peek();
-            res.addTxt("b _end_ifthenelse_" + Integer.toString(current_id));
+            res.addTxt("b _end_ifthenelse_" + current_id);
         } else {// pas de else dans ifThen
-            res.addTxt("bne _then_" + Integer.toString(current_id));
-            res.addTxt("beq _end_ifthenelse_" + Integer.toString(current_id));
+            res.addTxt("bne _then_" + current_id);
+            res.addTxt("beq _end_ifthenelse_" + current_id);
         }
         // Début de block de then
-        res.addTxt("_then_" + Integer.toString(current_id) + ":");
+        res.addTxt("_then_" + current_id + ":");
         res.addTxt(ifThenElseExpr.thenExpr.accept(this));
         // Mise à jour de l'identifiant actuel
         current_id = stack_id.peek();
-        res.addTxt("b _end_ifthenelse_" + Integer.toString(current_id));
+        res.addTxt("b _end_ifthenelse_" + current_id);
         // Fin du block conditionnel
-        res.addTxt("_end_ifthenelse_" + Integer.toString(current_id) + ":");
+        res.addTxt("_end_ifthenelse_" + current_id + ":");
         current_id = stack_id.pop();
         return res.leaveSection();
     }

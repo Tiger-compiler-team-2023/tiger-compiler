@@ -837,7 +837,10 @@ public class ControlesSemantiques implements AstVisitor<Type> {
         for (int i = 0; (i < nbArgsCall) && (i < nbArgsExpected); i++) {
             Type argType = ((ParameterList) node.argList).parameters.get(i).accept(this);
             Type argTypeExpected = ((FunctionType) func).inTypes.get(i);
-            if (!argType.equals(argTypeExpected)) {
+            if(argType == null) {
+                err.addSemanticError(node, UNDECLARED_TYPE, lastId);
+            }
+            else if (!argType.equals(argTypeExpected)) {
                 err.addSemanticError(node, Errors.BAD_ARGUMENT_TYPE, argType.getId(), i + "", argTypeExpected.getId());
             }
         }
