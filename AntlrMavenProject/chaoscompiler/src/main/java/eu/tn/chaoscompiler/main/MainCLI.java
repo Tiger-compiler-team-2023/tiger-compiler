@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.concurrent.Callable;
 
-@Command(name = "tigerCompiler", mixinStandardHelpOptions = true, version = "1.0",
+@Command(name = "tigerCompiler", mixinStandardHelpOptions = true, version = "1.1",
         header ="" +
                 "@|blue  _____ _                    ____                      _ _           \n|@" +
                 "@|blue |_   _(_) __ _  ___ _ __   / ___|___  _ __ ___  _ __ (_) | ___ _ __ \n|@" +
