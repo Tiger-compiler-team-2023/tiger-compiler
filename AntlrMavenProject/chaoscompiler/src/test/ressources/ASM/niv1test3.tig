@@ -22,24 +22,26 @@ in
   print("\n");
     /* Gestion de priorités */
   print("Expressions arithemetiques \n");
-  r1:=a1-a2+a3*a1;
-  r2:=a2/a3*a1-a1;
+  r1:=a1+a2-a3*a1;
+  r2:=a2/a3;
   r3:=4+4*40/20-1;
    /* Opérateurs logique */
   r4:=0 | 1 & 2;
 
-  print("r1 r2 r3 \t");
+  print("r1 r2 r3 r4 \t");
   printi(r1);
   print(" ");
   printi(r2);
   print(" ");
   printi(r3);
+  print(" ");
+  printi(r4);
   print("\n")
 end
 /*
   Résultat attendu
-  r1 : 20
-  r2 : -16
-  r3 : 2
+  r1 : 2
+  r2 : 2
+  r3 : 11
   r4 : 1
 */

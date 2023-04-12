@@ -7,7 +7,7 @@ let
   var r:=1
 in
   /* If */
-  if(input=0) then print("la valeur de l input est nulle") else print("la valeur de l input n est pas nulle");
+  if(input=0) then print("la valeur de l input est nulle\n") else print("la valeur de l input n est pas nulle\n");
   /* For
     Calcul de la somme arithmétique
 */

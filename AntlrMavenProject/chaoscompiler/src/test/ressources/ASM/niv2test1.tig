@@ -17,18 +17,18 @@ let
     let
       var b:=a
     in
-      if(n=0) then(a:=1) else(
-        while(n<>1) do (
-          a:=a*b;
+      if(n=0) then(b:=1) else(
+        while(n>1) do (
+          b:=a*b;
           n:=n-1
         )
-      )
-    end;a
+      );b
+    end
    )
 in
   print("resulat de l addition ");printi(addition(2,5));print("\n");
   print("resulat de la soustraction ");printi(soustraction(20,500));print("\n");
   print("resulat de le multiplication ");printi(multiplication(12,12));print("\n");
   print("resulat de la division ");printi(modulo(5,2));print("\n");
-  print("2 expo 18 ");printi(puissance(2,18));print("\n")
+  print("2 expo 33 :");printi(puissance(2,33));print("\n")
 end
