@@ -205,7 +205,6 @@ public class AsmVisitor implements AstVisitor<String> {
             int depth = val.depth;
             int depl = val.getDpl();
             res.addTxt("push " + Registre.ch_stat.n());
-            System.out.println(node.identifier + "\t" + depth + "\t" + depl + "\t" + tdsController.asmVisitorDepth);
             res.addTxt("mov x0, #" + (tdsController.asmVisitorDepth - depth) + " // depth");
             res.addTxt("push x0");
             res.addTxt("mov x0, #" + 16 * depl + " // depl");
