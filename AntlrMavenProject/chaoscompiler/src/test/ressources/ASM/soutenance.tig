@@ -51,12 +51,15 @@ in  print("\n---   QUI ALLONS-NOUS VOIR AUJOURD'HUI ?   ---\n")
 ;   t[ 2 ] := "Pythagore"
 ;   t[ 3 ] := "Fibonacci"
 ;   t[ 4 ] := "Pascal"
-;   while (N <> 314) do
+;   while (1) do
     (   print("Passez au programme suivant avec le code 314.\n")
     ;   print("Pour decouvrir un personnage, entrez un nombre entre 0 et 4 : ")
     ;   N := intput()
     ;   if N = 314
-        then print("Niveau suivant !\n")
+        then 
+        (   print("Niveau suivant !\n")
+        ;   break
+        )
         else
         (print("Personnage ")
         ;   printi(N)
@@ -70,6 +73,7 @@ in  print("\n---   QUI ALLONS-NOUS VOIR AUJOURD'HUI ?   ---\n")
     - controles semantiques dynamiques
     - print, printi, intput
     - while simple
+    - break
 */
 
 ;   print("\n---   NEWTON VS. LEIBNIZ   ---\n")

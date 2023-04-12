@@ -597,24 +597,10 @@
         // BEGIN While3
             b _loop_3
             _loop_3:
-            // BEGIN Operateur binaire
-                // BEGIN Id N
-                    push x28/*Ch. STAT*/
-                    mov x0, #0 // depth
-                    push x0
-                    mov x0, #32 // depl
-                    push x0
-                    bl chainage_st // [3] -> [1]
-                    at // i = *i
-                // END Id N
-                
-                // BEGIN IntegerNode
-                    MOV x9, #314
-                    push x9
-                // END IntegerNode
-                
-                bl ari_int_NE // [2] -> [1]
-            // END Operateur binaire
+            // BEGIN IntegerNode
+                MOV x9, #1
+                push x9
+            // END IntegerNode
             
             pop x1
             cmp x1,#0
@@ -789,18 +775,25 @@
                     
                     b _end_ifthenelse_4
                     _then_4:
-                    // BEGIN FunctionCall
-                        // BEGIN ParameterList
-                            // BEGIN StringNode
-                                ldr x0, =str_18
-                                push x0
-                            // END StringNode
+                    // BEGIN Sequence
+                        // BEGIN FunctionCall
+                            // BEGIN ParameterList
+                                // BEGIN StringNode
+                                    ldr x0, =str_18
+                                    push x0
+                                // END StringNode
+                                
+                            // END ParameterList
                             
-                        // END ParameterList
+                            // Fonction de la stdlib (id=print)
+                            bl print_str // [1] -> [0]
+                        // END FunctionCall
                         
-                        // Fonction de la stdlib (id=print)
-                        bl print_str // [1] -> [0]
-                    // END FunctionCall
+                        // BEGIN Id break
+                            b _end_loop_3
+                        // END Id break
+                        
+                    // END Sequence
                     
                     b _end_ifthenelse_4
                     _end_ifthenelse_4:
@@ -3489,137 +3482,137 @@ len_err_UK = . - err_UK
         
     // END String lit Ln 56, Col 14
     
-    // BEGIN String lit Ln 61, Col 15
+    // BEGIN String lit Ln 64, Col 15
         str_15:
          .asciz "Personnage "
         
-    // END String lit Ln 61, Col 15
+    // END String lit Ln 64, Col 15
     
-    // BEGIN String lit Ln 63, Col 18
+    // BEGIN String lit Ln 66, Col 18
         str_16:
          .asciz ": "
         
-    // END String lit Ln 63, Col 18
+    // END String lit Ln 66, Col 18
     
-    // BEGIN String lit Ln 65, Col 18
+    // BEGIN String lit Ln 68, Col 18
         str_17:
          .asciz "\n\n"
         
-    // END String lit Ln 65, Col 18
+    // END String lit Ln 68, Col 18
     
-    // BEGIN String lit Ln 59, Col 19
+    // BEGIN String lit Ln 60, Col 18
         str_18:
          .asciz "Niveau suivant !\n"
         
-    // END String lit Ln 59, Col 19
+    // END String lit Ln 60, Col 18
     
-    // BEGIN String lit Ln 75, Col 10
+    // BEGIN String lit Ln 78, Col 10
         str_19:
          .asciz "\n---   NEWTON VS. LEIBNIZ   ---\n"
         
-    // END String lit Ln 75, Col 10
+    // END String lit Ln 78, Col 10
     
-    // BEGIN String lit Ln 92, Col 14
+    // BEGIN String lit Ln 95, Col 14
         str_20:
          .asciz " est plus jeune que "
         
-    // END String lit Ln 92, Col 14
+    // END String lit Ln 95, Col 14
     
-    // BEGIN String lit Ln 94, Col 14
+    // BEGIN String lit Ln 97, Col 14
         str_21:
          .asciz " !\n"
         
-    // END String lit Ln 94, Col 14
+    // END String lit Ln 97, Col 14
     
-    // BEGIN String lit Ln 86, Col 14
+    // BEGIN String lit Ln 89, Col 14
         str_22:
          .asciz " est plus jeune que "
         
-    // END String lit Ln 86, Col 14
+    // END String lit Ln 89, Col 14
     
-    // BEGIN String lit Ln 88, Col 14
+    // BEGIN String lit Ln 91, Col 14
         str_23:
          .asciz " !\n"
         
-    // END String lit Ln 88, Col 14
+    // END String lit Ln 91, Col 14
     
-    // BEGIN String lit Ln 79, Col 14
+    // BEGIN String lit Ln 82, Col 14
         str_24:
          .asciz " et "
         
-    // END String lit Ln 79, Col 14
+    // END String lit Ln 82, Col 14
     
-    // BEGIN String lit Ln 81, Col 14
+    // BEGIN String lit Ln 84, Col 14
         str_25:
          .asciz "sont jumeaux !\n"
         
-    // END String lit Ln 81, Col 14
+    // END String lit Ln 84, Col 14
     
-    // BEGIN String lit Ln 103, Col 10
+    // BEGIN String lit Ln 106, Col 10
         str_26:
          .asciz "\n---   PYTHAGORE   ---\n"
         
-    // END String lit Ln 103, Col 10
+    // END String lit Ln 106, Col 10
     
-    // BEGIN String lit Ln 112, Col 10
+    // BEGIN String lit Ln 115, Col 10
         str_27:
          .asciz "\n---   FIBONACCI   ---\n"
         
-    // END String lit Ln 112, Col 10
+    // END String lit Ln 115, Col 10
     
-    // BEGIN String lit Ln 113, Col 10
+    // BEGIN String lit Ln 116, Col 10
         str_28:
          .asciz "Calcul du n-ieme terme de la suite de Fibonacci. N : "
         
-    // END String lit Ln 113, Col 10
+    // END String lit Ln 116, Col 10
     
-    // BEGIN String lit Ln 115, Col 10
+    // BEGIN String lit Ln 118, Col 10
         str_29:
          .asciz "fibo( "
         
-    // END String lit Ln 115, Col 10
+    // END String lit Ln 118, Col 10
     
-    // BEGIN String lit Ln 117, Col 10
+    // BEGIN String lit Ln 120, Col 10
         str_30:
          .asciz ") : "
         
-    // END String lit Ln 117, Col 10
+    // END String lit Ln 120, Col 10
     
-    // BEGIN String lit Ln 119, Col 10
+    // BEGIN String lit Ln 122, Col 10
         str_31:
          .asciz "\n"
         
-    // END String lit Ln 119, Col 10
+    // END String lit Ln 122, Col 10
     
-    // BEGIN String lit Ln 126, Col 10
+    // BEGIN String lit Ln 129, Col 10
         str_32:
          .asciz "\n---   PASCAL   ---\n"
         
-    // END String lit Ln 126, Col 10
+    // END String lit Ln 129, Col 10
     
-    // BEGIN String lit Ln 127, Col 10
+    // BEGIN String lit Ln 130, Col 10
         str_33:
          .asciz "Affichage du triangle de pascal sur N niveaux. N : "
         
-    // END String lit Ln 127, Col 10
+    // END String lit Ln 130, Col 10
     
-    // BEGIN String lit Ln 132, Col 18
+    // BEGIN String lit Ln 135, Col 18
         str_34:
          .asciz "\t"
         
-    // END String lit Ln 132, Col 18
+    // END String lit Ln 135, Col 18
     
-    // BEGIN String lit Ln 135, Col 14
+    // BEGIN String lit Ln 138, Col 14
         str_35:
          .asciz "\n"
         
-    // END String lit Ln 135, Col 14
+    // END String lit Ln 138, Col 14
     
-    // BEGIN String lit Ln 145, Col 10
+    // BEGIN String lit Ln 148, Col 10
         str_36:
          .asciz "\n"
         
-    // END String lit Ln 145, Col 10
+    // END String lit Ln 148, Col 10
     
 // END DATA
 
