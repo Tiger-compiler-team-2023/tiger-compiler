@@ -96,9 +96,9 @@ public class AsmVisitor implements AstVisitor<String> {
 
         try {
             ;
-
-            asm = """
-                    .include \"assembleur/base_macros.s\"
+            asm = "";
+            asm += ASM.base_macros;
+            asm += """
                     // MACROS
                         // Pas de macro à ajouter
                     // fin MACROS
@@ -127,11 +127,9 @@ public class AsmVisitor implements AstVisitor<String> {
 
             asm += funcSection.leaveSection();
 
-            asm += """
-                        .include "assembleur/arithmetic_functions.s"
-                        .include "assembleur/data_functions.s"
-                        .include "assembleur/base_functions.s"
-                    """;
+            asm += ASM.arithmetic_functions;
+            asm += ASM.data_functions;
+            asm += ASM.base_functions;
 
             asm += dataSection.leaveSection();
 
