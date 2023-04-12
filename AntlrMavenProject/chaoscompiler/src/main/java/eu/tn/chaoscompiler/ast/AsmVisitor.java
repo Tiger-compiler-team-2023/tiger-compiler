@@ -37,8 +37,8 @@ public class AsmVisitor implements AstVisitor<String> {
     private final GestionnaireErreur err = GestionnaireErreur.getInstance();
     private int stringCounter;
     private int current_id;
-    private static int counter_id_if = 1;
-    private static int counter_id_loop = 1;
+    private static int counter_id_if = 0;
+    private static int counter_id_loop = 0;
     private Stack<Integer> stack_id = new Stack<Integer>() {
     };
 
