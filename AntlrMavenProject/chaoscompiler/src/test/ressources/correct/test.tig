@@ -1,7 +1,34 @@
 let
-    type rec = {i : int, s : string}
-    var r := rec {i=5, s="coucou"}
+    function f(n:int):int = if n <= 0 then 1 else n*f(n-1)
+    var k := 0
+    var l := 0
+    var t := Tbl [ 5 ] of 1
 in
-    printi(r.i);
-    print(r.s)
+    print("TABLEAU\n");
+    printTable(t);
+    print("\n");
+
+    print("\nFACTORIELLE\n");
+    print("Entrez le nombre dont vous souhaitez calculer la factorielle : ");
+    k := intput();
+    printi(k);
+    print("! vaut ");
+    printi(f(k));
+    print("\n");
+
+    print("\nARITHMETIQUE\n");
+    print("Calcul de 2 fois x plus 5 sur y moins 1 pour x entre 1 et X et y entre 1 et Y.\nEntrez X : ");
+    k := intput();
+    print("Entrez Y : ");
+    l := intput();
+    for x := 1 to k do
+        for y := 1 to l do(
+            print("x : ");
+            printi(x);
+            print(" y : ");
+            printi(y);
+            print(" resultat : ");
+            printi(2*x+5/y-1);
+            print("\n")
+        )
 end
